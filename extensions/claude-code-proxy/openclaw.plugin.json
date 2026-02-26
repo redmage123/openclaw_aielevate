@@ -16,6 +16,10 @@
       "timeoutMs": {
         "type": "number",
         "description": "Request timeout in milliseconds (default: 120000)"
+      },
+      "authToken": {
+        "type": "string",
+        "description": "Bearer token for proxy auth (default: uses gateway token)"
       }
     }
   }

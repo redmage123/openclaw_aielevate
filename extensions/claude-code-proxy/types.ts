@@ -2,6 +2,7 @@ export type ClaudeCodeProxyConfig = {
   port: number;
   claudeBinaryPath: string;
   timeoutMs: number;
+  authToken?: string;
 };
 
 export const DEFAULT_PORT = 3456;

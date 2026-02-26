@@ -30,11 +30,32 @@ function buildModelDefinition(modelId: string) {
   };
 }
 
-function resolveConfig(pluginConfig?: Record<string, unknown>): ClaudeCodeProxyConfig {
+function resolveAuthToken(
+  gatewayConfig?: Record<string, unknown>,
+  pluginConfig?: Record<string, unknown>,
+): string | undefined {
+  // Priority: gateway auth token > env var > explicit plugin config
+  const gwAuth = (gatewayConfig as { auth?: { token?: string } } | undefined)?.auth?.token;
+  if (gwAuth) return gwAuth;
+
+  const envToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+  if (envToken) return envToken;
+
+  const explicit = pluginConfig?.authToken as string | undefined;
+  if (explicit) return explicit;
+
+  return undefined;
+}
+
+function resolveConfig(
+  pluginConfig?: Record<string, unknown>,
+  gatewayConfig?: Record<string, unknown>,
+): ClaudeCodeProxyConfig {
   return {
     port: (pluginConfig?.port as number) || DEFAULT_PORT,
     claudeBinaryPath: (pluginConfig?.claudeBinaryPath as string) || DEFAULT_CLAUDE_BINARY,
     timeoutMs: (pluginConfig?.timeoutMs as number) || DEFAULT_TIMEOUT_MS,
+    authToken: resolveAuthToken(gatewayConfig, pluginConfig),
   };
 }
 
@@ -45,7 +66,7 @@ const claudeCodeProxyPlugin = {
   configSchema: emptyPluginConfigSchema(),
 
   register(api: OpenClawPluginApi) {
-    const config = resolveConfig(api.pluginConfig);
+    const config = resolveConfig(api.pluginConfig, api.config.gateway);
     let server: Server | undefined;
 
     // Register the LLM provider
@@ -79,6 +100,8 @@ const claudeCodeProxyPlugin = {
             const baseUrl = `http://127.0.0.1:${config.port}/v1`;
             const defaultModelRef = `${PROVIDER_ID}/${MODEL_IDS[0]}`;
 
+            const credentialToken = config.authToken || "n/a";
+
             return {
               profiles: [
                 {
@@ -86,7 +109,7 @@ const claudeCodeProxyPlugin = {
                   credential: {
                     type: "token",
                     provider: PROVIDER_ID,
-                    token: "n/a",
+                    token: credentialToken,
                   },
                 },
               ],
@@ -95,9 +118,9 @@ const claudeCodeProxyPlugin = {
                   providers: {
                     [PROVIDER_ID]: {
                       baseUrl,
-                      apiKey: "n/a",
+                      apiKey: credentialToken,
                       api: "openai-completions",
-                      authHeader: false,
+                      authHeader: config.authToken ? true : false,
                       models: MODEL_IDS.map((id) => buildModelDefinition(id)),
                     },
                   },
@@ -114,6 +137,9 @@ const claudeCodeProxyPlugin = {
                 `Proxy endpoint: http://127.0.0.1:${config.port}/v1/chat/completions`,
                 "The claude CLI handles authentication — no API key needed.",
                 "Each request spawns a fresh claude -p process (stateless).",
+                config.authToken
+                  ? "Bearer auth enabled — requests require Authorization header."
+                  : "No auth token configured — proxy accepts all requests.",
               ],
             };
           },
@@ -125,7 +151,7 @@ const claudeCodeProxyPlugin = {
     api.registerService({
       id: PROVIDER_ID,
       async start(ctx) {
-        const svcConfig = resolveConfig(api.pluginConfig);
+        const svcConfig = resolveConfig(api.pluginConfig, api.config.gateway);
         try {
           server = await startServer(svcConfig, ctx.logger);
         } catch (err) {

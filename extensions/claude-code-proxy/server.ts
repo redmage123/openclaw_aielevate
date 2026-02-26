@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { runCli, runCliStream, killAllActive } from "./cli-runner.js";
 import { translateMessages } from "./message-translator.js";
@@ -17,6 +17,99 @@ type Logger = {
   warn: (msg: string) => void;
   error: (msg: string) => void;
 };
+
+// ---------------------------------------------------------------------------
+// Auth helpers (inline — plugins can't import core internals)
+// ---------------------------------------------------------------------------
+
+/** Timing-safe string comparison via SHA-256 digests (prevents length-leak). */
+function safeEqual(a: string | undefined | null, b: string | undefined | null): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const hash = (s: string) => createHash("sha256").update(s).digest();
+  return timingSafeEqual(hash(a), hash(b));
+}
+
+/** Extract bearer token from `Authorization: Bearer <token>` header. */
+function getBearerToken(req: IncomingMessage): string | undefined {
+  const raw = (
+    typeof req.headers.authorization === "string" ? req.headers.authorization : ""
+  ).trim();
+  if (!raw.toLowerCase().startsWith("bearer ")) return undefined;
+  const token = raw.slice(7).trim();
+  return token || undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Auth rate limiter (simplified version of src/gateway/auth-rate-limit.ts)
+// ---------------------------------------------------------------------------
+
+const RATE_MAX_ATTEMPTS = 10;
+const RATE_WINDOW_MS = 60_000; // 1 min
+const RATE_LOCKOUT_MS = 300_000; // 5 min
+const RATE_PRUNE_MS = 60_000; // prune every 1 min
+
+type RateLimitEntry = { attempts: number[]; lockedUntil?: number };
+
+function isLoopback(ip: string | undefined): boolean {
+  if (!ip) return false;
+  return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+}
+
+function createAuthRateLimiter() {
+  const entries = new Map<string, RateLimitEntry>();
+
+  const pruneTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of entries) {
+      if (entry.lockedUntil && now < entry.lockedUntil) continue;
+      entry.attempts = entry.attempts.filter((ts) => ts > now - RATE_WINDOW_MS);
+      if (entry.attempts.length === 0) entries.delete(key);
+    }
+  }, RATE_PRUNE_MS);
+  pruneTimer.unref();
+
+  return {
+    /** Check if IP is allowed. Returns { allowed, retryAfterMs }. */
+    check(ip: string | undefined): { allowed: boolean; retryAfterMs: number } {
+      if (isLoopback(ip)) return { allowed: true, retryAfterMs: 0 };
+      const entry = entries.get(ip ?? "unknown");
+      if (!entry) return { allowed: true, retryAfterMs: 0 };
+      const now = Date.now();
+      if (entry.lockedUntil) {
+        if (now < entry.lockedUntil) {
+          return { allowed: false, retryAfterMs: entry.lockedUntil - now };
+        }
+        entry.lockedUntil = undefined;
+        entry.attempts = [];
+      }
+      entry.attempts = entry.attempts.filter((ts) => ts > now - RATE_WINDOW_MS);
+      return { allowed: entry.attempts.length < RATE_MAX_ATTEMPTS, retryAfterMs: 0 };
+    },
+
+    /** Record a failed auth attempt. */
+    recordFailure(ip: string | undefined): void {
+      if (isLoopback(ip)) return;
+      const key = ip ?? "unknown";
+      let entry = entries.get(key);
+      if (!entry) {
+        entry = { attempts: [] };
+        entries.set(key, entry);
+      }
+      if (entry.lockedUntil && Date.now() < entry.lockedUntil) return;
+      const now = Date.now();
+      entry.attempts = entry.attempts.filter((ts) => ts > now - RATE_WINDOW_MS);
+      entry.attempts.push(now);
+      if (entry.attempts.length >= RATE_MAX_ATTEMPTS) {
+        entry.lockedUntil = now + RATE_LOCKOUT_MS;
+      }
+    },
+
+    dispose(): void {
+      clearInterval(pruneTimer);
+      entries.clear();
+    },
+  };
+}
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "Content-Type": "application/json" });
@@ -216,7 +309,12 @@ function handleHealth(res: ServerResponse): void {
   sendJson(res, 200, { status: "ok", provider: PROVIDER_ID });
 }
 
-export function createProxyServer(config: ClaudeCodeProxyConfig, logger: Logger): Server {
+export function createProxyServer(
+  config: ClaudeCodeProxyConfig,
+  logger: Logger,
+): { server: Server; rateLimiter: ReturnType<typeof createAuthRateLimiter> | undefined } {
+  const rateLimiter = config.authToken ? createAuthRateLimiter() : undefined;
+
   const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
     const path = url.pathname;
@@ -237,6 +335,42 @@ export function createProxyServer(config: ClaudeCodeProxyConfig, logger: Logger)
       res.writeHead(204);
       res.end();
       return;
+    }
+
+    // Bearer auth — skip for GET /health (health probes must work unauthenticated)
+    if (config.authToken && !(req.method === "GET" && path === "/health")) {
+      const clientIp = req.socket.remoteAddress;
+
+      // Rate limit check
+      if (rateLimiter) {
+        const rl = rateLimiter.check(clientIp);
+        if (!rl.allowed) {
+          const retryAfter = Math.ceil(rl.retryAfterMs / 1000);
+          res.writeHead(429, {
+            "Content-Type": "application/json",
+            "Retry-After": String(retryAfter),
+          });
+          res.end(
+            JSON.stringify({
+              error: { message: "Too many failed auth attempts", type: "rate_limit_error" },
+            }),
+          );
+          return;
+        }
+      }
+
+      const provided = getBearerToken(req);
+      if (!safeEqual(provided, config.authToken)) {
+        rateLimiter?.recordFailure(clientIp);
+        res.writeHead(401, {
+          "Content-Type": "application/json",
+          "WWW-Authenticate": "Bearer",
+        });
+        res.end(
+          JSON.stringify({ error: { message: "Unauthorized", type: "authentication_error" } }),
+        );
+        return;
+      }
     }
 
     if (req.method === "POST" && path === "/v1/chat/completions") {
@@ -266,26 +400,38 @@ export function createProxyServer(config: ClaudeCodeProxyConfig, logger: Logger)
     sendError(res, 404, `Not found: ${req.method} ${path}`);
   });
 
-  return server;
+  return { server, rateLimiter };
 }
 
 export function startServer(config: ClaudeCodeProxyConfig, logger: Logger): Promise<Server> {
   return new Promise((resolve, reject) => {
-    const server = createProxyServer(config, logger);
+    const { server, rateLimiter } = createProxyServer(config, logger);
+
+    // Stash rate limiter for cleanup on stop
+    (server as ServerWithRateLimiter).__rateLimiter = rateLimiter;
 
     server.on("error", (err) => {
+      rateLimiter?.dispose();
       reject(err);
     });
 
     server.listen(config.port, "127.0.0.1", () => {
-      logger.info(`claude-code-proxy: listening on http://127.0.0.1:${config.port}`);
+      logger.info(
+        `claude-code-proxy: listening on http://127.0.0.1:${config.port}` +
+          (config.authToken ? " (auth: bearer)" : " (auth: none)"),
+      );
       resolve(server);
     });
   });
 }
 
+type ServerWithRateLimiter = Server & {
+  __rateLimiter?: ReturnType<typeof createAuthRateLimiter>;
+};
+
 export function stopServer(server: Server): Promise<void> {
   killAllActive();
+  (server as ServerWithRateLimiter).__rateLimiter?.dispose();
   return new Promise((resolve) => {
     server.close(() => resolve());
   });
