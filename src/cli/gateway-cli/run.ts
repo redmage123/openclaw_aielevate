@@ -292,7 +292,8 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
     bind !== "loopback" &&
     !hasSharedSecret &&
     !canBootstrapToken &&
-    resolvedAuthMode !== "trusted-proxy"
+    resolvedAuthMode !== "trusted-proxy" &&
+    resolvedAuthMode !== "multi-user"
   ) {
     defaultRuntime.error(
       [
