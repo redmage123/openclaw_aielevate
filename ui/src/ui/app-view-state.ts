@@ -90,6 +90,8 @@ export type AppViewState = {
   chatThinkingLevel: string | null;
   chatQueue: ChatQueueItem[];
   chatManualRefreshInFlight: boolean;
+  chatDebugLog: Array<{ ts: number; level: "info" | "warn" | "error"; message: string }>;
+  chatShowDebug: boolean;
   nodesLoading: boolean;
   nodes: Array<Record<string, unknown>>;
   chatNewMessagesBelow: boolean;
