@@ -134,11 +134,13 @@ const claudeCodeProxyPlugin = {
               defaultModel: defaultModelRef,
               notes: [
                 "The claude-code-proxy server starts automatically with the gateway.",
-                `Proxy endpoint: http://127.0.0.1:${config.port}/v1/chat/completions`,
+                config.authToken
+                  ? `Proxy endpoint: http://127.0.0.1:${config.port}/v1/chat/completions?token=${config.authToken}`
+                  : `Proxy endpoint: http://127.0.0.1:${config.port}/v1/chat/completions`,
                 "The claude CLI handles authentication — no API key needed.",
                 "Each request spawns a fresh claude -p process (stateless).",
                 config.authToken
-                  ? "Bearer auth enabled — requests require Authorization header."
+                  ? "Auth: pass token via ?token= query param or Authorization: Bearer header."
                   : "No auth token configured — proxy accepts all requests.",
               ],
             };

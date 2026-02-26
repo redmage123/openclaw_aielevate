@@ -359,7 +359,8 @@ export function createProxyServer(
         }
       }
 
-      const provided = getBearerToken(req);
+      // Accept token from Bearer header or ?token= query parameter
+      const provided = getBearerToken(req) || url.searchParams.get("token") || undefined;
       if (!safeEqual(provided, config.authToken)) {
         rateLimiter?.recordFailure(clientIp);
         res.writeHead(401, {
