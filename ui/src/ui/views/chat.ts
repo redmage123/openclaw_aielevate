@@ -31,6 +31,12 @@ export type FallbackIndicatorStatus = {
   occurredAt: number;
 };
 
+export type ChatDebugEntry = {
+  ts: number;
+  level: "info" | "warn" | "error";
+  message: string;
+};
+
 export type ChatProps = {
   sessionKey: string;
   onSessionKeyChange: (next: string) => void;
@@ -68,6 +74,10 @@ export type ChatProps = {
   // Scroll control
   showNewMessages?: boolean;
   onScrollToBottom?: () => void;
+  // Debug panel
+  debugLog?: ChatDebugEntry[];
+  showDebug?: boolean;
+  onToggleDebug?: () => void;
   // Event handlers
   onRefresh: () => void;
   onToggleFocusMode: () => void;
@@ -154,6 +164,154 @@ function renderFallbackIndicator(status: FallbackIndicatorStatus | null | undefi
       title=${details}
     >
       ${icon} ${message}
+    </div>
+  `;
+}
+
+// Lightweight self-updating timer element (no framework dependency)
+if (!customElements.get("live-timer")) {
+  customElements.define(
+    "live-timer",
+    class extends HTMLElement {
+      private _timer = 0;
+      private _start = 0;
+
+      static get observedAttributes() {
+        return ["start"];
+      }
+
+      attributeChangedCallback() {
+        this._start = Number(this.getAttribute("start")) || Date.now();
+      }
+
+      connectedCallback() {
+        this._start = Number(this.getAttribute("start")) || Date.now();
+        this._tick();
+        this._timer = window.setInterval(() => this._tick(), 1000);
+      }
+
+      disconnectedCallback() {
+        clearInterval(this._timer);
+      }
+
+      private _tick() {
+        const secs = Math.floor((Date.now() - this._start) / 1000);
+        if (secs < 60) {
+          this.textContent = `${secs}s`;
+        } else {
+          const m = Math.floor(secs / 60);
+          const s = secs % 60;
+          this.textContent = `${m}m ${s.toString().padStart(2, "0")}s`;
+        }
+      }
+    },
+  );
+}
+
+function renderRequestStatus(props: ChatProps) {
+  const isBusy = props.sending || props.stream !== null;
+  const hasLog = (props.debugLog?.length ?? 0) > 0;
+
+  // Idle with no error — show toggle if there's a debug log
+  if (!isBusy && !props.error) {
+    if (hasLog && props.onToggleDebug) {
+      return html`
+        <div class="chat-status chat-status--idle" role="status">
+          <button
+            class="chat-status__debug-toggle"
+            type="button"
+            @click=${props.onToggleDebug}
+          >${props.showDebug ? "Hide debug log" : "Show debug log"}</button>
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
+  // Error state
+  if (props.error && !isBusy) {
+    return html`
+      <div class="chat-status chat-status--error" role="status" aria-live="polite">
+        <span class="chat-status__icon">${icons.x}</span>
+        <span class="chat-status__text">Error: ${props.error}</span>
+        ${
+          props.onToggleDebug
+            ? html`<button
+                class="chat-status__debug-toggle"
+                type="button"
+                @click=${props.onToggleDebug}
+              >${props.showDebug ? "Hide log" : "Show log"}</button>`
+            : nothing
+        }
+      </div>
+    `;
+  }
+
+  // Determine phase
+  const startedAt = props.streamStartedAt ?? Date.now();
+  const phase = props.sending
+    ? "Sending request..."
+    : props.stream !== null && props.stream.trim().length === 0
+      ? "Waiting for response..."
+      : "Streaming response...";
+
+  return html`
+    <div class="chat-status chat-status--busy" role="status" aria-live="polite">
+      <span class="chat-status__spinner"></span>
+      <span class="chat-status__text">${phase}</span>
+      <live-timer class="chat-status__elapsed" start=${String(startedAt)}></live-timer>
+      ${
+        props.onToggleDebug
+          ? html`<button
+              class="chat-status__debug-toggle"
+              type="button"
+              title="Toggle debug log"
+              @click=${props.onToggleDebug}
+            >${props.showDebug ? "Hide log" : "Show log"}</button>`
+          : nothing
+      }
+    </div>
+  `;
+}
+
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function renderDebugPanel(props: ChatProps) {
+  if (!props.showDebug) {
+    return nothing;
+  }
+  const log = props.debugLog ?? [];
+
+  return html`
+    <div class="chat-debug">
+      <div class="chat-debug__header">
+        <span class="chat-debug__title">Debug Log</span>
+        <button class="chat-debug__close" type="button" @click=${props.onToggleDebug}>
+          ${icons.x}
+        </button>
+      </div>
+      <div class="chat-debug__body">
+        ${
+          log.length === 0
+            ? html`
+                <div class="chat-debug__empty">No events yet. Send a message to see activity.</div>
+              `
+            : log.map(
+                (entry) => html`
+            <div class="chat-debug__entry chat-debug__entry--${entry.level}">
+              <span class="chat-debug__ts">${formatTime(entry.ts)}</span>
+              <span class="chat-debug__msg">${entry.message}</span>
+            </div>
+          `,
+              )
+        }
+      </div>
     </div>
   `;
 }
@@ -419,6 +577,9 @@ export function renderChat(props: ChatProps) {
           `
           : nothing
       }
+
+      ${renderRequestStatus(props)}
+      ${renderDebugPanel(props)}
 
       <div class="chat-compose">
         ${renderAttachmentPreview(props)}

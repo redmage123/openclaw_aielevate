@@ -1065,6 +1065,10 @@ export function renderApp(state: AppViewState) {
                 onNewSession: () => state.handleSendChat("/new", { restoreDraft: true }),
                 showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
                 onScrollToBottom: () => state.scrollToBottom(),
+                // Debug panel
+                debugLog: state.chatDebugLog,
+                showDebug: state.chatShowDebug,
+                onToggleDebug: () => (state.chatShowDebug = !state.chatShowDebug),
                 // Sidebar props for tool output viewing
                 sidebarOpen: state.sidebarOpen,
                 sidebarContent: state.sidebarContent,

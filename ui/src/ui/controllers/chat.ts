@@ -17,6 +17,7 @@ export type ChatState = {
   chatStream: string | null;
   chatStreamStartedAt: number | null;
   lastError: string | null;
+  pushDebugLog?: (level: "info" | "warn" | "error", message: string) => void;
 };
 
 export type ChatEventPayload = {
@@ -153,6 +154,7 @@ export async function sendChatMessage(
   state.chatRunId = runId;
   state.chatStream = "";
   state.chatStreamStartedAt = now;
+  state.pushDebugLog?.("info", `Sending message (run ${runId.slice(0, 8)})`);
 
   // Convert attachments to API format
   const apiAttachments = hasAttachments
@@ -179,6 +181,7 @@ export async function sendChatMessage(
       idempotencyKey: runId,
       attachments: apiAttachments,
     });
+    state.pushDebugLog?.("info", `Request accepted, waiting for LLM response...`);
     return runId;
   } catch (err) {
     const error = String(err);
@@ -186,6 +189,7 @@ export async function sendChatMessage(
     state.chatStream = null;
     state.chatStreamStartedAt = null;
     state.lastError = error;
+    state.pushDebugLog?.("error", `Send failed: ${error}`);
     state.chatMessages = [
       ...state.chatMessages,
       {
@@ -244,10 +248,15 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     if (typeof next === "string") {
       const current = state.chatStream ?? "";
       if (!current || next.length >= current.length) {
+        // Log first chunk only
+        if (!current) {
+          state.pushDebugLog?.("info", "First response chunk received");
+        }
         state.chatStream = next;
       }
     }
   } else if (payload.state === "final") {
+    state.pushDebugLog?.("info", "Response complete");
     const finalMessage = normalizeFinalAssistantMessage(payload.message);
     if (finalMessage) {
       state.chatMessages = [...state.chatMessages, finalMessage];
@@ -256,6 +265,7 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     state.chatRunId = null;
     state.chatStreamStartedAt = null;
   } else if (payload.state === "aborted") {
+    state.pushDebugLog?.("warn", "Response aborted");
     const normalizedMessage = normalizeAbortedAssistantMessage(payload.message);
     if (normalizedMessage) {
       state.chatMessages = [...state.chatMessages, normalizedMessage];
@@ -276,6 +286,7 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     state.chatRunId = null;
     state.chatStreamStartedAt = null;
   } else if (payload.state === "error") {
+    state.pushDebugLog?.("error", `Event error: ${payload.errorMessage ?? "unknown"}`);
     state.chatStream = null;
     state.chatRunId = null;
     state.chatStreamStartedAt = null;

@@ -158,6 +158,10 @@ export class OpenClawApp extends LitElement {
   @state() chatQueue: ChatQueueItem[] = [];
   @state() chatAttachments: ChatAttachment[] = [];
   @state() chatManualRefreshInFlight = false;
+  // Debug panel state
+  @state() chatDebugLog: Array<{ ts: number; level: "info" | "warn" | "error"; message: string }> =
+    [];
+  @state() chatShowDebug = false;
   // Sidebar state for tool output viewing
   @state() sidebarOpen = false;
   @state() sidebarContent: string | null = null;
@@ -614,6 +618,10 @@ export class OpenClawApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  pushDebugLog(level: "info" | "warn" | "error", message: string) {
+    this.chatDebugLog = [...this.chatDebugLog, { ts: Date.now(), level, message }].slice(-50); // Keep last 50 entries
   }
 
   async handleAuthLogin(username: string, password: string) {
