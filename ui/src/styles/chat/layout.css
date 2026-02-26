@@ -3,13 +3,14 @@
    ============================================= */
 
 /* Main chat card - flex column layout, transparent background */
-.chat {
+.card.chat {
   position: relative;
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
   min-height: 0; /* Allow flex shrinking — do NOT use height:100% here */
   overflow: hidden;
+  padding: 0 20px 20px; /* Override .card padding — remove top padding */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -23,8 +24,8 @@
   gap: 12px;
   flex-wrap: nowrap;
   flex-shrink: 0;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
   background: transparent;
 }
 

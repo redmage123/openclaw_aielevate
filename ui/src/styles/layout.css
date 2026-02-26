@@ -438,9 +438,9 @@
 .content--chat {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 0;
   overflow: hidden;
-  padding-bottom: 0;
+  padding: 0 16px;
 }
 
 .content--chat > * + * {
@@ -498,7 +498,16 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.content--chat .page-title {
+  font-size: 18px;
+}
+
+.content--chat .page-sub {
+  display: none;
 }
 
 .content--chat .content-header > div:first-child {
