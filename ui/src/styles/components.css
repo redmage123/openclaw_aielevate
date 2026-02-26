@@ -2668,6 +2668,43 @@
   cursor: not-allowed;
 }
 
+.auth-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-password-wrap .auth-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) ease;
+}
+
+.auth-password-toggle:hover {
+  color: var(--text);
+}
+
+.auth-eye-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .auth-button {
   display: inline-flex;
   align-items: center;
