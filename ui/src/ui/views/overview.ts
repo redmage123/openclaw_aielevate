@@ -32,7 +32,7 @@ export function renderOverview(props: OverviewProps) {
     | {
         uptimeMs?: number;
         policy?: { tickIntervalMs?: number };
-        authMode?: "none" | "token" | "password" | "trusted-proxy";
+        authMode?: "none" | "token" | "password" | "trusted-proxy" | "multi-user";
       }
     | undefined;
   const uptime = snapshot?.uptimeMs ? formatDurationHuman(snapshot.uptimeMs) : t("common.na");

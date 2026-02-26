@@ -19,7 +19,12 @@ import {
   resolveClientIp,
 } from "./net.js";
 
-export type ResolvedGatewayAuthMode = "none" | "token" | "password" | "trusted-proxy";
+export type ResolvedGatewayAuthMode =
+  | "none"
+  | "token"
+  | "password"
+  | "trusted-proxy"
+  | "multi-user";
 export type ResolvedGatewayAuthModeSource =
   | "override"
   | "config"
@@ -38,7 +43,16 @@ export type ResolvedGatewayAuth = {
 
 export type GatewayAuthResult = {
   ok: boolean;
-  method?: "none" | "token" | "password" | "tailscale" | "device-token" | "trusted-proxy";
+  method?:
+    | "none"
+    | "token"
+    | "password"
+    | "tailscale"
+    | "device-token"
+    | "trusted-proxy"
+    | "session-token";
+  /** Present when auth mode is multi-user and a session token was validated. */
+  userId?: string;
   user?: string;
   reason?: string;
   /** Present when the request was blocked by the rate limiter. */
@@ -276,7 +290,10 @@ export function resolveGatewayAuth(params: {
 
   const allowTailscale =
     authConfig.allowTailscale ??
-    (params.tailscaleMode === "serve" && mode !== "password" && mode !== "trusted-proxy");
+    (params.tailscaleMode === "serve" &&
+      mode !== "password" &&
+      mode !== "trusted-proxy" &&
+      mode !== "multi-user");
 
   return {
     mode,
@@ -312,6 +329,7 @@ export function assertGatewayAuthConfigured(auth: ResolvedGatewayAuth): void {
       );
     }
   }
+  // multi-user mode has no shared credentials to assert — auth is per-user via HTTP endpoints
 }
 
 /**
@@ -392,6 +410,13 @@ export async function authorizeGatewayConnect(
       return { ok: true, method: "trusted-proxy", user: result.user };
     }
     return { ok: false, reason: result.reason };
+  }
+
+  if (auth.mode === "multi-user") {
+    // Multi-user auth is handled via session tokens (HTTP Bearer or WS connect param).
+    // The session-token validation is done in the WS auth-context layer;
+    // if we reach here without a validated session, reject.
+    return { ok: false, reason: "session_token_required" };
   }
 
   if (auth.mode === "none") {

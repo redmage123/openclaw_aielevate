@@ -497,6 +497,7 @@ export const OpenClawSchema = z
                 z.literal("token"),
                 z.literal("password"),
                 z.literal("trusted-proxy"),
+                z.literal("multi-user"),
               ])
               .optional(),
             token: z.string().optional().register(sensitive),
@@ -516,6 +517,15 @@ export const OpenClawSchema = z
                 userHeader: z.string().min(1, "userHeader is required for trusted-proxy mode"),
                 requiredHeaders: z.array(z.string()).optional(),
                 allowUsers: z.array(z.string()).optional(),
+              })
+              .strict()
+              .optional(),
+            multiUser: z
+              .object({
+                allowSignup: z.boolean().optional(),
+                sessionLifetimeHours: z.number().int().min(1).optional(),
+                maxSessionsPerUser: z.number().int().min(1).optional(),
+                adminEmails: z.array(z.string()).optional(),
               })
               .strict()
               .optional(),

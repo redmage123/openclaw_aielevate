@@ -104,7 +104,7 @@ export type GatewayControlUiConfig = {
   dangerouslyDisableDeviceAuth?: boolean;
 };
 
-export type GatewayAuthMode = "none" | "token" | "password" | "trusted-proxy";
+export type GatewayAuthMode = "none" | "token" | "password" | "trusted-proxy" | "multi-user";
 
 /**
  * Configuration for trusted reverse proxy authentication.
@@ -131,6 +131,17 @@ export type GatewayTrustedProxyConfig = {
   allowUsers?: string[];
 };
 
+export type GatewayMultiUserConfig = {
+  /** Allow new user signups via the web UI. Default: true. */
+  allowSignup?: boolean;
+  /** Session lifetime in hours. Default: 720 (30 days). */
+  sessionLifetimeHours?: number;
+  /** Maximum active sessions per user. Default: 10. */
+  maxSessionsPerUser?: number;
+  /** Emails that automatically get admin role on signup. */
+  adminEmails?: string[];
+};
+
 export type GatewayAuthConfig = {
   /** Authentication mode for Gateway connections. Defaults to token when unset. */
   mode?: GatewayAuthMode;
@@ -147,6 +158,11 @@ export type GatewayAuthConfig = {
    * Required when mode is "trusted-proxy".
    */
   trustedProxy?: GatewayTrustedProxyConfig;
+  /**
+   * Configuration for multi-user auth mode.
+   * Used when mode is "multi-user".
+   */
+  multiUser?: GatewayMultiUserConfig;
 };
 
 export type GatewayAuthRateLimitConfig = {

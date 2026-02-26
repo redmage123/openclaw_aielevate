@@ -44,6 +44,14 @@ import type { ChatAttachment, ChatQueueItem, CronFormState } from "./ui-types.ts
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 import type { SessionLogEntry } from "./views/usage.ts";
 
+export type AuthUser = {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  role: string;
+};
+
 export type AppViewState = {
   settings: UiSettings;
   password: string;
@@ -51,6 +59,12 @@ export type AppViewState = {
   onboarding: boolean;
   basePath: string;
   connected: boolean;
+  /** Multi-user auth state. */
+  authState: "checking" | "unauthenticated" | "authenticated" | "not-required";
+  authUser: AuthUser | null;
+  authView: "login" | "signup";
+  authError: string | null;
+  authLoading: boolean;
   theme: ThemeMode;
   themeResolved: "light" | "dark";
   hello: GatewayHelloOk | null;
@@ -322,4 +336,13 @@ export type AppViewState = {
   handleOpenSidebar: (content: string) => void;
   handleCloseSidebar: () => void;
   handleSplitRatioChange: (ratio: number) => void;
+  handleAuthLogin: (username: string, password: string) => Promise<void>;
+  handleAuthSignup: (
+    username: string,
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<void>;
+  handleAuthLogout: () => Promise<void>;
+  setAuthView: (view: "login" | "signup") => void;
 };

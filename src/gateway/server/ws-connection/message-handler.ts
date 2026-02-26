@@ -71,7 +71,11 @@ import {
   refreshGatewayHealthSnapshot,
 } from "../health-state.js";
 import type { GatewayWsClient } from "../ws-types.js";
-import { resolveConnectAuthDecision, resolveConnectAuthState } from "./auth-context.js";
+import {
+  resolveConnectAuthDecision,
+  resolveConnectAuthState,
+  type SessionTokenValidator,
+} from "./auth-context.js";
 import { formatGatewayAuthFailureMessage, type AuthProvidedKind } from "./auth-messages.js";
 import {
   evaluateMissingDeviceIdentity,
@@ -99,6 +103,8 @@ export function attachGatewayWsMessageHandler(params: {
   resolvedAuth: ResolvedGatewayAuth;
   /** Optional rate limiter for auth brute-force protection. */
   rateLimiter?: AuthRateLimiter;
+  /** Validator for multi-user session tokens. */
+  validateSessionToken?: SessionTokenValidator;
   gatewayMethods: string[];
   events: string[];
   extraHandlers: GatewayRequestHandlers;
@@ -130,6 +136,7 @@ export function attachGatewayWsMessageHandler(params: {
     connectNonce,
     resolvedAuth,
     rateLimiter,
+    validateSessionToken,
     gatewayMethods,
     events,
     extraHandlers,
@@ -379,6 +386,7 @@ export function attachGatewayWsMessageHandler(params: {
           allowRealIpFallback,
           rateLimiter,
           clientIp,
+          validateSessionToken,
         });
         const rejectUnauthorized = (failedAuth: GatewayAuthResult) => {
           markHandshakeFailure("unauthorized", {
@@ -833,6 +841,7 @@ export function attachGatewayWsMessageHandler(params: {
           clientIp: reportedClientIp,
           canvasCapability,
           canvasCapabilityExpiresAtMs,
+          userId: authResult.userId,
         };
         setClient(nextClient);
         setHandshakeState("connected");

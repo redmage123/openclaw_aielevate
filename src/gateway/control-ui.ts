@@ -338,11 +338,13 @@ export function handleControlUiHttpRequest(
       res.end();
       return true;
     }
+    const authMode = config?.gateway?.auth?.mode === "multi-user" ? "multi-user" : "single-user";
     sendJson(res, 200, {
       basePath,
       assistantName: identity.name,
       assistantAvatar: avatarValue ?? identity.avatar,
       assistantAgentId: identity.agentId,
+      authMode,
     } satisfies ControlUiBootstrapConfig);
     return true;
   }

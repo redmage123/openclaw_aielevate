@@ -5,4 +5,6 @@ export type ControlUiBootstrapConfig = {
   assistantName: string;
   assistantAvatar: string;
   assistantAgentId: string;
+  /** Auth mode for the control UI. Absent means single-user (legacy). */
+  authMode?: "single-user" | "multi-user";
 };

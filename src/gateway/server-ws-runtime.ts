@@ -4,6 +4,7 @@ import type { AuthRateLimiter } from "./auth-rate-limit.js";
 import type { ResolvedGatewayAuth } from "./auth.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./server-methods/types.js";
 import { attachGatewayWsConnectionHandler } from "./server/ws-connection.js";
+import type { SessionTokenValidator } from "./server/ws-connection/auth-context.js";
 import type { GatewayWsClient } from "./server/ws-types.js";
 
 export function attachGatewayWsHandlers(params: {
@@ -16,6 +17,8 @@ export function attachGatewayWsHandlers(params: {
   resolvedAuth: ResolvedGatewayAuth;
   /** Optional rate limiter for auth brute-force protection. */
   rateLimiter?: AuthRateLimiter;
+  /** Validator for multi-user session tokens. */
+  validateSessionToken?: SessionTokenValidator;
   gatewayMethods: string[];
   events: string[];
   logGateway: ReturnType<typeof createSubsystemLogger>;
@@ -41,6 +44,7 @@ export function attachGatewayWsHandlers(params: {
     canvasHostServerPort: params.canvasHostServerPort,
     resolvedAuth: params.resolvedAuth,
     rateLimiter: params.rateLimiter,
+    validateSessionToken: params.validateSessionToken,
     gatewayMethods: params.gatewayMethods,
     events: params.events,
     logGateway: params.logGateway,

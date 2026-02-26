@@ -17,6 +17,7 @@ import {
   readConfigFileSnapshot,
   writeConfigFile,
 } from "../config/config.js";
+import { resolveStateDir } from "../config/paths.js";
 import { applyPluginAutoEnable } from "../config/plugin-auto-enable.js";
 import { clearAgentRunContext, onAgentEvent } from "../infra/agent-events.js";
 import {
@@ -90,6 +91,8 @@ import {
 } from "./server/health-state.js";
 import { loadGatewayTlsRuntime } from "./server/tls.js";
 import { ensureGatewayStartupAuth } from "./startup-auth.js";
+import { handleAuthHttpRequest } from "./users/auth-http.js";
+import { UserDb } from "./users/user-db.js";
 
 export { __resetModelCatalogCacheForTest } from "./server-model-catalog.js";
 
@@ -317,6 +320,24 @@ export async function startGatewayServer(
     ? createAuthRateLimiter(rateLimitConfig)
     : undefined;
 
+  // Initialize multi-user database when auth mode is multi-user.
+  let userDb: UserDb | null = null;
+  let multiUserSessionPruneTimer: ReturnType<typeof setInterval> | null = null;
+  if (resolvedAuth.mode === "multi-user") {
+    const multiUserConfig = cfgAtStart.gateway?.auth?.multiUser;
+    const userDbPath = path.join(resolveStateDir(), "users.sqlite");
+    userDb = new UserDb({
+      dbPath: userDbPath,
+      sessionLifetimeHours: multiUserConfig?.sessionLifetimeHours,
+      maxSessionsPerUser: multiUserConfig?.maxSessionsPerUser,
+      adminEmails: multiUserConfig?.adminEmails,
+    });
+    // Prune expired sessions every hour.
+    multiUserSessionPruneTimer = setInterval(() => userDb?.pruneExpiredSessions(), 60 * 60 * 1000);
+    multiUserSessionPruneTimer.unref();
+    log.info("gateway: multi-user auth mode enabled");
+  }
+
   let controlUiRootState: ControlUiRootState | undefined;
   if (controlUiRootOverride) {
     const resolvedOverride = resolveControlUiRootOverrideSync(controlUiRootOverride);
@@ -396,6 +417,15 @@ export async function startGatewayServer(
     canvasRuntime,
     canvasHostEnabled,
     allowCanvasHostInTests: opts.allowCanvasHostInTests,
+    handleAuthHttpRequest: userDb
+      ? (req, res) =>
+          handleAuthHttpRequest(req, res, {
+            userDb,
+            rateLimiter: authRateLimiter,
+            allowSignup: cfgAtStart.gateway?.auth?.multiUser?.allowSignup ?? true,
+            trustedProxies: cfgAtStart.gateway?.trustedProxies,
+          })
+      : undefined,
     logCanvas,
     log,
     logHooks,
@@ -574,6 +604,15 @@ export async function startGatewayServer(
     canvasHostServerPort,
     resolvedAuth,
     rateLimiter: authRateLimiter,
+    validateSessionToken: userDb
+      ? (token) => {
+          const user = userDb.validateSession(token);
+          if (!user) {
+            return null;
+          }
+          return { id: user.id, email: user.email };
+        }
+      : undefined,
     gatewayMethods,
     events: GATEWAY_EVENTS,
     logGateway: log,
@@ -777,6 +816,10 @@ export async function startGatewayServer(
       }
       skillsChangeUnsub();
       authRateLimiter?.dispose();
+      if (multiUserSessionPruneTimer) {
+        clearInterval(multiUserSessionPruneTimer);
+      }
+      userDb?.close();
       channelHealthMonitor?.stop();
       await close(opts);
     },

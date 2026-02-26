@@ -12,12 +12,18 @@ export type ControlUiBootstrapState = {
   assistantAgentId: string | null;
 };
 
-export async function loadControlUiBootstrapConfig(state: ControlUiBootstrapState) {
+export type BootstrapResult = {
+  authMode?: "single-user" | "multi-user";
+};
+
+export async function loadControlUiBootstrapConfig(
+  state: ControlUiBootstrapState,
+): Promise<BootstrapResult> {
   if (typeof window === "undefined") {
-    return;
+    return {};
   }
   if (typeof fetch !== "function") {
-    return;
+    return {};
   }
 
   const basePath = normalizeBasePath(state.basePath ?? "");
@@ -32,7 +38,7 @@ export async function loadControlUiBootstrapConfig(state: ControlUiBootstrapStat
       credentials: "same-origin",
     });
     if (!res.ok) {
-      return;
+      return {};
     }
     const parsed = (await res.json()) as ControlUiBootstrapConfig;
     const normalized = normalizeAssistantIdentity({
@@ -43,7 +49,9 @@ export async function loadControlUiBootstrapConfig(state: ControlUiBootstrapStat
     state.assistantName = normalized.name;
     state.assistantAvatar = normalized.avatar;
     state.assistantAgentId = normalized.agentId ?? null;
+    return { authMode: parsed.authMode };
   } catch {
     // Ignore bootstrap failures; UI will update identity after connecting.
+    return {};
   }
 }

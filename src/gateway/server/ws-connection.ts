@@ -15,6 +15,7 @@ import { formatError } from "../server-utils.js";
 import { logWs } from "../ws-log.js";
 import { getHealthVersion, incrementPresenceVersion } from "./health-state.js";
 import { broadcastPresenceSnapshot } from "./presence-events.js";
+import type { SessionTokenValidator } from "./ws-connection/auth-context.js";
 import { attachGatewayWsMessageHandler } from "./ws-connection/message-handler.js";
 import type { GatewayWsClient } from "./ws-types.js";
 
@@ -65,6 +66,8 @@ export function attachGatewayWsConnectionHandler(params: {
   resolvedAuth: ResolvedGatewayAuth;
   /** Optional rate limiter for auth brute-force protection. */
   rateLimiter?: AuthRateLimiter;
+  /** Validator for multi-user session tokens. */
+  validateSessionToken?: SessionTokenValidator;
   gatewayMethods: string[];
   events: string[];
   logGateway: SubsystemLogger;
@@ -90,6 +93,7 @@ export function attachGatewayWsConnectionHandler(params: {
     canvasHostServerPort,
     resolvedAuth,
     rateLimiter,
+    validateSessionToken,
     gatewayMethods,
     events,
     logGateway,
@@ -278,6 +282,7 @@ export function attachGatewayWsConnectionHandler(params: {
       connectNonce,
       resolvedAuth,
       rateLimiter,
+      validateSessionToken,
       gatewayMethods,
       events,
       extraHandlers,

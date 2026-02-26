@@ -66,6 +66,8 @@ import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "./external-link.ts";
 import { icons } from "./icons.ts";
 import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
 import { renderAgents } from "./views/agents.ts";
+import { renderLogin } from "./views/auth-login.ts";
+import { renderSignup } from "./views/auth-signup.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderConfig } from "./views/config.ts";
@@ -137,6 +139,32 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
 }
 
 export function renderApp(state: AppViewState) {
+  // Multi-user auth gate: show login/signup when unauthenticated.
+  if (state.authState === "checking") {
+    return html`
+      <div class="auth-page">
+        <div class="auth-card"><p>Loading...</p></div>
+      </div>
+    `;
+  }
+  if (state.authState === "unauthenticated") {
+    if (state.authView === "signup") {
+      return renderSignup({
+        error: state.authError,
+        loading: state.authLoading,
+        onSignup: (username, email, password, displayName) =>
+          state.handleAuthSignup(username, email, password, displayName),
+        onSwitchToLogin: () => state.setAuthView("login"),
+      });
+    }
+    return renderLogin({
+      error: state.authError,
+      loading: state.authLoading,
+      onLogin: (username, password) => state.handleAuthLogin(username, password),
+      onSwitchToSignup: () => state.setAuthView("signup"),
+    });
+  }
+
   const openClawVersion =
     (typeof state.hello?.server?.version === "string" && state.hello.server.version.trim()) ||
     state.updateAvailable?.currentVersion ||

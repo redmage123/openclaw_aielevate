@@ -16,6 +16,8 @@ import {
   syncTabWithLocation,
   syncThemeWithSettings,
 } from "./app-settings.ts";
+import type { AuthUser } from "./app-view-state.ts";
+import { loadAuthToken, validateAuthToken } from "./auth-state.ts";
 import { loadControlUiBootstrapConfig } from "./controllers/control-ui-bootstrap.ts";
 import type { Tab } from "./navigation.ts";
 
@@ -38,17 +40,18 @@ type LifecycleHost = {
   logsEntries: unknown[];
   popStateHandler: () => void;
   topbarObserver: ResizeObserver | null;
+  authState: "checking" | "unauthenticated" | "authenticated" | "not-required";
+  authUser: AuthUser | null;
 };
 
 export function handleConnected(host: LifecycleHost) {
   host.basePath = inferBasePath();
-  void loadControlUiBootstrapConfig(host);
+  void initializeAuth(host);
   applySettingsFromUrl(host as unknown as Parameters<typeof applySettingsFromUrl>[0]);
   syncTabWithLocation(host as unknown as Parameters<typeof syncTabWithLocation>[0], true);
   syncThemeWithSettings(host as unknown as Parameters<typeof syncThemeWithSettings>[0]);
   attachThemeListener(host as unknown as Parameters<typeof attachThemeListener>[0]);
   window.addEventListener("popstate", host.popStateHandler);
-  connectGateway(host as unknown as Parameters<typeof connectGateway>[0]);
   startNodesPolling(host as unknown as Parameters<typeof startNodesPolling>[0]);
   if (host.tab === "logs") {
     startLogsPolling(host as unknown as Parameters<typeof startLogsPolling>[0]);
@@ -56,6 +59,33 @@ export function handleConnected(host: LifecycleHost) {
   if (host.tab === "debug") {
     startDebugPolling(host as unknown as Parameters<typeof startDebugPolling>[0]);
   }
+}
+
+async function initializeAuth(host: LifecycleHost): Promise<void> {
+  const bootstrap = await loadControlUiBootstrapConfig(host);
+
+  if (bootstrap.authMode !== "multi-user") {
+    // Single-user mode: connect gateway directly (existing behavior).
+    host.authState = "not-required";
+    connectGateway(host as unknown as Parameters<typeof connectGateway>[0]);
+    return;
+  }
+
+  // Multi-user mode: check for existing session token.
+  host.authState = "checking";
+  const token = loadAuthToken();
+  if (token) {
+    const user = await validateAuthToken(token, host.basePath);
+    if (user) {
+      host.authUser = user;
+      host.authState = "authenticated";
+      connectGateway(host as unknown as Parameters<typeof connectGateway>[0]);
+      return;
+    }
+  }
+
+  // No valid session — show login screen.
+  host.authState = "unauthenticated";
 }
 
 export function handleFirstUpdated(host: LifecycleHost) {

@@ -77,6 +77,8 @@ export type GatewayBrowserClientOptions = {
   url: string;
   token?: string;
   password?: string;
+  /** Multi-user session token (Bearer token from login). */
+  sessionToken?: string;
   clientName?: GatewayClientName;
   clientVersion?: string;
   platform?: string;
@@ -189,10 +191,11 @@ export class GatewayBrowserClient {
       canFallbackToShared = Boolean(storedToken && this.opts.token);
     }
     const auth =
-      authToken || this.opts.password
+      authToken || this.opts.password || this.opts.sessionToken
         ? {
             token: authToken,
             password: this.opts.password,
+            sessionToken: this.opts.sessionToken,
           }
         : undefined;
 

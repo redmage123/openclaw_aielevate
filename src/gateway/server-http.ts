@@ -420,6 +420,8 @@ export function createGatewayHttpServer(opts: {
   strictTransportSecurityHeader?: string;
   handleHooksRequest: HooksRequestHandler;
   handlePluginRequest?: HooksRequestHandler;
+  /** Multi-user auth HTTP handler (handles /api/auth/*). */
+  handleAuthHttpRequest?: HooksRequestHandler;
   resolvedAuth: ResolvedGatewayAuth;
   /** Optional rate limiter for auth brute-force protection. */
   rateLimiter?: AuthRateLimiter;
@@ -437,6 +439,7 @@ export function createGatewayHttpServer(opts: {
     strictTransportSecurityHeader,
     handleHooksRequest,
     handlePluginRequest,
+    handleAuthHttpRequest,
     resolvedAuth,
     rateLimiter,
   } = opts;
@@ -472,6 +475,9 @@ export function createGatewayHttpServer(opts: {
       }
       const requestPath = new URL(req.url ?? "/", "http://localhost").pathname;
       if (await handleHooksRequest(req, res)) {
+        return;
+      }
+      if (handleAuthHttpRequest && (await handleAuthHttpRequest(req, res))) {
         return;
       }
       if (

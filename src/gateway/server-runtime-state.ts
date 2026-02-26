@@ -52,6 +52,11 @@ export async function createGatewayRuntimeState(params: {
   canvasRuntime: RuntimeEnv;
   canvasHostEnabled: boolean;
   allowCanvasHostInTests?: boolean;
+  /** Multi-user auth HTTP handler (handles /api/auth/*). */
+  handleAuthHttpRequest?: (
+    req: import("node:http").IncomingMessage,
+    res: import("node:http").ServerResponse,
+  ) => Promise<boolean>;
   logCanvas: { info: (msg: string) => void; warn: (msg: string) => void };
   log: { info: (msg: string) => void; warn: (msg: string) => void };
   logHooks: ReturnType<typeof createSubsystemLogger>;
@@ -132,6 +137,7 @@ export async function createGatewayRuntimeState(params: {
       strictTransportSecurityHeader: params.strictTransportSecurityHeader,
       handleHooksRequest,
       handlePluginRequest,
+      handleAuthHttpRequest: params.handleAuthHttpRequest,
       resolvedAuth: params.resolvedAuth,
       rateLimiter: params.rateLimiter,
       tlsOptions: params.gatewayTls?.enabled ? params.gatewayTls.tlsOptions : undefined,

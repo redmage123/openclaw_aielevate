@@ -254,6 +254,24 @@ export function resolveOAuthPath(
   return path.join(resolveOAuthDir(env, stateDir), OAUTH_FILENAME);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Per-user data directory for multi-user mode.
+ * Returns `~/.openclaw/users/<userId>/`.
+ * Validates userId is UUID format to prevent path traversal.
+ */
+export function resolveUserStateDir(
+  userId: string,
+  env: NodeJS.ProcessEnv = process.env,
+  stateDir: string = resolveStateDir(env, envHomedir(env)),
+): string {
+  if (!UUID_RE.test(userId)) {
+    throw new Error(`Invalid user ID format: expected UUID, got "${userId}"`);
+  }
+  return path.join(stateDir, "users", userId);
+}
+
 export function resolveGatewayPort(
   cfg?: OpenClawConfig,
   env: NodeJS.ProcessEnv = process.env,

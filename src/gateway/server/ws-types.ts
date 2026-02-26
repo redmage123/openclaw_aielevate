@@ -9,4 +9,6 @@ export type GatewayWsClient = {
   clientIp?: string;
   canvasCapability?: string;
   canvasCapabilityExpiresAtMs?: number;
+  /** Present when auth mode is multi-user. */
+  userId?: string;
 };

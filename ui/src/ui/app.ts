@@ -122,6 +122,12 @@ export class OpenClawApp extends LitElement {
   @state() tab: Tab = "chat";
   @state() onboarding = resolveOnboardingMode();
   @state() connected = false;
+  @state() authState: "checking" | "unauthenticated" | "authenticated" | "not-required" =
+    "not-required";
+  @state() authUser: import("./app-view-state.ts").AuthUser | null = null;
+  @state() authView: "login" | "signup" = "login";
+  @state() authError: string | null = null;
+  @state() authLoading = false;
   @state() theme: ThemeMode = this.settings.theme ?? "system";
   @state() themeResolved: ResolvedTheme = "dark";
   @state() hello: GatewayHelloOk | null = null;
@@ -608,6 +614,59 @@ export class OpenClawApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  async handleAuthLogin(username: string, password: string) {
+    const { loginUser, storeAuthToken } = await import("./auth-state.ts");
+    this.authLoading = true;
+    this.authError = null;
+    const result = await loginUser(this.basePath, username, password);
+    this.authLoading = false;
+    if ("error" in result) {
+      this.authError = result.error;
+      return;
+    }
+    storeAuthToken(result.token, result.user);
+    this.authUser = result.user;
+    this.authState = "authenticated";
+    this.authError = null;
+    connectGatewayInternal(this as unknown as Parameters<typeof connectGatewayInternal>[0]);
+  }
+
+  async handleAuthSignup(username: string, email: string, password: string, displayName: string) {
+    const { signupUser, storeAuthToken } = await import("./auth-state.ts");
+    this.authLoading = true;
+    this.authError = null;
+    const result = await signupUser(this.basePath, username, email, password, displayName);
+    this.authLoading = false;
+    if ("error" in result) {
+      this.authError = result.error;
+      return;
+    }
+    storeAuthToken(result.token, result.user);
+    this.authUser = result.user;
+    this.authState = "authenticated";
+    this.authError = null;
+    connectGatewayInternal(this as unknown as Parameters<typeof connectGatewayInternal>[0]);
+  }
+
+  async handleAuthLogout() {
+    const { logoutUser, loadAuthToken } = await import("./auth-state.ts");
+    const token = loadAuthToken();
+    if (token) {
+      await logoutUser(this.basePath, token);
+    }
+    this.authUser = null;
+    this.authState = "unauthenticated";
+    this.authView = "login";
+    this.connected = false;
+    this.client?.stop();
+    this.client = null;
+  }
+
+  setAuthView(view: "login" | "signup") {
+    this.authView = view;
+    this.authError = null;
   }
 
   render() {

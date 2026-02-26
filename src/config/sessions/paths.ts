@@ -15,6 +15,15 @@ function resolveAgentSessionsDir(
   return path.join(root, "agents", id, "sessions");
 }
 
+/**
+ * Resolve agent sessions dir under a user-scoped state directory.
+ * Used by multi-user mode to isolate per-user sessions.
+ */
+export function resolveUserAgentSessionsDir(userStateDir: string, agentId?: string): string {
+  const id = normalizeAgentId(agentId ?? DEFAULT_AGENT_ID);
+  return path.join(userStateDir, "agents", id, "sessions");
+}
+
 export function resolveSessionTranscriptsDir(
   env: NodeJS.ProcessEnv = process.env,
   homedir: () => string = () => resolveRequiredHomeDir(env, os.homedir),

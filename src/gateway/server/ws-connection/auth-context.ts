@@ -16,7 +16,10 @@ type HandshakeConnectAuth = {
   token?: string;
   deviceToken?: string;
   password?: string;
+  sessionToken?: string;
 };
+
+export type SessionTokenValidator = (token: string) => { id: string; email: string } | null;
 
 export type DeviceTokenCandidateSource = "explicit-device-token" | "shared-token-fallback";
 
@@ -81,7 +84,40 @@ export async function resolveConnectAuthState(params: {
   allowRealIpFallback: boolean;
   rateLimiter?: AuthRateLimiter;
   clientIp?: string;
+  /** Validator for multi-user session tokens. */
+  validateSessionToken?: SessionTokenValidator;
 }): Promise<ConnectAuthState> {
+  // Multi-user mode: validate session token from the connect handshake.
+  if (params.resolvedAuth.mode === "multi-user") {
+    const sessionToken = trimToUndefined(params.connectAuth?.sessionToken);
+    if (!sessionToken || !params.validateSessionToken) {
+      return {
+        authResult: { ok: false, reason: "session_token_required" },
+        authOk: false,
+        authMethod: "session-token",
+        sharedAuthOk: false,
+        sharedAuthProvided: false,
+      };
+    }
+    const user = params.validateSessionToken(sessionToken);
+    if (!user) {
+      return {
+        authResult: { ok: false, reason: "session_token_invalid" },
+        authOk: false,
+        authMethod: "session-token",
+        sharedAuthOk: false,
+        sharedAuthProvided: false,
+      };
+    }
+    return {
+      authResult: { ok: true, method: "session-token", userId: user.id, user: user.email },
+      authOk: true,
+      authMethod: "session-token",
+      sharedAuthOk: true,
+      sharedAuthProvided: true,
+    };
+  }
+
   const sharedConnectAuth = resolveSharedConnectAuth(params.connectAuth);
   const sharedAuthProvided = Boolean(sharedConnectAuth);
   const { token: deviceTokenCandidate, source: deviceTokenCandidateSource } =
