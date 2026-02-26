@@ -201,3 +201,22 @@ export function parseToolCalls(text: string): {
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+/**
+ * Extract only new user/tool messages for session resumption.
+ * Skips system and assistant messages (already in the CLI session).
+ */
+export function extractResumePrompt(messages: OpenAiMessage[], afterIndex: number): string {
+  const parts: string[] = [];
+  for (let i = afterIndex; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.role === "user") {
+      parts.push(getContentText(msg.content));
+    } else if (msg.role === "tool") {
+      const callId = msg.tool_call_id ?? "unknown";
+      const name = msg.name ?? "unknown";
+      parts.push(`[Tool result for ${name} (call_id: ${callId})]:\n${getContentText(msg.content)}`);
+    }
+  }
+  return parts.join("\n\n");
+}

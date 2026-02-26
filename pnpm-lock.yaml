@@ -253,6 +253,8 @@ importers:
 
   extensions/bluebubbles: {}
 
+  extensions/claude-code-proxy: {}
+
   extensions/copilot-proxy: {}
 
   extensions/diagnostics-otel:

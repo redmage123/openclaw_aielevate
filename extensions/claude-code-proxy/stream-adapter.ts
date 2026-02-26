@@ -20,9 +20,10 @@ export async function pipeStreamToSSE(
   model: string,
   requestId: string,
   hasTools = false,
-): Promise<void> {
+): Promise<{ sessionId?: string }> {
   const created = Math.floor(Date.now() / 1000);
   let sentRole = false;
+  let capturedSessionId: string | undefined;
 
   // Buffer for tool call detection (only used when hasTools=true)
   const toolBuffer: string[] = [];
@@ -91,6 +92,7 @@ export async function pipeStreamToSSE(
         }
       }
     } else if (event.type === "result") {
+      capturedSessionId = (event as Record<string, unknown>).session_id as string | undefined;
       const usage = extractUsage(event);
 
       if (hasTools && toolBuffer.length > 0) {
@@ -193,6 +195,7 @@ export async function pipeStreamToSSE(
   }
 
   res.write("data: [DONE]\n\n");
+  return { sessionId: capturedSessionId };
 }
 
 /**

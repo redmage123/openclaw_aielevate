@@ -3,10 +3,20 @@ import type { Readable } from "node:stream";
 import type { ClaudeCliJsonResult, ClaudeCodeProxyConfig } from "./types.js";
 import { MODEL_MAP, MAX_CONCURRENT, DEFAULT_CLAUDE_BINARY, DEFAULT_TIMEOUT_MS } from "./types.js";
 
-// Build a clean env that strips CLAUDECODE to avoid nesting detection
+// Build a clean env that strips ALL Claude-related markers to avoid nesting detection.
+// The Claude CLI checks env vars and parent process tree to detect nesting.
+// Strip everything that starts with CLAUDE to ensure the CLI runs as a fresh instance.
 function cleanEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  delete env.CLAUDECODE;
+  for (const key of Object.keys(env)) {
+    if (key.startsWith("CLAUDE")) {
+      delete env[key];
+    }
+  }
+  // Explicitly unset TERM_PROGRAM if it's set to something Claude-related
+  if (env.TERM_PROGRAM?.toLowerCase().includes("claude")) {
+    delete env.TERM_PROGRAM;
+  }
   return env;
 }
 
@@ -15,7 +25,12 @@ const activeProcesses = new Set<ChildProcess>();
 
 export function killAllActive(): void {
   for (const proc of activeProcesses) {
-    proc.kill("SIGTERM");
+    // Kill the entire process group (negative PID) since we spawn detached
+    try {
+      if (proc.pid) process.kill(-proc.pid, "SIGTERM");
+    } catch {
+      proc.kill("SIGTERM");
+    }
   }
   activeProcesses.clear();
 }
@@ -40,9 +55,13 @@ function buildArgs(opts: {
   outputFormat: string;
   replaceSystemPrompt?: boolean;
   extraFlags: string[];
+  resumeSessionId?: string;
 }): string[] {
   const args = ["-p", "--output-format", opts.outputFormat, "--model", resolveModel(opts.model)];
-  if (opts.systemPrompt) {
+  if (opts.resumeSessionId) {
+    // Resume an existing session — system prompt is already set in the session
+    args.push("--resume", opts.resumeSessionId);
+  } else if (opts.systemPrompt) {
     // --system-prompt replaces the default (hides built-in tool definitions);
     // --append-system-prompt adds to it (preserves built-in context).
     const flag = opts.replaceSystemPrompt ? "--system-prompt" : "--append-system-prompt";
@@ -63,6 +82,7 @@ export async function runCli(opts: {
   disableBuiltinTools?: boolean;
   config: ClaudeCodeProxyConfig;
   signal?: AbortSignal;
+  resumeSessionId?: string;
 }): Promise<ClaudeCliJsonResult> {
   const { prompt, model, systemPrompt, maxTokens, config, signal } = opts;
   checkConcurrencyLimit();
@@ -75,6 +95,7 @@ export async function runCli(opts: {
     outputFormat: "json",
     replaceSystemPrompt: opts.disableBuiltinTools,
     extraFlags: [],
+    resumeSessionId: opts.resumeSessionId,
   });
 
   return new Promise<ClaudeCliJsonResult>((resolve, reject) => {
@@ -89,8 +110,11 @@ export async function runCli(opts: {
     const proc = spawn(binary, args, {
       stdio: ["pipe", "pipe", "pipe"],
       env: cleanEnv(),
+      detached: true,
     });
     activeProcesses.add(proc);
+    // Unref so the detached process group doesn't prevent Node from exiting
+    proc.unref();
 
     const chunks: Buffer[] = [];
 
@@ -104,6 +128,10 @@ export async function runCli(opts: {
     proc.stdin.end();
 
     const timer = setTimeout(() => {
+      const stderr = Buffer.concat(stderrChunks).toString("utf-8").trim();
+      if (stderr) {
+        console.error(`[claude-code-proxy] CLI stderr before timeout: ${stderr.slice(0, 500)}`);
+      }
       proc.kill("SIGTERM");
       settle(reject, new Error(`Claude CLI timed out after ${timeoutMs}ms`));
     }, timeoutMs);
@@ -160,6 +188,7 @@ export function runCliStream(opts: {
   disableBuiltinTools?: boolean;
   config: ClaudeCodeProxyConfig;
   signal?: AbortSignal;
+  resumeSessionId?: string;
 }): { stream: Readable; process: ChildProcess } {
   const { prompt, model, systemPrompt, maxTokens, config, signal } = opts;
   checkConcurrencyLimit();
@@ -172,13 +201,22 @@ export function runCliStream(opts: {
     outputFormat: "stream-json",
     replaceSystemPrompt: opts.disableBuiltinTools,
     extraFlags: ["--verbose"],
+    resumeSessionId: opts.resumeSessionId,
   });
 
   const proc = spawn(binary, args, {
     stdio: ["pipe", "pipe", "pipe"],
     env: cleanEnv(),
+    detached: true,
   });
   activeProcesses.add(proc);
+  proc.unref();
+
+  // Capture stderr for diagnostics
+  proc.stderr.on("data", (chunk: Buffer) => {
+    const text = chunk.toString("utf-8").trim();
+    if (text) console.error(`[claude-code-proxy] CLI stderr: ${text.slice(0, 300)}`);
+  });
 
   // Write prompt to stdin and close
   proc.stdin.write(prompt);
