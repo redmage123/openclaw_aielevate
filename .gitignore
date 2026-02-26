@@ -90,6 +90,7 @@ USER.md
 
 # Agent credentials and memory (NEVER COMMIT)
 /memory/
+/memory-bank/
 .agent/*.json
 !.agent/workflows/
 /local/
