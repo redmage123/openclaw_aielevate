@@ -29,9 +29,33 @@ export const MODEL_MAP: Record<string, string> = {
 
 export const MODEL_IDS = Object.keys(MODEL_MAP);
 
+// OpenAI function calling types
+export type OpenAiFunction = {
+  name: string;
+  description?: string;
+  parameters?: Record<string, unknown>;
+};
+
+export type OpenAiTool = {
+  type: "function";
+  function: OpenAiFunction;
+};
+
+export type OpenAiToolCall = {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+};
+
 export type OpenAiMessage = {
-  role: "system" | "user" | "assistant";
-  content: string;
+  role: "system" | "user" | "assistant" | "tool";
+  content: string | null;
+  tool_calls?: OpenAiToolCall[];
+  tool_call_id?: string;
+  name?: string;
 };
 
 export type OpenAiChatRequest = {
@@ -40,6 +64,8 @@ export type OpenAiChatRequest = {
   stream?: boolean;
   max_tokens?: number;
   temperature?: number;
+  tools?: OpenAiTool[];
+  tool_choice?: "none" | "auto" | { type: "function"; function: { name: string } };
 };
 
 // Claude CLI JSON output format (non-streaming)

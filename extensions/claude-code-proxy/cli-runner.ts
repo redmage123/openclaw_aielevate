@@ -34,21 +34,21 @@ function checkConcurrencyLimit(): void {
   }
 }
 
-function buildArgs(
-  model: string,
-  systemPrompt: string | undefined,
-  outputFormat: string,
-  maxTokens: number | undefined,
-  extraFlags: string[],
-): string[] {
-  const args = ["-p", "--output-format", outputFormat, "--model", resolveModel(model)];
-  if (systemPrompt) {
-    args.push("--append-system-prompt", systemPrompt);
+function buildArgs(opts: {
+  model: string;
+  systemPrompt: string | undefined;
+  outputFormat: string;
+  replaceSystemPrompt?: boolean;
+  extraFlags: string[];
+}): string[] {
+  const args = ["-p", "--output-format", opts.outputFormat, "--model", resolveModel(opts.model)];
+  if (opts.systemPrompt) {
+    // --system-prompt replaces the default (hides built-in tool definitions);
+    // --append-system-prompt adds to it (preserves built-in context).
+    const flag = opts.replaceSystemPrompt ? "--system-prompt" : "--append-system-prompt";
+    args.push(flag, opts.systemPrompt);
   }
-  if (maxTokens) {
-    args.push("--max-tokens", String(maxTokens));
-  }
-  args.push(...extraFlags);
+  args.push(...opts.extraFlags);
   return args;
 }
 
@@ -60,6 +60,7 @@ export async function runCli(opts: {
   model: string;
   systemPrompt?: string;
   maxTokens?: number;
+  disableBuiltinTools?: boolean;
   config: ClaudeCodeProxyConfig;
   signal?: AbortSignal;
 }): Promise<ClaudeCliJsonResult> {
@@ -68,7 +69,13 @@ export async function runCli(opts: {
 
   const binary = config.claudeBinaryPath || DEFAULT_CLAUDE_BINARY;
   const timeoutMs = config.timeoutMs || DEFAULT_TIMEOUT_MS;
-  const args = buildArgs(model, systemPrompt, "json", maxTokens, []);
+  const args = buildArgs({
+    model,
+    systemPrompt,
+    outputFormat: "json",
+    replaceSystemPrompt: opts.disableBuiltinTools,
+    extraFlags: [],
+  });
 
   return new Promise<ClaudeCliJsonResult>((resolve, reject) => {
     let settled = false;
@@ -88,8 +95,9 @@ export async function runCli(opts: {
     const chunks: Buffer[] = [];
 
     proc.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
-    // Drain stderr to prevent pipe backup
-    proc.stderr.resume();
+    // Capture stderr for diagnostics
+    const stderrChunks: Buffer[] = [];
+    proc.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
 
     // Write prompt to stdin and close
     proc.stdin.write(prompt);
@@ -112,6 +120,7 @@ export async function runCli(opts: {
       activeProcesses.delete(proc);
 
       const stdout = Buffer.concat(chunks).toString("utf-8").trim();
+      const stderr = Buffer.concat(stderrChunks).toString("utf-8").trim();
 
       // CLI may exit non-zero but still produce valid JSON with error info
       try {
@@ -123,7 +132,8 @@ export async function runCli(opts: {
         settle(resolve, result);
       } catch {
         if (code !== 0) {
-          settle(reject, new Error(`Claude CLI exited with code ${code}`));
+          const detail = stderr ? ` — stderr: ${stderr.slice(0, 500)}` : "";
+          settle(reject, new Error(`Claude CLI exited with code ${code}${detail}`));
         } else {
           settle(reject, new Error("Failed to parse Claude CLI output"));
         }
@@ -147,6 +157,7 @@ export function runCliStream(opts: {
   model: string;
   systemPrompt?: string;
   maxTokens?: number;
+  disableBuiltinTools?: boolean;
   config: ClaudeCodeProxyConfig;
   signal?: AbortSignal;
 }): { stream: Readable; process: ChildProcess } {
@@ -155,7 +166,13 @@ export function runCliStream(opts: {
 
   const binary = config.claudeBinaryPath || DEFAULT_CLAUDE_BINARY;
   const timeoutMs = config.timeoutMs || DEFAULT_TIMEOUT_MS;
-  const args = buildArgs(model, systemPrompt, "stream-json", maxTokens, ["--verbose"]);
+  const args = buildArgs({
+    model,
+    systemPrompt,
+    outputFormat: "stream-json",
+    replaceSystemPrompt: opts.disableBuiltinTools,
+    extraFlags: ["--verbose"],
+  });
 
   const proc = spawn(binary, args, {
     stdio: ["pipe", "pipe", "pipe"],

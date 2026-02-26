@@ -1,7 +1,7 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { runCli, runCliStream, killAllActive } from "./cli-runner.js";
-import { translateMessages } from "./message-translator.js";
+import { translateMessages, parseToolCalls } from "./message-translator.js";
 import { pipeStreamToSSE } from "./stream-adapter.js";
 import type { ClaudeCodeProxyConfig, OpenAiChatRequest } from "./types.js";
 import {
@@ -185,10 +185,10 @@ async function handleCompletions(
     return;
   }
 
-  // Item 9: Message content validation
+  // Message validation: role is required; content can be string, null, or array
   for (const msg of body.messages) {
-    if (typeof msg.role !== "string" || typeof msg.content !== "string") {
-      sendError(res, 400, "Each message must have a string 'role' and 'content'");
+    if (typeof msg.role !== "string") {
+      sendError(res, 400, "Each message must have a string 'role'");
       return;
     }
   }
@@ -200,7 +200,8 @@ async function handleCompletions(
     return;
   }
 
-  const { prompt, systemPrompt } = translateMessages(body.messages);
+  const { prompt, systemPrompt } = translateMessages(body.messages, body.tools, body.tool_choice);
+  const hasTools = Boolean(body.tools?.length) && body.tool_choice !== "none";
   const requestId = `chatcmpl-${randomUUID()}`;
 
   if (body.stream) {
@@ -218,6 +219,7 @@ async function handleCompletions(
         model,
         systemPrompt,
         maxTokens: body.max_tokens,
+        disableBuiltinTools: hasTools,
         config,
         signal: req.destroyed ? AbortSignal.abort() : undefined,
       });
@@ -226,7 +228,7 @@ async function handleCompletions(
         stream.destroy();
       });
 
-      await pipeStreamToSSE(stream, res, model, requestId);
+      await pipeStreamToSSE(stream, res, model, requestId, hasTools);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       logger.error(`Stream error: ${msg}`);
@@ -253,8 +255,23 @@ async function handleCompletions(
         model,
         systemPrompt,
         maxTokens: body.max_tokens,
+        disableBuiltinTools: hasTools,
         config,
       });
+
+      // Parse for tool calls when tools were provided
+      const { content, toolCalls } = hasTools
+        ? parseToolCalls(result.result)
+        : { content: result.result, toolCalls: [] };
+      const hasToolCalls = toolCalls.length > 0;
+
+      const message: Record<string, unknown> = {
+        role: "assistant",
+        content: hasToolCalls ? content || null : content,
+      };
+      if (hasToolCalls) {
+        message.tool_calls = toolCalls;
+      }
 
       const response = {
         id: requestId,
@@ -264,11 +281,8 @@ async function handleCompletions(
         choices: [
           {
             index: 0,
-            message: {
-              role: "assistant",
-              content: result.result,
-            },
-            finish_reason: "stop",
+            message,
+            finish_reason: hasToolCalls ? "tool_calls" : "stop",
           },
         ],
         usage: {
