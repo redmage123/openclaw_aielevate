@@ -1,7 +1,13 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import type { Readable } from "node:stream";
 import type { ClaudeCliJsonResult, ClaudeCodeProxyConfig } from "./types.js";
-import { MODEL_MAP, MAX_CONCURRENT, DEFAULT_CLAUDE_BINARY, DEFAULT_TIMEOUT_MS } from "./types.js";
+import {
+  MODEL_MAP,
+  MAX_CONCURRENT,
+  DEFAULT_CLAUDE_BINARY,
+  DEFAULT_TIMEOUT_MS,
+  SIGKILL_DELAY_MS,
+} from "./types.js";
 
 // Build a clean env that strips ALL Claude-related markers to avoid nesting detection.
 // The Claude CLI checks env vars and parent process tree to detect nesting.
@@ -23,14 +29,27 @@ function cleanEnv(): NodeJS.ProcessEnv {
 // Track active processes for graceful shutdown
 const activeProcesses = new Set<ChildProcess>();
 
+// Send SIGTERM to a process group, then escalate to SIGKILL if it doesn't exit
+function killWithEscalation(proc: ChildProcess): void {
+  try {
+    if (proc.pid) process.kill(-proc.pid, "SIGTERM");
+  } catch {
+    proc.kill("SIGTERM");
+  }
+  const escalation = setTimeout(() => {
+    try {
+      if (proc.pid) process.kill(-proc.pid, "SIGKILL");
+    } catch {
+      /* already dead */
+    }
+  }, SIGKILL_DELAY_MS);
+  escalation.unref();
+  proc.on("close", () => clearTimeout(escalation));
+}
+
 export function killAllActive(): void {
   for (const proc of activeProcesses) {
-    // Kill the entire process group (negative PID) since we spawn detached
-    try {
-      if (proc.pid) process.kill(-proc.pid, "SIGTERM");
-    } catch {
-      proc.kill("SIGTERM");
-    }
+    killWithEscalation(proc);
   }
   activeProcesses.clear();
 }
@@ -132,12 +151,12 @@ export async function runCli(opts: {
       if (stderr) {
         console.error(`[claude-code-proxy] CLI stderr before timeout: ${stderr.slice(0, 500)}`);
       }
-      proc.kill("SIGTERM");
+      killWithEscalation(proc);
       settle(reject, new Error(`Claude CLI timed out after ${timeoutMs}ms`));
     }, timeoutMs);
 
     const onAbort = () => {
-      proc.kill("SIGTERM");
+      killWithEscalation(proc);
       settle(reject, new Error("Request aborted"));
     };
     signal?.addEventListener("abort", onAbort, { once: true });
@@ -223,11 +242,11 @@ export function runCliStream(opts: {
   proc.stdin.end();
 
   const timer = setTimeout(() => {
-    proc.kill("SIGTERM");
+    killWithEscalation(proc);
   }, timeoutMs);
 
   const onAbort = () => {
-    proc.kill("SIGTERM");
+    killWithEscalation(proc);
   };
   signal?.addEventListener("abort", onAbort, { once: true });
 

@@ -17,6 +17,11 @@ export const PROVIDER_ID = "claude-code-proxy";
 export const MAX_BODY_BYTES = 1_048_576; // 1 MB
 export const MAX_CONCURRENT = 10;
 
+// Hang-prevention timeouts
+export const SIGKILL_DELAY_MS = 5_000; // Grace period before SIGKILL after SIGTERM
+export const STREAM_STALE_TIMEOUT_MS = 90_000; // Destroy stream if no data for this long
+export const HEARTBEAT_INTERVAL_MS = 15_000; // SSE heartbeat interval during streaming
+
 // Maps provider model IDs to claude CLI --model flag values
 // CLI accepts aliases (sonnet, opus, haiku) or short names (claude-sonnet-4-6)
 export const MODEL_MAP: Record<string, string> = {

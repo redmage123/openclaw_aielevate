@@ -3,6 +3,7 @@ import { createInterface } from "node:readline";
 import type { Readable } from "node:stream";
 import { parseToolCalls } from "./message-translator.js";
 import type { OpenAiToolCall } from "./types.js";
+import { STREAM_STALE_TIMEOUT_MS } from "./types.js";
 
 /**
  * Convert Claude CLI stream-json NDJSON output to OpenAI SSE format.
@@ -20,6 +21,7 @@ export async function pipeStreamToSSE(
   model: string,
   requestId: string,
   hasTools = false,
+  staleTimeoutMs = STREAM_STALE_TIMEOUT_MS,
 ): Promise<{ sessionId?: string }> {
   const created = Math.floor(Date.now() / 1000);
   let sentRole = false;
@@ -27,6 +29,16 @@ export async function pipeStreamToSSE(
 
   // Buffer for tool call detection (only used when hasTools=true)
   const toolBuffer: string[] = [];
+
+  // Stale stream detection — destroy if no data arrives for staleTimeoutMs
+  let staleTimer = setTimeout(() => cliStream.destroy(), staleTimeoutMs);
+  staleTimer.unref();
+  cliStream.on("data", () => {
+    clearTimeout(staleTimer);
+    staleTimer = setTimeout(() => cliStream.destroy(), staleTimeoutMs);
+    staleTimer.unref();
+  });
+  res.on("close", () => clearTimeout(staleTimer));
 
   const rl = createInterface({ input: cliStream, crlfDelay: Infinity });
 
@@ -194,6 +206,7 @@ export async function pipeStreamToSSE(
     }
   }
 
+  clearTimeout(staleTimer);
   res.write("data: [DONE]\n\n");
   return { sessionId: capturedSessionId };
 }

@@ -10,6 +10,7 @@ import {
   DEFAULT_CONTEXT_WINDOW,
   DEFAULT_MAX_TOKENS,
   PROVIDER_ID,
+  HEARTBEAT_INTERVAL_MS,
 } from "./types.js";
 
 type Logger = {
@@ -304,6 +305,12 @@ async function handleCompletions(
       "X-Request-Id": requestId,
     });
 
+    // SSE heartbeat keeps the connection alive and lets clients detect stalls
+    const heartbeat = setInterval(() => {
+      if (!res.destroyed) res.write(":heartbeat\n\n");
+    }, HEARTBEAT_INTERVAL_MS);
+    heartbeat.unref();
+
     try {
       const { stream } = runCliStream({
         prompt,
@@ -321,10 +328,12 @@ async function handleCompletions(
       });
 
       const { sessionId } = await pipeStreamToSSE(stream, res, model, requestId, hasTools);
+      clearInterval(heartbeat);
       if (sessionId) {
         storeSession(sessionKey, sessionId, body.messages.length);
       }
     } catch (err) {
+      clearInterval(heartbeat);
       const msg = err instanceof Error ? err.message : "Unknown error";
       logger.error(`Stream error: ${msg}`);
 
@@ -575,6 +584,9 @@ export function startServer(config: ClaudeCodeProxyConfig, logger: Logger): Prom
       rateLimiter?.dispose();
       reject(err);
     });
+
+    // HTTP socket timeout: CLI timeout + 30s buffer to prevent connections from living forever
+    server.timeout = (config.timeoutMs || 120_000) + 30_000;
 
     server.listen(config.port, "127.0.0.1", () => {
       logger.info(
