@@ -1,0 +1,22 @@
+{
+  "id": "claude-code-proxy",
+  "providers": ["claude-code-proxy"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "port": {
+        "type": "number",
+        "description": "Port for the local proxy server (default: 3456)"
+      },
+      "claudeBinaryPath": {
+        "type": "string",
+        "description": "Path to the claude CLI binary (default: 'claude')"
+      },
+      "timeoutMs": {
+        "type": "number",
+        "description": "Request timeout in milliseconds (default: 120000)"
+      }
+    }
+  }
+}
