@@ -5,12 +5,54 @@ import { parseToolCalls } from "./message-translator.js";
 import type { OpenAiToolCall } from "./types.js";
 import { STREAM_STALE_TIMEOUT_MS } from "./types.js";
 
+// How often to inject a "still working" progress line when the CLI is
+// executing tools internally (no NDJSON text events for a while).
+const PROGRESS_INTERVAL_MS = 8_000;
+
+type ContentPart = {
+  type?: string;
+  text?: string;
+  thinking?: string;
+  name?: string;
+  id?: string;
+  input?: Record<string, unknown>;
+};
+
+/**
+ * Format a tool_use content block into a human-readable progress line.
+ */
+function formatToolProgress(part: ContentPart): string {
+  const name = part.name ?? "tool";
+  const input = part.input;
+  let detail = "";
+  if (input) {
+    // Show a short preview of the tool input
+    if (typeof input.command === "string") {
+      detail = `: \`${input.command.slice(0, 120)}\``;
+    } else if (typeof input.file_path === "string") {
+      detail = `: ${input.file_path}`;
+    } else if (typeof input.pattern === "string") {
+      detail = `: ${input.pattern}`;
+    } else if (typeof input.query === "string") {
+      detail = `: ${input.query.slice(0, 80)}`;
+    } else if (typeof input.url === "string") {
+      detail = `: ${input.url.slice(0, 80)}`;
+    }
+  }
+  return `[${name}${detail}]`;
+}
+
 /**
  * Convert Claude CLI stream-json NDJSON output to OpenAI SSE format.
  *
  * Claude stream-json emits one JSON object per line:
+ * - `{ type: "system", ... }` — init metadata (tools, model, session)
  * - `{ type: "assistant", message: { content: [...] } }` — content chunks
  * - `{ type: "result", ... }` — final result
+ *
+ * Content arrays can include `tool_use` blocks when the CLI's agentic loop
+ * calls tools. These are surfaced as progress status lines so the user can
+ * see what the CLI is doing during long-running tasks.
  *
  * When `hasTools` is true, content is buffered and parsed for <tool_call>
  * blocks at the end so that tool calls are emitted in proper OpenAI format.
@@ -29,6 +71,11 @@ export async function pipeStreamToSSE(
 
   // Buffer for tool call detection (only used when hasTools=true)
   const toolBuffer: string[] = [];
+
+  // Track tool activity for progress reporting
+  let lastContentAt = Date.now();
+  let toolsActive = false;
+  let progressCount = 0;
 
   // Stale stream detection — destroy if no data arrives for staleTimeoutMs
   let staleTimer = setTimeout(() => cliStream.destroy(), staleTimeoutMs);
@@ -61,6 +108,39 @@ export async function pipeStreamToSSE(
     res.write(`data: ${JSON.stringify(chunk)}\n\n`);
   };
 
+  /** Inject a text delta into the SSE stream. */
+  const sendContentDelta = (text: string) => {
+    sendRoleChunk();
+    const chunk = {
+      id: requestId,
+      object: "chat.completion.chunk",
+      created,
+      model,
+      choices: [
+        {
+          index: 0,
+          delta: { content: text },
+          finish_reason: null,
+        },
+      ],
+    };
+    res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+  };
+
+  // Periodic progress heartbeat: when tools are running and no text has
+  // been emitted for a while, inject a status line so the user knows
+  // the CLI is still working.
+  const progressTimer = setInterval(() => {
+    if (!toolsActive) return;
+    const silenceMs = Date.now() - lastContentAt;
+    if (silenceMs >= PROGRESS_INTERVAL_MS) {
+      progressCount++;
+      const dots = ".".repeat((progressCount % 3) + 1);
+      sendContentDelta(`\n*Working${dots}*\n`);
+    }
+  }, PROGRESS_INTERVAL_MS);
+  progressTimer.unref();
+
   for await (const line of rl) {
     if (!line.trim()) continue;
 
@@ -71,35 +151,46 @@ export async function pipeStreamToSSE(
       continue;
     }
 
-    if (event.type === "assistant") {
+    if (event.type === "system") {
+      // Init event — capture session_id early and log metadata
+      capturedSessionId =
+        capturedSessionId || ((event as Record<string, unknown>).session_id as string | undefined);
+      const toolCount = Array.isArray(event.tools) ? event.tools.length : 0;
+      const mcpCount = Array.isArray(event.mcp_servers) ? event.mcp_servers.length : 0;
+      const version = (event.claude_code_version as string) || "unknown";
+      console.log(
+        `[claude-code-proxy] CLI init: v${version} tools=${toolCount} mcp=${mcpCount} model=${event.model ?? "?"}`,
+      );
+    } else if (event.type === "assistant") {
       const message = event.message as
         | {
-            content?: Array<{ type?: string; text?: string; thinking?: string }>;
+            content?: ContentPart[];
           }
         | undefined;
       const contentParts = message?.content ?? [];
+
       for (const part of contentParts) {
         if (part.type === "text" && part.text) {
-          // Always stream text immediately — the consuming SDK handles
-          // tool calls via delta.tool_calls, not by parsing text blocks.
+          // Real text content from the model
+          lastContentAt = Date.now();
+          toolsActive = false;
+          progressCount = 0;
+
           if (hasTools) {
             toolBuffer.push(part.text);
           }
-          sendRoleChunk();
-          const chunk = {
-            id: requestId,
-            object: "chat.completion.chunk",
-            created,
-            model,
-            choices: [
-              {
-                index: 0,
-                delta: { content: part.text },
-                finish_reason: null,
-              },
-            ],
-          };
-          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+          sendContentDelta(part.text);
+        } else if (part.type === "tool_use") {
+          // The CLI is about to execute a tool — inject a progress line
+          // so the user can see what's happening during long tool loops.
+          toolsActive = true;
+          const progress = formatToolProgress(part);
+          console.log(`[claude-code-proxy] tool: ${progress}`);
+          sendContentDelta(`\n*${progress}*\n`);
+          lastContentAt = Date.now();
+        } else if (part.type === "tool_result") {
+          // Tool finished — note the activity
+          lastContentAt = Date.now();
         }
       }
     } else if (event.type === "result") {
@@ -115,20 +206,7 @@ export async function pipeStreamToSSE(
           sendRoleChunk();
           // Emit remaining content (text outside tool_call blocks)
           if (content) {
-            const contentChunk = {
-              id: requestId,
-              object: "chat.completion.chunk",
-              created,
-              model,
-              choices: [
-                {
-                  index: 0,
-                  delta: { content },
-                  finish_reason: null,
-                },
-              ],
-            };
-            res.write(`data: ${JSON.stringify(contentChunk)}\n\n`);
+            sendContentDelta(content);
           }
           // Emit tool calls
           emitToolCallChunks(res, toolCalls, requestId, created, model);
@@ -152,20 +230,7 @@ export async function pipeStreamToSSE(
           // No tool calls found — emit buffered content as a regular response
           sendRoleChunk();
           if (fullContent) {
-            const contentChunk = {
-              id: requestId,
-              object: "chat.completion.chunk",
-              created,
-              model,
-              choices: [
-                {
-                  index: 0,
-                  delta: { content: fullContent },
-                  finish_reason: null,
-                },
-              ],
-            };
-            res.write(`data: ${JSON.stringify(contentChunk)}\n\n`);
+            sendContentDelta(fullContent);
           }
           const stopChunk = {
             id: requestId,
@@ -205,6 +270,7 @@ export async function pipeStreamToSSE(
     }
   }
 
+  clearInterval(progressTimer);
   clearTimeout(staleTimer);
   res.write("data: [DONE]\n\n");
   return { sessionId: capturedSessionId };

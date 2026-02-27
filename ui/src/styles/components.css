@@ -2838,6 +2838,8 @@
   font-family: var(--font-mono, monospace);
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
+  z-index: 11;
 }
 
 .chat-debug__header {
@@ -2895,7 +2897,7 @@
 .chat-debug__body {
   max-height: 180px;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 4px 0 8px;
 }
 
 .chat-debug__empty {

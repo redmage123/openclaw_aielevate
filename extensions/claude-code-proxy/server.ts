@@ -1,9 +1,9 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { runCli, runCliStream, killAllActive } from "./cli-runner.js";
-import { translateMessages, parseToolCalls } from "./message-translator.js";
+import { translateMessages, extractResumePrompt } from "./message-translator.js";
 import { pipeStreamToSSE } from "./stream-adapter.js";
-import type { ClaudeCodeProxyConfig, OpenAiChatRequest } from "./types.js";
+import type { ClaudeCodeProxyConfig, OpenAiChatRequest, OpenAiMessage } from "./types.js";
 import {
   MODEL_IDS,
   MAX_BODY_BYTES,
@@ -12,6 +12,56 @@ import {
   PROVIDER_ID,
   HEARTBEAT_INTERVAL_MS,
 } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Session store — track CLI session IDs for conversation resumption
+// ---------------------------------------------------------------------------
+// Keyed by a fingerprint derived from the conversation messages.
+// When a follow-up request arrives with more messages than before, we
+// resume the CLI session (--resume <id>) and send only the new content.
+// This enables prompt caching and memory persistence across turns.
+
+const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_PRUNE_INTERVAL_MS = 5 * 60 * 1000; // prune every 5 min
+
+type ConversationSession = {
+  cliSessionId: string;
+  messageCount: number;
+  lastUsed: number;
+};
+
+const sessionStore = new Map<string, ConversationSession>();
+
+// Prune expired sessions periodically
+const sessionPruneTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [key, session] of sessionStore) {
+    if (now - session.lastUsed > SESSION_TTL_MS) {
+      sessionStore.delete(key);
+    }
+  }
+}, SESSION_PRUNE_INTERVAL_MS);
+sessionPruneTimer.unref();
+
+/**
+ * Derive a stable conversation fingerprint from the first user message
+ * and any system messages. This identifies "the same conversation" across
+ * requests so we can resume the CLI session.
+ */
+function conversationFingerprint(messages: OpenAiMessage[]): string {
+  const parts: string[] = [];
+  for (const msg of messages) {
+    if (msg.role === "system") {
+      parts.push(`s:${typeof msg.content === "string" ? msg.content : ""}`);
+    } else if (msg.role === "user") {
+      // Use only the first user message to anchor the conversation identity.
+      // Additional user messages grow the conversation but don't change its ID.
+      parts.push(`u:${typeof msg.content === "string" ? msg.content : ""}`);
+      break;
+    }
+  }
+  return createHash("sha256").update(parts.join("\n")).digest("hex").slice(0, 16);
+}
 
 type Logger = {
   info: (msg: string) => void;
@@ -205,18 +255,40 @@ async function handleCompletions(
   // natively via its own agentic loop (Bash, Read, Write, etc.).
   // Gateway tool definitions would conflict with the CLI's native tools
   // and create a broken text-based <tool_call> protocol that the model ignores.
-  const { prompt: fullPrompt, systemPrompt } = translateMessages(
-    body.messages,
-    /* tools */ undefined,
-    /* toolChoice */ undefined,
-  );
   const requestId = `chatcmpl-${randomUUID()}`;
 
-  // Session resumption disabled — each request starts a fresh CLI session.
-  // The --resume feature caused progressive slowdown: each resumed request
-  // replayed the entire accumulated conversation history to the API, making
-  // responses slower with every follow-up message.
-  const prompt = fullPrompt;
+  // Session resumption: if we have a CLI session for this conversation,
+  // resume it and send only the new user message. This enables prompt
+  // caching (faster follow-ups) and memory persistence across turns.
+  const convKey = conversationFingerprint(body.messages);
+  const existingSession = sessionStore.get(convKey);
+  let prompt: string;
+  let systemPrompt: string | undefined;
+  let resumeSessionId: string | undefined;
+
+  if (existingSession && body.messages.length > existingSession.messageCount) {
+    // Follow-up: resume existing CLI session with only new messages
+    resumeSessionId = existingSession.cliSessionId;
+    prompt = extractResumePrompt(body.messages, existingSession.messageCount);
+    systemPrompt = undefined; // system prompt already in the resumed session
+    logger.info(
+      `[SESSION] resuming session ${resumeSessionId} (prev=${existingSession.messageCount} msgs, now=${body.messages.length})`,
+    );
+  } else {
+    // Fresh conversation or retry: translate all messages
+    const translated = translateMessages(
+      body.messages,
+      /* tools */ undefined,
+      /* toolChoice */ undefined,
+    );
+    prompt = translated.prompt;
+    systemPrompt = translated.systemPrompt;
+    resumeSessionId = undefined;
+    if (existingSession) {
+      logger.info(`[SESSION] resetting stale session for conv=${convKey}`);
+      sessionStore.delete(convKey);
+    }
+  }
 
   const t0 = Date.now();
   logger.info(`[TIMING] request arrived, stream=${!!body.stream} model=${model}`);
@@ -237,13 +309,17 @@ async function handleCompletions(
     heartbeat.unref();
 
     try {
-      logger.info(`[TIMING] +${Date.now() - t0}ms spawning CLI`);
+      logger.info(
+        `[TIMING] +${Date.now() - t0}ms spawning CLI` +
+          (resumeSessionId ? ` (resume=${resumeSessionId})` : " (fresh)"),
+      );
       const { stream } = runCliStream({
         prompt,
         model,
         systemPrompt,
         maxTokens: body.max_tokens,
         config,
+        resumeSessionId,
         signal: req.destroyed ? AbortSignal.abort() : undefined,
       });
       logger.info(`[TIMING] +${Date.now() - t0}ms CLI spawned`);
@@ -260,7 +336,24 @@ async function handleCompletions(
         }
       });
 
-      await pipeStreamToSSE(stream, res, model, requestId, /* hasTools */ false);
+      const { sessionId: cliSessionId } = await pipeStreamToSSE(
+        stream,
+        res,
+        model,
+        requestId,
+        /* hasTools */ false,
+      );
+
+      // Store session for future resumption
+      if (cliSessionId) {
+        sessionStore.set(convKey, {
+          cliSessionId,
+          messageCount: body.messages.length,
+          lastUsed: Date.now(),
+        });
+        logger.info(`[SESSION] stored session ${cliSessionId} for conv=${convKey}`);
+      }
+
       logger.info(`[TIMING] +${Date.now() - t0}ms stream complete, sending to browser`);
       clearInterval(heartbeat);
     } catch (err) {
@@ -286,14 +379,27 @@ async function handleCompletions(
   } else {
     // Non-streaming response
     try {
-      logger.info(`[TIMING] +${Date.now() - t0}ms calling runCli`);
+      logger.info(
+        `[TIMING] +${Date.now() - t0}ms calling runCli` +
+          (resumeSessionId ? ` (resume=${resumeSessionId})` : " (fresh)"),
+      );
       const result = await runCli({
         prompt,
         model,
         systemPrompt,
         maxTokens: body.max_tokens,
         config,
+        resumeSessionId,
       });
+
+      // Store session for future resumption
+      if (result.session_id) {
+        sessionStore.set(convKey, {
+          cliSessionId: result.session_id,
+          messageCount: body.messages.length,
+          lastUsed: Date.now(),
+        });
+      }
 
       logger.info(`[TIMING] +${Date.now() - t0}ms CLI returned (api=${result.duration_api_ms}ms)`);
 
@@ -474,6 +580,8 @@ type ServerWithRateLimiter = Server & {
 
 export function stopServer(server: Server): Promise<void> {
   killAllActive();
+  sessionStore.clear();
+  clearInterval(sessionPruneTimer);
   (server as ServerWithRateLimiter).__rateLimiter?.dispose();
   return new Promise((resolve) => {
     server.close(() => resolve());

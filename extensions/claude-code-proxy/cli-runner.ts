@@ -118,9 +118,17 @@ function buildArgs(opts: {
   systemPrompt: string | undefined;
   outputFormat: string;
   config: ClaudeCodeProxyConfig;
+  resumeSessionId?: string;
   extraFlags: string[];
 }): string[] {
   const args = ["-p", "--output-format", opts.outputFormat, "--model", resolveModel(opts.model)];
+
+  // Session resumption: continue a previous CLI session for prompt caching
+  // and memory persistence. When resuming, only the new user message is
+  // sent — the CLI already has the prior conversation context.
+  if (opts.resumeSessionId) {
+    args.push("--resume", opts.resumeSessionId);
+  }
 
   if (opts.systemPrompt) {
     // Always append to preserve the CLI's built-in tool definitions.
@@ -174,9 +182,10 @@ export async function runCli(opts: {
   systemPrompt?: string;
   maxTokens?: number;
   config: ClaudeCodeProxyConfig;
+  resumeSessionId?: string;
   signal?: AbortSignal;
 }): Promise<ClaudeCliJsonResult> {
-  const { prompt, model, systemPrompt, maxTokens, config, signal } = opts;
+  const { prompt, model, systemPrompt, maxTokens, config, resumeSessionId, signal } = opts;
   checkConcurrencyLimit();
 
   const binary = resolveClaudeBinary(config.claudeBinaryPath || "");
@@ -186,6 +195,7 @@ export async function runCli(opts: {
     systemPrompt,
     outputFormat: "json",
     config,
+    resumeSessionId,
     extraFlags: [],
   });
 
@@ -276,9 +286,10 @@ export function runCliStream(opts: {
   systemPrompt?: string;
   maxTokens?: number;
   config: ClaudeCodeProxyConfig;
+  resumeSessionId?: string;
   signal?: AbortSignal;
 }): { stream: Readable; process: ChildProcess } {
-  const { prompt, model, systemPrompt, maxTokens, config, signal } = opts;
+  const { prompt, model, systemPrompt, maxTokens, config, resumeSessionId, signal } = opts;
   checkConcurrencyLimit();
 
   const binary = resolveClaudeBinary(config.claudeBinaryPath || "");
@@ -288,6 +299,7 @@ export function runCliStream(opts: {
     systemPrompt,
     outputFormat: "stream-json",
     config,
+    resumeSessionId,
     extraFlags: ["--verbose"],
   });
 
