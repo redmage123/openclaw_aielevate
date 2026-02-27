@@ -233,6 +233,9 @@ export async function runAgentTurnWithFallback(params: {
                     phase: "end",
                     startedAt,
                     endedAt: Date.now(),
+                    // Include response text so emitChatFinal has a fallback
+                    // when the buffer wasn't populated by delta events.
+                    text: cliText || undefined,
                   },
                 });
                 lifecycleTerminalEmitted = true;

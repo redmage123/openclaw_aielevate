@@ -323,9 +323,14 @@ export function createAgentEventHandler({
     seq: number,
     jobState: "done" | "error",
     error?: unknown,
+    fallbackText?: string,
   ) => {
+    const rawBuffered = chatRunState.buffers.get(clientRunId) ?? "";
+    // Use buffered text from delta events, or fall back to text from the
+    // lifecycle event (CLI backends emit response text there when the delta
+    // buffer wasn't populated).
     const bufferedText = stripInlineDirectiveTagsForDisplay(
-      chatRunState.buffers.get(clientRunId) ?? "",
+      rawBuffered || fallbackText || "",
     ).text.trim();
     const normalizedHeartbeatText = normalizeHeartbeatChatFinalText({
       runId: clientRunId,
@@ -456,6 +461,9 @@ export function createAgentEventHandler({
       if (!isAborted && evt.stream === "assistant" && typeof evt.data?.text === "string") {
         emitChatDelta(sessionKey, clientRunId, evt.runId, evt.seq, evt.data.text);
       } else if (!isAborted && (lifecyclePhase === "end" || lifecyclePhase === "error")) {
+        // Pass lifecycle text as fallback for CLI backends that include
+        // response text in the lifecycle event rather than delta events.
+        const lifecycleText = typeof evt.data?.text === "string" ? evt.data.text : undefined;
         if (chatLink) {
           const finished = chatRunState.registry.shift(evt.runId);
           if (!finished) {
@@ -469,6 +477,7 @@ export function createAgentEventHandler({
             evt.seq,
             lifecyclePhase === "error" ? "error" : "done",
             evt.data?.error,
+            lifecycleText,
           );
         } else {
           emitChatFinal(
@@ -478,6 +487,7 @@ export function createAgentEventHandler({
             evt.seq,
             lifecyclePhase === "error" ? "error" : "done",
             evt.data?.error,
+            lifecycleText,
           );
         }
       } else if (isAborted && (lifecyclePhase === "end" || lifecyclePhase === "error")) {

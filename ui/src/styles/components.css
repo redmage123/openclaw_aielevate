@@ -2814,7 +2814,9 @@
   padding: 2px 8px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+  transition:
+    color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
 }
 
 .chat-status__debug-toggle:hover {
@@ -2835,6 +2837,7 @@
   font-size: 12px;
   font-family: var(--font-mono, monospace);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .chat-debug__header {
@@ -2852,6 +2855,22 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
+}
+
+.chat-debug__clear {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.chat-debug__clear:hover {
+  color: var(--fg);
+  border-color: var(--fg);
 }
 
 .chat-debug__close {

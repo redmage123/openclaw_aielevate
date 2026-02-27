@@ -78,6 +78,7 @@ export type ChatProps = {
   debugLog?: ChatDebugEntry[];
   showDebug?: boolean;
   onToggleDebug?: () => void;
+  onClearDebug?: () => void;
   // Event handlers
   onRefresh: () => void;
   onToggleFocusMode: () => void;
@@ -292,6 +293,11 @@ function renderDebugPanel(props: ChatProps) {
     <div class="chat-debug">
       <div class="chat-debug__header">
         <span class="chat-debug__title">Debug Log</span>
+        ${
+          log.length > 0 && props.onClearDebug
+            ? html`<button class="chat-debug__clear" type="button" @click=${props.onClearDebug}>Clear</button>`
+            : nothing
+        }
         <button class="chat-debug__close" type="button" @click=${props.onToggleDebug}>
           ${icons.x}
         </button>

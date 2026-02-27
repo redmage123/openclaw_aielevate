@@ -3,11 +3,20 @@ export type ClaudeCodeProxyConfig = {
   claudeBinaryPath: string;
   timeoutMs: number;
   authToken?: string;
+  // CLI passthrough options — read from plugin config
+  mcpConfig?: string[];
+  allowedTools?: string[];
+  disallowedTools?: string[];
+  permissionMode?: string;
+  pluginDirs?: string[];
+  addDirs?: string[];
+  appendSystemPrompt?: string;
+  maxBudgetUsd?: number;
 };
 
 export const DEFAULT_PORT = 3456;
 export const DEFAULT_CLAUDE_BINARY = "claude";
-export const DEFAULT_TIMEOUT_MS = 120_000;
+export const DEFAULT_TIMEOUT_MS = 600_000; // 10 minutes — CLI runs agentic tool loops internally
 export const DEFAULT_CONTEXT_WINDOW = 200_000;
 export const DEFAULT_MAX_TOKENS = 8192;
 

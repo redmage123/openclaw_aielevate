@@ -80,27 +80,26 @@ export async function pipeStreamToSSE(
       const contentParts = message?.content ?? [];
       for (const part of contentParts) {
         if (part.type === "text" && part.text) {
+          // Always stream text immediately — the consuming SDK handles
+          // tool calls via delta.tool_calls, not by parsing text blocks.
           if (hasTools) {
-            // Buffer content for tool call detection at the end
             toolBuffer.push(part.text);
-          } else {
-            // Stream content immediately
-            sendRoleChunk();
-            const chunk = {
-              id: requestId,
-              object: "chat.completion.chunk",
-              created,
-              model,
-              choices: [
-                {
-                  index: 0,
-                  delta: { content: part.text },
-                  finish_reason: null,
-                },
-              ],
-            };
-            res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           }
+          sendRoleChunk();
+          const chunk = {
+            id: requestId,
+            object: "chat.completion.chunk",
+            created,
+            model,
+            choices: [
+              {
+                index: 0,
+                delta: { content: part.text },
+                finish_reason: null,
+              },
+            ],
+          };
+          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
         }
       }
     } else if (event.type === "result") {

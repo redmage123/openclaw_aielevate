@@ -1069,6 +1069,7 @@ export function renderApp(state: AppViewState) {
                 debugLog: state.chatDebugLog,
                 showDebug: state.chatShowDebug,
                 onToggleDebug: () => (state.chatShowDebug = !state.chatShowDebug),
+                onClearDebug: () => (state.chatDebugLog = []),
                 // Sidebar props for tool output viewing
                 sidebarOpen: state.sidebarOpen,
                 sidebarContent: state.sidebarContent,

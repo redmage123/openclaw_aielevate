@@ -260,6 +260,29 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     const finalMessage = normalizeFinalAssistantMessage(payload.message);
     if (finalMessage) {
       state.chatMessages = [...state.chatMessages, finalMessage];
+    } else {
+      // Fallback: preserve any accumulated stream text as a message.
+      // CLI backends may not populate the gateway buffer, leaving
+      // payload.message undefined while chatStream holds partial text.
+      const streamedText = state.chatStream ?? "";
+      if (streamedText.trim()) {
+        state.pushDebugLog?.("warn", "Final message empty, using streamed text");
+        state.chatMessages = [
+          ...state.chatMessages,
+          {
+            role: "assistant",
+            content: [{ type: "text", text: streamedText }],
+            timestamp: Date.now(),
+          },
+        ];
+      } else if (payload.message !== undefined) {
+        state.pushDebugLog?.(
+          "warn",
+          `Response received but message could not be displayed (keys: ${Object.keys(payload.message as Record<string, unknown>).join(", ")})`,
+        );
+      } else {
+        state.pushDebugLog?.("warn", "Response completed with no message content");
+      }
     }
     state.chatStream = null;
     state.chatRunId = null;

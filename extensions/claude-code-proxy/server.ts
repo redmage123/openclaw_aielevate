@@ -1,9 +1,9 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { runCli, runCliStream, killAllActive } from "./cli-runner.js";
-import { translateMessages, parseToolCalls, extractResumePrompt } from "./message-translator.js";
+import { translateMessages, parseToolCalls } from "./message-translator.js";
 import { pipeStreamToSSE } from "./stream-adapter.js";
-import type { ClaudeCodeProxyConfig, OpenAiChatRequest, OpenAiMessage } from "./types.js";
+import type { ClaudeCodeProxyConfig, OpenAiChatRequest } from "./types.js";
 import {
   MODEL_IDS,
   MAX_BODY_BYTES,
@@ -112,72 +112,6 @@ function createAuthRateLimiter() {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Session cache — enables --resume for follow-up messages
-// ---------------------------------------------------------------------------
-
-type SessionEntry = {
-  cliSessionId: string;
-  messageCount: number;
-  lastUsedAt: number;
-};
-
-const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
-const SESSION_MAX_ENTRIES = 100;
-const sessionCache = new Map<string, SessionEntry>();
-
-const sessionCleanupTimer = setInterval(
-  () => {
-    const now = Date.now();
-    for (const [key, entry] of sessionCache) {
-      if (now - entry.lastUsedAt > SESSION_TTL_MS) {
-        sessionCache.delete(key);
-      }
-    }
-  },
-  5 * 60 * 1000,
-);
-sessionCleanupTimer.unref();
-
-function getContentText(content: unknown): string {
-  if (typeof content === "string") return content;
-  if (content == null) return "";
-  if (Array.isArray(content)) {
-    return (content as Array<{ type?: string; text?: string }>)
-      .filter((p) => p?.type === "text" && typeof p?.text === "string")
-      .map((p) => p.text)
-      .join("");
-  }
-  return String(content);
-}
-
-function computeSessionKey(model: string, messages: OpenAiMessage[]): string {
-  const systemContent = messages
-    .filter((m) => m.role === "system")
-    .map((m) => getContentText(m.content))
-    .join("\n");
-  const firstUser = messages.find((m) => m.role === "user");
-  const firstUserContent = firstUser ? getContentText(firstUser.content) : "";
-  const raw = `${model}\0${systemContent}\0${firstUserContent}`;
-  return createHash("sha256").update(raw).digest("hex").slice(0, 16);
-}
-
-function storeSession(key: string, cliSessionId: string, messageCount: number): void {
-  sessionCache.set(key, { cliSessionId, messageCount, lastUsedAt: Date.now() });
-  // Evict oldest if over limit
-  if (sessionCache.size > SESSION_MAX_ENTRIES) {
-    let oldestKey: string | undefined;
-    let oldestTime = Infinity;
-    for (const [k, v] of sessionCache) {
-      if (v.lastUsedAt < oldestTime) {
-        oldestTime = v.lastUsedAt;
-        oldestKey = k;
-      }
-    }
-    if (oldestKey) sessionCache.delete(oldestKey);
-  }
-}
-
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
@@ -267,34 +201,25 @@ async function handleCompletions(
     return;
   }
 
+  // Don't pass gateway tools to the CLI — the CLI handles tool execution
+  // natively via its own agentic loop (Bash, Read, Write, etc.).
+  // Gateway tool definitions would conflict with the CLI's native tools
+  // and create a broken text-based <tool_call> protocol that the model ignores.
   const { prompt: fullPrompt, systemPrompt } = translateMessages(
     body.messages,
-    body.tools,
-    body.tool_choice,
+    /* tools */ undefined,
+    /* toolChoice */ undefined,
   );
-  const hasTools = Boolean(body.tools?.length) && body.tool_choice !== "none";
   const requestId = `chatcmpl-${randomUUID()}`;
 
-  // Session resumption: reuse CLI session for follow-up messages
-  const sessionKey = computeSessionKey(model, body.messages);
-  const cached = sessionCache.get(sessionKey);
-  let resumeSessionId: string | undefined;
-  let prompt: string;
+  // Session resumption disabled — each request starts a fresh CLI session.
+  // The --resume feature caused progressive slowdown: each resumed request
+  // replayed the entire accumulated conversation history to the API, making
+  // responses slower with every follow-up message.
+  const prompt = fullPrompt;
 
-  if (cached && cached.messageCount < body.messages.length) {
-    const resumePrompt = extractResumePrompt(body.messages, cached.messageCount);
-    if (resumePrompt.trim()) {
-      resumeSessionId = cached.cliSessionId;
-      prompt = resumePrompt;
-      logger.info(
-        `Resuming session ${cached.cliSessionId.slice(0, 8)}… (${body.messages.length - cached.messageCount} new msgs)`,
-      );
-    } else {
-      prompt = fullPrompt;
-    }
-  } else {
-    prompt = fullPrompt;
-  }
+  const t0 = Date.now();
+  logger.info(`[TIMING] request arrived, stream=${!!body.stream} model=${model}`);
 
   if (body.stream) {
     // Streaming response
@@ -312,70 +237,47 @@ async function handleCompletions(
     heartbeat.unref();
 
     try {
+      logger.info(`[TIMING] +${Date.now() - t0}ms spawning CLI`);
       const { stream } = runCliStream({
         prompt,
         model,
-        systemPrompt: resumeSessionId ? undefined : systemPrompt,
+        systemPrompt,
         maxTokens: body.max_tokens,
-        disableBuiltinTools: hasTools,
         config,
         signal: req.destroyed ? AbortSignal.abort() : undefined,
-        resumeSessionId,
       });
+      logger.info(`[TIMING] +${Date.now() - t0}ms CLI spawned`);
 
       req.on("close", () => {
         stream.destroy();
       });
 
-      const { sessionId } = await pipeStreamToSSE(stream, res, model, requestId, hasTools);
+      let firstChunkLogged = false;
+      stream.on("data", () => {
+        if (!firstChunkLogged) {
+          firstChunkLogged = true;
+          logger.info(`[TIMING] +${Date.now() - t0}ms first CLI stdout chunk`);
+        }
+      });
+
+      await pipeStreamToSSE(stream, res, model, requestId, /* hasTools */ false);
+      logger.info(`[TIMING] +${Date.now() - t0}ms stream complete, sending to browser`);
       clearInterval(heartbeat);
-      if (sessionId) {
-        storeSession(sessionKey, sessionId, body.messages.length);
-      }
     } catch (err) {
       clearInterval(heartbeat);
       const msg = err instanceof Error ? err.message : "Unknown error";
       logger.error(`Stream error: ${msg}`);
 
-      // If resume failed, retry without it
-      if (resumeSessionId && !res.headersSent) {
-        logger.warn("Resume failed, retrying with full prompt");
-        sessionCache.delete(sessionKey);
-        try {
-          const { stream: retryStream } = runCliStream({
-            prompt: fullPrompt,
-            model,
-            systemPrompt,
-            maxTokens: body.max_tokens,
-            disableBuiltinTools: hasTools,
-            config,
-            signal: req.destroyed ? AbortSignal.abort() : undefined,
-          });
-          req.on("close", () => retryStream.destroy());
-          const { sessionId } = await pipeStreamToSSE(retryStream, res, model, requestId, hasTools);
-          if (sessionId) {
-            storeSession(sessionKey, sessionId, body.messages.length);
-          }
-        } catch (retryErr) {
-          const retryMsg = retryErr instanceof Error ? retryErr.message : "Unknown error";
-          logger.error(`Retry stream error: ${retryMsg}`);
-          if (!res.destroyed) {
-            res.write(`data: ${JSON.stringify({ error: { message: "Request failed" } })}\n\n`);
-            res.write("data: [DONE]\n\n");
-          }
+      // Item 7: Guard against writing to destroyed response
+      if (!res.destroyed) {
+        if (isConcurrencyError(msg)) {
+          res.write(
+            `data: ${JSON.stringify({ error: { message: "Too many concurrent requests" } })}\n\n`,
+          );
+        } else {
+          res.write(`data: ${JSON.stringify({ error: { message: "Request failed" } })}\n\n`);
         }
-      } else {
-        // Item 7: Guard against writing to destroyed response
-        if (!res.destroyed) {
-          if (isConcurrencyError(msg)) {
-            res.write(
-              `data: ${JSON.stringify({ error: { message: "Too many concurrent requests" } })}\n\n`,
-            );
-          } else {
-            res.write(`data: ${JSON.stringify({ error: { message: "Request failed" } })}\n\n`);
-          }
-          res.write("data: [DONE]\n\n");
-        }
+        res.write("data: [DONE]\n\n");
       }
     }
     if (!res.destroyed) {
@@ -384,50 +286,18 @@ async function handleCompletions(
   } else {
     // Non-streaming response
     try {
-      let result = await runCli({
+      logger.info(`[TIMING] +${Date.now() - t0}ms calling runCli`);
+      const result = await runCli({
         prompt,
         model,
-        systemPrompt: resumeSessionId ? undefined : systemPrompt,
+        systemPrompt,
         maxTokens: body.max_tokens,
-        disableBuiltinTools: hasTools,
         config,
-        resumeSessionId,
-      }).catch(async (err) => {
-        // If resume failed, retry without it
-        if (resumeSessionId) {
-          logger.warn(`Resume failed (${err instanceof Error ? err.message : err}), retrying`);
-          sessionCache.delete(sessionKey);
-          return runCli({
-            prompt: fullPrompt,
-            model,
-            systemPrompt,
-            maxTokens: body.max_tokens,
-            disableBuiltinTools: hasTools,
-            config,
-          });
-        }
-        throw err;
       });
 
-      // Store session for future resumption
-      if (result.session_id) {
-        storeSession(sessionKey, result.session_id, body.messages.length);
-      }
+      logger.info(`[TIMING] +${Date.now() - t0}ms CLI returned (api=${result.duration_api_ms}ms)`);
 
-      // Parse for tool calls when tools were provided
-      const { content, toolCalls } = hasTools
-        ? parseToolCalls(result.result)
-        : { content: result.result, toolCalls: [] };
-      const hasToolCalls = toolCalls.length > 0;
-
-      const message: Record<string, unknown> = {
-        role: "assistant",
-        content: hasToolCalls ? content || null : content,
-      };
-      if (hasToolCalls) {
-        message.tool_calls = toolCalls;
-      }
-
+      // CLI handles tool execution natively; result.result is the final text.
       const response = {
         id: requestId,
         object: "chat.completion",
@@ -436,8 +306,8 @@ async function handleCompletions(
         choices: [
           {
             index: 0,
-            message,
-            finish_reason: hasToolCalls ? "tool_calls" : "stop",
+            message: { role: "assistant", content: result.result },
+            finish_reason: "stop",
           },
         ],
         usage: {
@@ -605,8 +475,6 @@ type ServerWithRateLimiter = Server & {
 export function stopServer(server: Server): Promise<void> {
   killAllActive();
   (server as ServerWithRateLimiter).__rateLimiter?.dispose();
-  sessionCache.clear();
-  clearInterval(sessionCleanupTimer);
   return new Promise((resolve) => {
     server.close(() => resolve());
   });

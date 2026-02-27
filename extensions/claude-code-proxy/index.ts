@@ -47,6 +47,12 @@ function resolveAuthToken(
   return undefined;
 }
 
+function asStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const filtered = value.filter((v): v is string => typeof v === "string" && v.length > 0);
+  return filtered.length > 0 ? filtered : undefined;
+}
+
 function resolveConfig(
   pluginConfig?: Record<string, unknown>,
   gatewayConfig?: Record<string, unknown>,
@@ -56,6 +62,15 @@ function resolveConfig(
     claudeBinaryPath: (pluginConfig?.claudeBinaryPath as string) || DEFAULT_CLAUDE_BINARY,
     timeoutMs: (pluginConfig?.timeoutMs as number) || DEFAULT_TIMEOUT_MS,
     authToken: resolveAuthToken(gatewayConfig, pluginConfig),
+    // CLI passthrough options
+    mcpConfig: asStringArray(pluginConfig?.mcpConfig),
+    allowedTools: asStringArray(pluginConfig?.allowedTools),
+    disallowedTools: asStringArray(pluginConfig?.disallowedTools),
+    permissionMode: (pluginConfig?.permissionMode as string) || undefined,
+    pluginDirs: asStringArray(pluginConfig?.pluginDirs),
+    addDirs: asStringArray(pluginConfig?.addDirs),
+    appendSystemPrompt: (pluginConfig?.appendSystemPrompt as string) || undefined,
+    maxBudgetUsd: (pluginConfig?.maxBudgetUsd as number) || undefined,
   };
 }
 
