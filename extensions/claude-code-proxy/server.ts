@@ -592,6 +592,31 @@ export function createProxyServer(
   return { server, rateLimiter };
 }
 
+/**
+ * Fire a lightweight CLI invocation in the background to warm up the
+ * process: loads the binary, authenticates, initialises MCP servers, etc.
+ * The result is discarded — the goal is to pay the cold-start cost before
+ * the first real user request arrives.
+ */
+function warmUpCli(config: ClaudeCodeProxyConfig, logger: Logger): void {
+  const t0 = Date.now();
+  logger.info("[WARMUP] spawning warm-up CLI process...");
+  runCli({
+    prompt: "Say OK",
+    model: "claude-haiku-4-5",
+    systemPrompt: "Reply with exactly: OK",
+    maxTokens: 8,
+    config,
+  })
+    .then(() => {
+      logger.info(`[WARMUP] warm-up complete in ${Date.now() - t0}ms — CLI is hot`);
+    })
+    .catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`[WARMUP] warm-up failed (non-fatal): ${msg}`);
+    });
+}
+
 export function startServer(config: ClaudeCodeProxyConfig, logger: Logger): Promise<Server> {
   return new Promise((resolve, reject) => {
     const { server, rateLimiter } = createProxyServer(config, logger);
@@ -612,6 +637,10 @@ export function startServer(config: ClaudeCodeProxyConfig, logger: Logger): Prom
         `claude-code-proxy: listening on http://127.0.0.1:${config.port}` +
           (config.authToken ? " (auth: bearer)" : " (auth: none)"),
       );
+
+      // Pre-warm the CLI so the first real request doesn't pay cold-start cost
+      warmUpCli(config, logger);
+
       resolve(server);
     });
   });
