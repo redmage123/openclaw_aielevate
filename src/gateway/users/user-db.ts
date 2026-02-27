@@ -160,7 +160,7 @@ export class UserDb {
       .prepare(
         `UPDATE user_sessions SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL`,
       )
-      .run(tokenHash, now);
+      .run(now, tokenHash);
     return (result as unknown as { changes: number }).changes > 0;
   }
 
