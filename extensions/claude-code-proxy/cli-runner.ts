@@ -119,9 +119,15 @@ function buildArgs(opts: {
   outputFormat: string;
   config: ClaudeCodeProxyConfig;
   resumeSessionId?: string;
+  maxTurns?: number;
   extraFlags: string[];
 }): string[] {
   const args = ["-p", "--output-format", opts.outputFormat, "--model", resolveModel(opts.model)];
+
+  // Limit agentic turns (e.g. warm-up should never enter tool loops)
+  if (opts.maxTurns != null && opts.maxTurns > 0) {
+    args.push("--max-turns", String(opts.maxTurns));
+  }
 
   // Session resumption: continue a previous CLI session for prompt caching
   // and memory persistence. When resuming, only the new user message is
@@ -183,10 +189,13 @@ export async function runCli(opts: {
   maxTokens?: number;
   config: ClaudeCodeProxyConfig;
   resumeSessionId?: string;
+  maxTurns?: number;
+  skipConcurrencyCheck?: boolean;
   signal?: AbortSignal;
 }): Promise<ClaudeCliJsonResult> {
-  const { prompt, model, systemPrompt, maxTokens, config, resumeSessionId, signal } = opts;
-  checkConcurrencyLimit();
+  const { prompt, model, systemPrompt, maxTokens, config, resumeSessionId, maxTurns, signal } =
+    opts;
+  if (!opts.skipConcurrencyCheck) checkConcurrencyLimit();
 
   const binary = resolveClaudeBinary(config.claudeBinaryPath || "");
   const timeoutMs = config.timeoutMs || DEFAULT_TIMEOUT_MS;
@@ -196,6 +205,7 @@ export async function runCli(opts: {
     outputFormat: "json",
     config,
     resumeSessionId,
+    maxTurns,
     extraFlags: [],
   });
 

@@ -606,6 +606,8 @@ function warmUpCli(config: ClaudeCodeProxyConfig, logger: Logger): void {
     model: "claude-haiku-4-5",
     systemPrompt: "Reply with exactly: OK",
     maxTokens: 8,
+    maxTurns: 1,
+    skipConcurrencyCheck: true,
     config,
   })
     .then(() => {
