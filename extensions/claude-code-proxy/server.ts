@@ -1,5 +1,8 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { runCli, runCliStream, killAllActive } from "./cli-runner.js";
 import { translateMessages, extractResumePrompt } from "./message-translator.js";
 import { pipeStreamToSSE } from "./stream-adapter.js";
@@ -23,6 +26,7 @@ import {
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const SESSION_PRUNE_INTERVAL_MS = 5 * 60 * 1000; // prune every 5 min
+const SESSION_FILE = join(homedir(), ".openclaw", "claude-code-sessions.json");
 
 type ConversationSession = {
   cliSessionId: string;
@@ -32,14 +36,50 @@ type ConversationSession = {
 
 const sessionStore = new Map<string, ConversationSession>();
 
-// Prune expired sessions periodically
+/** Load sessions from disk, discarding any that have expired. */
+function loadSessions(): void {
+  try {
+    const raw = readFileSync(SESSION_FILE, "utf-8");
+    const entries = JSON.parse(raw) as Record<string, ConversationSession>;
+    const now = Date.now();
+    for (const [key, session] of Object.entries(entries)) {
+      if (now - session.lastUsed <= SESSION_TTL_MS) {
+        sessionStore.set(key, session);
+      }
+    }
+  } catch {
+    // File doesn't exist or is corrupt — start fresh
+  }
+}
+
+/** Persist the current session store to disk. */
+function saveSessions(): void {
+  try {
+    const obj: Record<string, ConversationSession> = {};
+    for (const [key, session] of sessionStore) {
+      obj[key] = session;
+    }
+    mkdirSync(join(homedir(), ".openclaw"), { recursive: true });
+    writeFileSync(SESSION_FILE, JSON.stringify(obj, null, 2), "utf-8");
+  } catch {
+    // Non-fatal — sessions will just be lost on restart
+  }
+}
+
+// Load persisted sessions on module init
+loadSessions();
+
+// Prune expired sessions periodically and persist after pruning
 const sessionPruneTimer = setInterval(() => {
   const now = Date.now();
+  let pruned = false;
   for (const [key, session] of sessionStore) {
     if (now - session.lastUsed > SESSION_TTL_MS) {
       sessionStore.delete(key);
+      pruned = true;
     }
   }
+  if (pruned) saveSessions();
 }, SESSION_PRUNE_INTERVAL_MS);
 sessionPruneTimer.unref();
 
@@ -287,6 +327,7 @@ async function handleCompletions(
     if (existingSession) {
       logger.info(`[SESSION] resetting stale session for conv=${convKey}`);
       sessionStore.delete(convKey);
+      saveSessions();
     }
   }
 
@@ -351,6 +392,7 @@ async function handleCompletions(
           messageCount: body.messages.length,
           lastUsed: Date.now(),
         });
+        saveSessions();
         logger.info(`[SESSION] stored session ${cliSessionId} for conv=${convKey}`);
       }
 
@@ -399,6 +441,7 @@ async function handleCompletions(
           messageCount: body.messages.length,
           lastUsed: Date.now(),
         });
+        saveSessions();
       }
 
       logger.info(`[TIMING] +${Date.now() - t0}ms CLI returned (api=${result.duration_api_ms}ms)`);
@@ -580,6 +623,7 @@ type ServerWithRateLimiter = Server & {
 
 export function stopServer(server: Server): Promise<void> {
   killAllActive();
+  saveSessions();
   sessionStore.clear();
   clearInterval(sessionPruneTimer);
   (server as ServerWithRateLimiter).__rateLimiter?.dispose();
