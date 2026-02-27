@@ -6,9 +6,11 @@ import {
   parseConfigJson5,
   readConfigFileSnapshot,
   readConfigFileSnapshotForWrite,
+  readUserConfigOverlay,
   resolveConfigSnapshotHash,
   validateConfigObjectWithPlugins,
   writeConfigFile,
+  writeUserConfigOverlay,
 } from "../../config/config.js";
 import { applyLegacyMigrations } from "../../config/legacy.js";
 import { applyMergePatch } from "../../config/merge-patch.js";
@@ -462,5 +464,52 @@ export const configHandlers: GatewayRequestHandlers = {
       },
       undefined,
     );
+  },
+  "config.user.get": ({ respond, userContext }) => {
+    if (!userContext) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "multi-user mode required for per-user config"),
+      );
+      return;
+    }
+    const overlay = readUserConfigOverlay(userContext.userStateDir);
+    respond(true, { overlay }, undefined);
+  },
+  "config.user.set": ({ params, respond, userContext }) => {
+    if (!userContext) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "multi-user mode required for per-user config"),
+      );
+      return;
+    }
+    const overlay = params.overlay;
+    if (!overlay || typeof overlay !== "object" || Array.isArray(overlay)) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "overlay must be a plain object"),
+      );
+      return;
+    }
+    const result = writeUserConfigOverlay(
+      userContext.userStateDir,
+      overlay as Record<string, unknown>,
+    );
+    if (!result.ok) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          `admin-only keys not allowed in user config: ${result.rejectedKeys.join(", ")}`,
+        ),
+      );
+      return;
+    }
+    respond(true, { ok: true }, undefined);
   },
 };

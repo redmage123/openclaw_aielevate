@@ -1351,3 +1351,105 @@ export async function writeConfigFile(
     unsetPaths: options.unsetPaths,
   });
 }
+
+// ── Per-user config overlay (multi-user mode) ──────────────────────
+
+/** Keys that users may override in their personal config overlay. */
+const USER_OVERRIDABLE_KEYS = new Set([
+  "agents",
+  "models",
+  "skills",
+  "tools",
+  "memory",
+  "session",
+  "messages",
+  "ui",
+  "audio",
+]);
+
+/**
+ * Load global config merged with the per-user overlay at
+ * `~/.openclaw/users/{userId}/openclaw.json`.
+ *
+ * Non-overridable keys (gateway, auth, plugins, channels) are stripped
+ * from the user overlay before merging.
+ */
+export function loadUserConfig(userStateDir: string): OpenClawConfig {
+  const globalCfg = loadConfig();
+  const userConfigPath = path.join(userStateDir, "openclaw.json");
+  let rawUserConfig: Record<string, unknown>;
+  try {
+    const raw = fs.readFileSync(userConfigPath, "utf-8");
+    rawUserConfig = JSON5.parse(raw);
+  } catch {
+    // No user config or unreadable — return global as-is.
+    return globalCfg;
+  }
+
+  // Strip non-overridable keys to enforce admin boundaries.
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rawUserConfig)) {
+    if (USER_OVERRIDABLE_KEYS.has(key)) {
+      sanitized[key] = value;
+    }
+  }
+
+  if (Object.keys(sanitized).length === 0) {
+    return globalCfg;
+  }
+
+  return applyMergePatch(globalCfg, sanitized, {
+    mergeObjectArraysById: true,
+  }) as OpenClawConfig;
+}
+
+/**
+ * Read the raw per-user config overlay (only user-overridable keys).
+ * Returns empty object `{}` if the file does not exist.
+ */
+export function readUserConfigOverlay(userStateDir: string): Record<string, unknown> {
+  const userConfigPath = path.join(userStateDir, "openclaw.json");
+  try {
+    const raw = fs.readFileSync(userConfigPath, "utf-8");
+    const parsed = JSON5.parse(raw);
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (USER_OVERRIDABLE_KEYS.has(key)) {
+        result[key] = value;
+      }
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Write the per-user config overlay.
+ * Only user-overridable keys are persisted; admin-only keys are rejected.
+ */
+export function writeUserConfigOverlay(
+  userStateDir: string,
+  overlay: Record<string, unknown>,
+): { ok: true } | { ok: false; rejectedKeys: string[] } {
+  const rejectedKeys: string[] = [];
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(overlay)) {
+    if (USER_OVERRIDABLE_KEYS.has(key)) {
+      sanitized[key] = value;
+    } else {
+      rejectedKeys.push(key);
+    }
+  }
+  if (rejectedKeys.length > 0) {
+    return { ok: false, rejectedKeys };
+  }
+
+  const userConfigPath = path.join(userStateDir, "openclaw.json");
+  fs.mkdirSync(userStateDir, { recursive: true });
+  fs.writeFileSync(userConfigPath, JSON.stringify(sanitized, null, 2) + "\n", {
+    encoding: "utf-8",
+    mode: 0o600,
+  });
+  return { ok: true };
+}

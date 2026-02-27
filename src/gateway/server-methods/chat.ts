@@ -414,11 +414,12 @@ function persistAbortedPartials(params: {
   context: Pick<GatewayRequestContext, "logGateway">;
   sessionKey: string;
   snapshots: AbortedPartialSnapshot[];
+  userStateDir?: string;
 }) {
   if (params.snapshots.length === 0) {
     return;
   }
-  const { storePath, entry } = loadSessionEntry(params.sessionKey);
+  const { storePath, entry } = loadSessionEntry(params.sessionKey, params.userStateDir);
   for (const snapshot of params.snapshots) {
     const sessionId = entry?.sessionId ?? snapshot.sessionId ?? snapshot.runId;
     const appended = appendAssistantTranscriptMessage({
@@ -461,6 +462,7 @@ function abortChatRunsForSessionKeyWithPartials(params: {
   sessionKey: string;
   abortOrigin: AbortOrigin;
   stopReason?: string;
+  userStateDir?: string;
 }) {
   const snapshots = collectSessionAbortPartials({
     chatAbortControllers: params.context.chatAbortControllers,
@@ -477,6 +479,7 @@ function abortChatRunsForSessionKeyWithPartials(params: {
       context: params.context,
       sessionKey: params.sessionKey,
       snapshots,
+      userStateDir: params.userStateDir,
     });
   }
   return res;
@@ -530,7 +533,7 @@ function broadcastChatError(params: {
 }
 
 export const chatHandlers: GatewayRequestHandlers = {
-  "chat.history": async ({ params, respond, context }) => {
+  "chat.history": async ({ params, respond, context, userContext }) => {
     if (!validateChatHistoryParams(params)) {
       respond(
         false,
@@ -546,7 +549,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       sessionKey: string;
       limit?: number;
     };
-    const { cfg, storePath, entry } = loadSessionEntry(sessionKey);
+    const { cfg, storePath, entry } = loadSessionEntry(sessionKey, userContext?.userStateDir);
     const sessionId = entry?.sessionId;
     const rawMessages =
       sessionId && storePath ? readSessionMessages(sessionId, storePath, entry?.sessionFile) : [];
@@ -598,7 +601,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       verboseLevel,
     });
   },
-  "chat.abort": ({ params, respond, context }) => {
+  "chat.abort": ({ params, respond, context, userContext }) => {
     if (!validateChatAbortParams(params)) {
       respond(
         false,
@@ -624,6 +627,7 @@ export const chatHandlers: GatewayRequestHandlers = {
         sessionKey: rawSessionKey,
         abortOrigin: "rpc",
         stopReason: "rpc",
+        userStateDir: userContext?.userStateDir,
       });
       respond(true, { ok: true, aborted: res.aborted, runIds: res.runIds });
       return;
@@ -661,6 +665,7 @@ export const chatHandlers: GatewayRequestHandlers = {
             abortOrigin: "rpc",
           },
         ],
+        userStateDir: userContext?.userStateDir,
       });
     }
     respond(true, {
@@ -669,7 +674,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       runIds: res.aborted ? [runId] : [],
     });
   },
-  "chat.send": async ({ params, respond, context, client }) => {
+  "chat.send": async ({ params, respond, context, client, userContext }) => {
     if (!validateChatSendParams(params)) {
       respond(
         false,
@@ -732,7 +737,11 @@ export const chatHandlers: GatewayRequestHandlers = {
       }
     }
     const rawSessionKey = p.sessionKey;
-    const { cfg, entry, canonicalKey: sessionKey } = loadSessionEntry(rawSessionKey);
+    const {
+      cfg,
+      entry,
+      canonicalKey: sessionKey,
+    } = loadSessionEntry(rawSessionKey, userContext?.userStateDir);
     const timeoutMs = resolveAgentTimeoutMs({
       cfg,
       overrideMs: p.timeoutMs,
@@ -763,6 +772,7 @@ export const chatHandlers: GatewayRequestHandlers = {
         sessionKey: rawSessionKey,
         abortOrigin: "stop-command",
         stopReason: "stop",
+        userStateDir: userContext?.userStateDir,
       });
       respond(true, { ok: true, aborted: res.aborted, runIds: res.runIds });
       return;
@@ -897,8 +907,10 @@ export const chatHandlers: GatewayRequestHandlers = {
               .trim();
             let message: Record<string, unknown> | undefined;
             if (combinedReply) {
-              const { storePath: latestStorePath, entry: latestEntry } =
-                loadSessionEntry(sessionKey);
+              const { storePath: latestStorePath, entry: latestEntry } = loadSessionEntry(
+                sessionKey,
+                userContext?.userStateDir,
+              );
               const sessionId = latestEntry?.sessionId ?? entry?.sessionId ?? clientRunId;
               const appended = appendAssistantTranscriptMessage({
                 message: combinedReply,
@@ -980,7 +992,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       });
     }
   },
-  "chat.inject": async ({ params, respond, context }) => {
+  "chat.inject": async ({ params, respond, context, userContext }) => {
     if (!validateChatInjectParams(params)) {
       respond(
         false,
@@ -1000,7 +1012,7 @@ export const chatHandlers: GatewayRequestHandlers = {
 
     // Load session to find transcript file
     const rawSessionKey = p.sessionKey;
-    const { cfg, storePath, entry } = loadSessionEntry(rawSessionKey);
+    const { cfg, storePath, entry } = loadSessionEntry(rawSessionKey, userContext?.userStateDir);
     const sessionId = entry?.sessionId;
     if (!sessionId || !storePath) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "session not found"));

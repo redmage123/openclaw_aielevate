@@ -181,6 +181,83 @@ export class UserDb {
     return (result as unknown as { changes: number }).changes;
   }
 
+  /** List all users. */
+  listUsers(): AuthUser[] {
+    const rows = this.db
+      .prepare(`SELECT id, username, email, display_name, role FROM users ORDER BY created_at ASC`)
+      .all() as Array<Record<string, unknown>>;
+    return rows.map((row) => ({
+      id: row.id as string,
+      username: row.username as string,
+      email: row.email as string,
+      displayName: row.display_name as string,
+      role: row.role as string,
+    })) as AuthUser[];
+  }
+
+  /** Find a user by ID. */
+  findById(userId: string): User | null {
+    const row = this.db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId) as
+      | Record<string, unknown>
+      | undefined;
+    if (!row) {
+      return null;
+    }
+    return rowToUser(row);
+  }
+
+  /** Update a user's role (admin-only). */
+  updateUserRole(userId: string, role: "admin" | "user"): boolean {
+    const now = Date.now();
+    const result = this.db
+      .prepare(`UPDATE users SET role = ?, updated_at = ? WHERE id = ?`)
+      .run(role, now, userId);
+    return (result as unknown as { changes: number }).changes > 0;
+  }
+
+  /** Change a user's password. */
+  changePassword(userId: string, newPassword: string): boolean {
+    const newHash = hashPassword(newPassword);
+    const now = Date.now();
+    const result = this.db
+      .prepare(`UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?`)
+      .run(newHash, now, userId);
+    return (result as unknown as { changes: number }).changes > 0;
+  }
+
+  /** Update user profile fields. */
+  updateProfile(userId: string, fields: { displayName?: string; email?: string }): boolean {
+    const setClauses: string[] = [];
+    const values: (string | number)[] = [];
+    if (fields.displayName !== undefined) {
+      setClauses.push("display_name = ?");
+      values.push(fields.displayName.trim());
+    }
+    if (fields.email !== undefined) {
+      setClauses.push("email = ?");
+      values.push(fields.email.toLowerCase().trim());
+    }
+    if (setClauses.length === 0) {
+      return false;
+    }
+    setClauses.push("updated_at = ?");
+    values.push(Date.now());
+    values.push(userId);
+    const result = this.db
+      .prepare(`UPDATE users SET ${setClauses.join(", ")} WHERE id = ?`)
+      .run(...values);
+    return (result as unknown as { changes: number }).changes > 0;
+  }
+
+  /** Revoke all active sessions for a user (e.g. on role change or disable). */
+  revokeAllUserSessions(userId: string): number {
+    const now = Date.now();
+    const result = this.db
+      .prepare(`UPDATE user_sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL`)
+      .run(now, userId);
+    return (result as unknown as { changes: number }).changes;
+  }
+
   close(): void {
     this.db.close();
   }

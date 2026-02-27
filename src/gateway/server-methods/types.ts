@@ -18,6 +18,14 @@ export type GatewayClient = {
   connect: ConnectParams;
   connId?: string;
   clientIp?: string;
+  /** Present when auth mode is multi-user. */
+  userId?: string;
+};
+
+/** Context for per-user data isolation in multi-user mode. */
+export type UserContext = {
+  userId: string;
+  userStateDir: string;
 };
 
 export type RespondFn = (
@@ -102,6 +110,8 @@ export type GatewayRequestHandlerOptions = {
   isWebchatConnect: (params: ConnectParams | null | undefined) => boolean;
   respond: RespondFn;
   context: GatewayRequestContext;
+  /** Per-user context for data isolation. Present when auth mode is multi-user. */
+  userContext?: UserContext;
 };
 
 export type GatewayRequestHandler = (opts: GatewayRequestHandlerOptions) => Promise<void> | void;

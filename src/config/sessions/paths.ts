@@ -39,8 +39,11 @@ export function resolveSessionTranscriptsDirForAgent(
   return resolveAgentSessionsDir(agentId, env, homedir);
 }
 
-export function resolveDefaultSessionStorePath(agentId?: string): string {
-  return path.join(resolveAgentSessionsDir(agentId), "sessions.json");
+export function resolveDefaultSessionStorePath(agentId?: string, userStateDir?: string): string {
+  const sessionsDir = userStateDir
+    ? resolveUserAgentSessionsDir(userStateDir, agentId)
+    : resolveAgentSessionsDir(agentId);
+  return path.join(sessionsDir, "sessions.json");
 }
 
 export type SessionFilePathOptions = {
@@ -74,10 +77,13 @@ export function validateSessionId(sessionId: string): string {
   return trimmed;
 }
 
-function resolveSessionsDir(opts?: SessionFilePathOptions): string {
+function resolveSessionsDir(opts?: SessionFilePathOptions & { userStateDir?: string }): string {
   const sessionsDir = opts?.sessionsDir?.trim();
   if (sessionsDir) {
     return path.resolve(sessionsDir);
+  }
+  if (opts?.userStateDir) {
+    return resolveUserAgentSessionsDir(opts.userStateDir, opts?.agentId);
   }
   return resolveAgentSessionsDir(opts?.agentId);
 }
@@ -252,8 +258,12 @@ export function resolveSessionTranscriptPath(
   sessionId: string,
   agentId?: string,
   topicId?: string | number,
+  userStateDir?: string,
 ): string {
-  return resolveSessionTranscriptPathInDir(sessionId, resolveAgentSessionsDir(agentId), topicId);
+  const sessionsDir = userStateDir
+    ? resolveUserAgentSessionsDir(userStateDir, agentId)
+    : resolveAgentSessionsDir(agentId);
+  return resolveSessionTranscriptPathInDir(sessionId, sessionsDir, topicId);
 }
 
 export function resolveSessionFilePath(
@@ -273,11 +283,16 @@ export function resolveSessionFilePath(
   return resolveSessionTranscriptPathInDir(sessionId, sessionsDir);
 }
 
-export function resolveStorePath(store?: string, opts?: { agentId?: string }) {
+export function resolveStorePath(
+  store?: string,
+  opts?: { agentId?: string; userStateDir?: string },
+) {
   const agentId = normalizeAgentId(opts?.agentId ?? DEFAULT_AGENT_ID);
   if (!store) {
-    return resolveDefaultSessionStorePath(agentId);
+    return resolveDefaultSessionStorePath(agentId, opts?.userStateDir);
   }
+  // Custom store path overrides — not user-scoped (admin-controlled).
+  // Per-user isolation only applies to the default store path.
   if (store.includes("{agentId}")) {
     const expanded = store.replaceAll("{agentId}", agentId);
     if (expanded.startsWith("~")) {

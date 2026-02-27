@@ -272,6 +272,30 @@ export function resolveUserStateDir(
   return path.join(stateDir, "users", userId);
 }
 
+/**
+ * Per-user OAuth credentials directory.
+ * Returns `~/.openclaw/users/<userId>/credentials/`.
+ */
+export function resolveUserOAuthDir(userStateDir: string): string {
+  return path.join(userStateDir, "credentials");
+}
+
+/**
+ * Per-user OAuth credentials file path.
+ * Returns `~/.openclaw/users/<userId>/credentials/oauth.json`.
+ */
+export function resolveUserOAuthPath(userStateDir: string): string {
+  return path.join(resolveUserOAuthDir(userStateDir), OAUTH_FILENAME);
+}
+
+/**
+ * Per-user memory/knowledge directory.
+ * Returns `~/.openclaw/users/<userId>/memory/`.
+ */
+export function resolveUserMemoryDir(userStateDir: string): string {
+  return path.join(userStateDir, "memory");
+}
+
 export function resolveGatewayPort(
   cfg?: OpenClawConfig,
   env: NodeJS.ProcessEnv = process.env,

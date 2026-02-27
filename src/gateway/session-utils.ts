@@ -176,12 +176,12 @@ export function deriveSessionTitle(
   return undefined;
 }
 
-export function loadSessionEntry(sessionKey: string) {
+export function loadSessionEntry(sessionKey: string, userStateDir?: string) {
   const cfg = loadConfig();
   const sessionCfg = cfg.session;
   const canonicalKey = resolveSessionStoreKey({ cfg, sessionKey });
   const agentId = resolveSessionStoreAgentId(cfg, canonicalKey);
-  const storePath = resolveStorePath(sessionCfg?.store, { agentId });
+  const storePath = resolveStorePath(sessionCfg?.store, { agentId, userStateDir });
   const store = loadSessionStore(storePath);
   const match = findStoreMatch(store, canonicalKey, sessionKey.trim());
   const legacyKey = match?.key !== canonicalKey ? match?.key : undefined;
@@ -296,8 +296,8 @@ function isStorePathTemplate(store?: string): boolean {
   return typeof store === "string" && store.includes("{agentId}");
 }
 
-function listExistingAgentIdsFromDisk(): string[] {
-  const root = resolveStateDir();
+function listExistingAgentIdsFromDisk(userStateDir?: string): string[] {
+  const root = userStateDir ?? resolveStateDir();
   const agentsDir = path.join(root, "agents");
   try {
     const entries = fs.readdirSync(agentsDir, { withFileTypes: true });
@@ -310,7 +310,7 @@ function listExistingAgentIdsFromDisk(): string[] {
   }
 }
 
-function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
+function listConfiguredAgentIds(cfg: OpenClawConfig, userStateDir?: string): string[] {
   const agents = cfg.agents?.list ?? [];
   if (agents.length > 0) {
     const ids = new Set<string>();
@@ -331,7 +331,7 @@ function listConfiguredAgentIds(cfg: OpenClawConfig): string[] {
   const ids = new Set<string>();
   const defaultId = normalizeAgentId(resolveDefaultAgentId(cfg));
   ids.add(defaultId);
-  for (const id of listExistingAgentIdsFromDisk()) {
+  for (const id of listExistingAgentIdsFromDisk(userStateDir)) {
     ids.add(id);
   }
   const sorted = Array.from(ids).filter(Boolean);
@@ -493,6 +493,7 @@ export function resolveGatewaySessionStoreTarget(params: {
   key: string;
   scanLegacyKeys?: boolean;
   store?: Record<string, SessionEntry>;
+  userStateDir?: string;
 }): {
   agentId: string;
   storePath: string;
@@ -506,7 +507,7 @@ export function resolveGatewaySessionStoreTarget(params: {
   });
   const agentId = resolveSessionStoreAgentId(params.cfg, canonicalKey);
   const storeConfig = params.cfg.session?.store;
-  const storePath = resolveStorePath(storeConfig, { agentId });
+  const storePath = resolveStorePath(storeConfig, { agentId, userStateDir: params.userStateDir });
 
   if (canonicalKey === "global" || canonicalKey === "unknown") {
     const storeKeys = key && key !== canonicalKey ? [canonicalKey, key] : [key];
@@ -573,13 +574,16 @@ function mergeSessionEntryIntoCombined(params: {
   }
 }
 
-export function loadCombinedSessionStoreForGateway(cfg: OpenClawConfig): {
+export function loadCombinedSessionStoreForGateway(
+  cfg: OpenClawConfig,
+  userStateDir?: string,
+): {
   storePath: string;
   store: Record<string, SessionEntry>;
 } {
   const storeConfig = cfg.session?.store;
   if (storeConfig && !isStorePathTemplate(storeConfig)) {
-    const storePath = resolveStorePath(storeConfig);
+    const storePath = resolveStorePath(storeConfig, { userStateDir });
     const defaultAgentId = normalizeAgentId(resolveDefaultAgentId(cfg));
     const store = loadSessionStore(storePath);
     const combined: Record<string, SessionEntry> = {};
@@ -596,10 +600,10 @@ export function loadCombinedSessionStoreForGateway(cfg: OpenClawConfig): {
     return { storePath, store: combined };
   }
 
-  const agentIds = listConfiguredAgentIds(cfg);
+  const agentIds = listConfiguredAgentIds(cfg, userStateDir);
   const combined: Record<string, SessionEntry> = {};
   for (const agentId of agentIds) {
-    const storePath = resolveStorePath(storeConfig, { agentId });
+    const storePath = resolveStorePath(storeConfig, { agentId, userStateDir });
     const store = loadSessionStore(storePath);
     for (const [key, entry] of Object.entries(store)) {
       const canonicalKey = canonicalizeSessionKeyForAgent(agentId, key);

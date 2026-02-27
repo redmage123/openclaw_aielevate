@@ -228,14 +228,14 @@ export async function runCli(opts: {
 
     const chunks: Buffer[] = [];
 
-    proc.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
+    proc.stdout!.on("data", (chunk: Buffer) => chunks.push(chunk));
     // Capture stderr for diagnostics
     const stderrChunks: Buffer[] = [];
-    proc.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
+    proc.stderr!.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
 
     // Write prompt to stdin and close
-    proc.stdin.write(prompt);
-    proc.stdin.end();
+    proc.stdin!.write(prompt);
+    proc.stdin!.end();
 
     const timer = setTimeout(() => {
       const stderr = Buffer.concat(stderrChunks).toString("utf-8").trim();
@@ -322,14 +322,14 @@ export function runCliStream(opts: {
   );
 
   // Capture stderr for diagnostics
-  proc.stderr.on("data", (chunk: Buffer) => {
+  proc.stderr!.on("data", (chunk: Buffer) => {
     const text = chunk.toString("utf-8").trim();
     if (text) console.error(`[claude-code-proxy] CLI stderr: ${text.slice(0, 300)}`);
   });
 
   // Write prompt to stdin and close
-  proc.stdin.write(prompt);
-  proc.stdin.end();
+  proc.stdin!.write(prompt);
+  proc.stdin!.end();
   console.log(`[claude-code-proxy] [TIMING] stdin written +${Date.now() - spawnT0}ms`);
 
   const timer = setTimeout(() => {
@@ -359,5 +359,5 @@ export function runCliStream(opts: {
     activeProcesses.delete(proc);
   });
 
-  return { stream: proc.stdout, process: proc };
+  return { stream: proc.stdout!, process: proc };
 }

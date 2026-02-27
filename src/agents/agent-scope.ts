@@ -270,6 +270,22 @@ export function resolveAgentWorkspaceDir(cfg: OpenClawConfig, agentId: string) {
   return stripNullBytes(path.join(stateDir, `workspace-${id}`));
 }
 
+/**
+ * Resolve workspace dir under a user-scoped state directory.
+ * Falls back to global resolution when `userStateDir` is undefined.
+ */
+export function resolveAgentWorkspaceDirForUser(
+  cfg: OpenClawConfig,
+  agentId: string,
+  userStateDir?: string,
+) {
+  if (!userStateDir) {
+    return resolveAgentWorkspaceDir(cfg, agentId);
+  }
+  const id = normalizeAgentId(agentId);
+  return stripNullBytes(path.join(userStateDir, "workspace", id));
+}
+
 export function resolveAgentDir(cfg: OpenClawConfig, agentId: string) {
   const id = normalizeAgentId(agentId);
   const configured = resolveAgentConfig(cfg, id)?.agentDir?.trim();

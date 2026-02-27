@@ -23,10 +23,15 @@ import {
 // When a follow-up request arrives with more messages than before, we
 // resume the CLI session (--resume <id>) and send only the new content.
 // This enables prompt caching and memory persistence across turns.
+//
+// Multi-user support: each authenticated user gets their own session store.
+// The global (default) store is used when no userId is present.
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const SESSION_PRUNE_INTERVAL_MS = 5 * 60 * 1000; // prune every 5 min
-const SESSION_FILE = join(homedir(), ".openclaw", "claude-code-sessions.json");
+const GLOBAL_SESSION_FILE = join(homedir(), ".openclaw", "claude-code-sessions.json");
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type ConversationSession = {
   cliSessionId: string;
@@ -34,17 +39,37 @@ type ConversationSession = {
   lastUsed: number;
 };
 
-const sessionStore = new Map<string, ConversationSession>();
+/** Per-user session stores. Key "" = global (single-user mode). */
+const userSessionStores = new Map<string, Map<string, ConversationSession>>();
+
+function resolveSessionFilePath(userId?: string): string {
+  if (userId && UUID_RE.test(userId)) {
+    return join(homedir(), ".openclaw", "users", userId, "claude-code-sessions.json");
+  }
+  return GLOBAL_SESSION_FILE;
+}
+
+function getSessionStore(userId?: string): Map<string, ConversationSession> {
+  const storeKey = userId && UUID_RE.test(userId) ? userId : "";
+  let store = userSessionStores.get(storeKey);
+  if (!store) {
+    store = new Map();
+    userSessionStores.set(storeKey, store);
+    // Load persisted sessions for this user
+    loadSessionsForStore(store, resolveSessionFilePath(storeKey || undefined));
+  }
+  return store;
+}
 
 /** Load sessions from disk, discarding any that have expired. */
-function loadSessions(): void {
+function loadSessionsForStore(store: Map<string, ConversationSession>, filePath: string): void {
   try {
-    const raw = readFileSync(SESSION_FILE, "utf-8");
+    const raw = readFileSync(filePath, "utf-8");
     const entries = JSON.parse(raw) as Record<string, ConversationSession>;
     const now = Date.now();
     for (const [key, session] of Object.entries(entries)) {
       if (now - session.lastUsed <= SESSION_TTL_MS) {
-        sessionStore.set(key, session);
+        store.set(key, session);
       }
     }
   } catch {
@@ -52,34 +77,46 @@ function loadSessions(): void {
   }
 }
 
-/** Persist the current session store to disk. */
-function saveSessions(): void {
+/** Persist a session store to disk. */
+function saveSessionStore(store: Map<string, ConversationSession>, filePath: string): void {
   try {
     const obj: Record<string, ConversationSession> = {};
-    for (const [key, session] of sessionStore) {
+    for (const [key, session] of store) {
       obj[key] = session;
     }
-    mkdirSync(join(homedir(), ".openclaw"), { recursive: true });
-    writeFileSync(SESSION_FILE, JSON.stringify(obj, null, 2), "utf-8");
+    mkdirSync(join(filePath, ".."), { recursive: true });
+    writeFileSync(filePath, JSON.stringify(obj, null, 2), "utf-8");
   } catch {
     // Non-fatal — sessions will just be lost on restart
   }
 }
 
-// Load persisted sessions on module init
-loadSessions();
+function saveSessions(userId?: string): void {
+  const storeKey = userId && UUID_RE.test(userId) ? userId : "";
+  const store = userSessionStores.get(storeKey);
+  if (store) {
+    saveSessionStore(store, resolveSessionFilePath(storeKey || undefined));
+  }
+}
+
+// Load global sessions on module init
+getSessionStore();
 
 // Prune expired sessions periodically and persist after pruning
 const sessionPruneTimer = setInterval(() => {
   const now = Date.now();
-  let pruned = false;
-  for (const [key, session] of sessionStore) {
-    if (now - session.lastUsed > SESSION_TTL_MS) {
-      sessionStore.delete(key);
-      pruned = true;
+  for (const [storeKey, store] of userSessionStores) {
+    let pruned = false;
+    for (const [key, session] of store) {
+      if (now - session.lastUsed > SESSION_TTL_MS) {
+        store.delete(key);
+        pruned = true;
+      }
+    }
+    if (pruned) {
+      saveSessionStore(store, resolveSessionFilePath(storeKey || undefined));
     }
   }
-  if (pruned) saveSessions();
 }, SESSION_PRUNE_INTERVAL_MS);
 sessionPruneTimer.unref();
 
@@ -250,6 +287,7 @@ async function handleCompletions(
   res: ServerResponse,
   config: ClaudeCodeProxyConfig,
   logger: Logger,
+  userId?: string,
 ): Promise<void> {
   // Item 8: Content-Type validation
   const contentType = req.headers["content-type"] ?? "";
@@ -300,6 +338,7 @@ async function handleCompletions(
   // Session resumption: if we have a CLI session for this conversation,
   // resume it and send only the new user message. This enables prompt
   // caching (faster follow-ups) and memory persistence across turns.
+  const sessionStore = getSessionStore(userId);
   const convKey = conversationFingerprint(body.messages);
   const existingSession = sessionStore.get(convKey);
   let prompt: string;
@@ -327,7 +366,7 @@ async function handleCompletions(
     if (existingSession) {
       logger.info(`[SESSION] resetting stale session for conv=${convKey}`);
       sessionStore.delete(convKey);
-      saveSessions();
+      saveSessions(userId);
     }
   }
 
@@ -392,7 +431,7 @@ async function handleCompletions(
           messageCount: body.messages.length,
           lastUsed: Date.now(),
         });
-        saveSessions();
+        saveSessions(userId);
         logger.info(`[SESSION] stored session ${cliSessionId} for conv=${convKey}`);
       }
 
@@ -441,7 +480,7 @@ async function handleCompletions(
           messageCount: body.messages.length,
           lastUsed: Date.now(),
         });
-        saveSessions();
+        saveSessions(userId);
       }
 
       logger.info(`[TIMING] +${Date.now() - t0}ms CLI returned (api=${result.duration_api_ms}ms)`);
@@ -563,7 +602,14 @@ export function createProxyServer(
     }
 
     if (req.method === "POST" && path === "/v1/chat/completions") {
-      handleCompletions(req, res, config, logger).catch((err) => {
+      // Extract user ID for per-user session isolation (set by gateway in multi-user mode).
+      const rawUserId =
+        typeof req.headers["x-openclaw-user-id"] === "string"
+          ? req.headers["x-openclaw-user-id"].trim()
+          : undefined;
+      const userId = rawUserId && UUID_RE.test(rawUserId) ? rawUserId : undefined;
+
+      handleCompletions(req, res, config, logger, userId).catch((err) => {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Unhandled error: ${msg}`);
         if (!res.headersSent) {
@@ -654,8 +700,12 @@ type ServerWithRateLimiter = Server & {
 
 export function stopServer(server: Server): Promise<void> {
   killAllActive();
-  saveSessions();
-  sessionStore.clear();
+  // Persist all user session stores before shutdown.
+  for (const [storeKey, store] of userSessionStores) {
+    saveSessionStore(store, resolveSessionFilePath(storeKey || undefined));
+    store.clear();
+  }
+  userSessionStores.clear();
   clearInterval(sessionPruneTimer);
   (server as ServerWithRateLimiter).__rateLimiter?.dispose();
   return new Promise((resolve) => {

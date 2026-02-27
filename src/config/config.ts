@@ -2,11 +2,14 @@ export {
   clearConfigCache,
   createConfigIO,
   loadConfig,
+  loadUserConfig,
   parseConfigJson5,
   readConfigFileSnapshot,
   readConfigFileSnapshotForWrite,
+  readUserConfigOverlay,
   resolveConfigSnapshotHash,
   writeConfigFile,
+  writeUserConfigOverlay,
 } from "./io.js";
 export { migrateLegacyConfig } from "./legacy-migrate.js";
 export * from "./paths.js";
