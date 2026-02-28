@@ -31,6 +31,8 @@ export type ConnectAuthState = {
   sharedAuthProvided: boolean;
   deviceTokenCandidate?: string;
   deviceTokenCandidateSource?: DeviceTokenCandidateSource;
+  /** When true, session-token auth is mandatory and device-token fallback must not override it. */
+  sessionTokenRequired?: boolean;
 };
 
 type VerifyDeviceTokenResult = { ok: boolean };
@@ -97,6 +99,7 @@ export async function resolveConnectAuthState(params: {
         authMethod: "session-token",
         sharedAuthOk: false,
         sharedAuthProvided: false,
+        sessionTokenRequired: true,
       };
     }
     const user = params.validateSessionToken(sessionToken);
@@ -107,6 +110,7 @@ export async function resolveConnectAuthState(params: {
         authMethod: "session-token",
         sharedAuthOk: false,
         sharedAuthProvided: false,
+        sessionTokenRequired: true,
       };
     }
     return {
@@ -207,6 +211,11 @@ export async function resolveConnectAuthDecision(params: {
   let authResult = params.state.authResult;
   let authOk = params.state.authOk;
   let authMethod = params.state.authMethod;
+
+  // In multi-user mode, session-token auth is mandatory — device-token fallback must not bypass it.
+  if (params.state.sessionTokenRequired) {
+    return { authResult, authOk, authMethod };
+  }
 
   const deviceTokenCandidate = params.state.deviceTokenCandidate;
   if (!params.hasDeviceIdentity || !params.deviceId || authOk || !deviceTokenCandidate) {

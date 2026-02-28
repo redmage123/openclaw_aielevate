@@ -281,6 +281,23 @@ export function renderApp(state: AppViewState) {
             <span class="mono">${state.connected ? t("common.ok") : t("common.offline")}</span>
           </div>
           ${renderThemeToggle(state)}
+          ${
+            state.authState === "authenticated" && state.authUser
+              ? html`
+            <div class="user-menu">
+              <span class="user-menu__icon">${icons.userCircle}</span>
+              <span class="user-menu__name">${state.authUser.displayName || state.authUser.username}</span>
+              <button
+                class="user-menu__logout"
+                @click=${() => state.handleAuthLogout()}
+                title="Sign out"
+              >
+                <span class="user-menu__logout-icon">${icons.logOut}</span>
+              </button>
+            </div>
+          `
+              : nothing
+          }
         </div>
       </header>
       <aside class="nav ${state.settings.navCollapsed ? "nav--collapsed" : ""}">

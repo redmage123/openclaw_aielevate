@@ -221,6 +221,20 @@ export const icons = {
   circle: html`
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></svg>
   `,
+  userCircle: html`
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+    </svg>
+  `,
+  logOut: html`
+    <svg viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </svg>
+  `,
   puzzle: html`
     <svg viewBox="0 0 24 24">
       <path

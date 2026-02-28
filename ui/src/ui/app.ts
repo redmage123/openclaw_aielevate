@@ -123,7 +123,7 @@ export class OpenClawApp extends LitElement {
   @state() onboarding = resolveOnboardingMode();
   @state() connected = false;
   @state() authState: "checking" | "unauthenticated" | "authenticated" | "not-required" =
-    "not-required";
+    "checking";
   @state() authUser: import("./app-view-state.ts").AuthUser | null = null;
   @state() authView: "login" | "signup" = "login";
   @state() authError: string | null = null;
