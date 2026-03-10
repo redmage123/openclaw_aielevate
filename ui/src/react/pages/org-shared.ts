@@ -14,12 +14,16 @@ export type OrgDef = {
   label: string;
   description: string;
   gradient: string;
+  /** Workspace root for project discovery (used by Projects tab). */
+  workspaceRoot?: string;
+  /** Subdirectory under workspaceRoot containing project folders. */
+  projectsDir?: string;
 };
 
 export const ORG_DEFS: OrgDef[] = [
-  { id: "techuni", prefix: "techuni-", label: "TechUni AI", description: "Course-creator SaaS platform team", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  { id: "gigforge", prefix: "gigforge-", label: "GigForge", description: "Freelance fulfillment team", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  { id: "ai-elevate", prefix: "*", label: "AI Elevate", description: "Core platform agents and utilities", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  { id: "techuni", prefix: "techuni-", label: "TechUni AI", description: "Course-creator SaaS platform team", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", workspaceRoot: "/home/bbrelin/ai-elevate/techuni" },
+  { id: "gigforge", prefix: "gigforge-", label: "GigForge", description: "Freelance fulfillment team", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", workspaceRoot: "/home/bbrelin/ai-elevate/gigforge", projectsDir: "projects" },
+  { id: "ai-elevate", prefix: "*", label: "AI Elevate", description: "Core platform agents and utilities", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", workspaceRoot: "/home/bbrelin/ai-elevate" },
 ];
 
 export type OrgGroup = OrgDef & { agents: AgentEntry[] };

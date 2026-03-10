@@ -143,11 +143,50 @@ export default function OrgDetailPage() {
 
 type ProjectEntry = {
   name: string;
-  status: "active" | "completed" | "blocked" | "planned";
+  status: string;
   description: string;
-  lastUpdate?: string;
   source: string;
 };
+
+/** Parse a markdown table from AGENTS.md under "## Projects" heading. */
+function parseProjectsTable(content: string): ProjectEntry[] {
+  const lines = content.split("\n");
+  const projects: ProjectEntry[] = [];
+  let inSection = false;
+  let headerParsed = false;
+
+  for (const line of lines) {
+    if (/^##\s+Projects\b/i.test(line)) {
+      inSection = true;
+      headerParsed = false;
+      continue;
+    }
+    if (inSection && /^##\s/.test(line)) break; // next section
+    if (!inSection) continue;
+
+    // Skip table header and separator rows
+    if (!headerParsed) {
+      if (line.includes("|") && (line.includes("---") || line.toLowerCase().includes("project"))) {
+        if (line.includes("---")) headerParsed = true;
+        continue;
+      }
+    }
+
+    // Parse table rows: | name | status | description |
+    const match = line.match(/^\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]*)\s*\|?$/);
+    if (match) {
+      headerParsed = true;
+      const name = match[1].trim();
+      const status = match[2].trim();
+      const desc = match[3]?.trim() ?? "";
+      if (name && name !== "---" && !name.toLowerCase().includes("project")) {
+        projects.push({ name, status, description: desc, source: "AGENTS.md" });
+      }
+    }
+  }
+
+  return projects;
+}
 
 function ProjectsTab({
   orgDef,
@@ -161,77 +200,69 @@ function ProjectsTab({
   connected: boolean;
 }) {
   const [projects, setProjects] = useState<ProjectEntry[]>([]);
-  const [standups, setStandups] = useState<{ date: string; content: string }[]>([]);
+  const [strategyDocs, setStrategyDocs] = useState<{ title: string; excerpt: string; source: string }[]>([]);
+  const [activity, setActivity] = useState<{ date: string; content: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
-  const [expandedStandup, setExpandedStandup] = useState<string | null>(null);
+  const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
     if (!connected || !rpc) return;
     setLoading(true);
     setError(null);
     try {
-      const parsed: ProjectEntry[] = [];
-      const standupEntries: { date: string; content: string }[] = [];
+      const allProjects: ProjectEntry[] = [];
+      const docs: { title: string; excerpt: string; source: string }[] = [];
+      const activityEntries: { date: string; content: string }[] = [];
 
-      // Load workspace files for the first agent (usually the org lead) to find project data
-      for (const agent of orgAgents.slice(0, 3)) {
+      for (const agent of orgAgents) {
         try {
-          const filesRes = await rpc.request<{ files: AgentFileEntry[]; workspace: string }>("agents.files.list", { agentId: agent.id });
-          const ws = filesRes?.workspace ?? "";
+          // Read AGENTS.md to find ## Projects table
+          const agentsFile = await rpc.request<{ file: AgentFileEntry }>("agents.files.get", { agentId: agent.id, name: "AGENTS.md" });
+          if (agentsFile?.file?.content) {
+            const tableProjects = parseProjectsTable(agentsFile.file.content);
+            for (const p of tableProjects) {
+              // Deduplicate by name
+              if (!allProjects.some((e) => e.name === p.name)) {
+                allProjects.push({ ...p, source: agent.name });
+              }
+            }
+          }
+        } catch { /* no AGENTS.md */ }
 
-          // Look for strategic/project files
-          for (const fname of ["STRATEGIC-PLAN.md", "MASTER-STRATEGY-2026-Q1.md", "PRODUCT.md", "ROADMAP.md"]) {
+        // Look for strategy/planning docs (only from first few agents to avoid flooding)
+        if (docs.length < 5) {
+          for (const fname of ["SOUL.md", "TOOLS.md"]) {
             try {
               const fRes = await rpc.request<{ file: AgentFileEntry }>("agents.files.get", { agentId: agent.id, name: fname });
-              if (fRes?.file?.content) {
+              if (fRes?.file?.content && fRes.file.content.length > 100) {
                 const lines = fRes.file.content.split("\n");
                 const title = lines.find((l: string) => l.startsWith("# "))?.replace(/^#\s+/, "") ?? fname;
-                parsed.push({
-                  name: title,
-                  status: "active",
-                  description: lines.slice(0, 5).filter((l: string) => l.trim() && !l.startsWith("#")).join(" ").slice(0, 200),
+                docs.push({
+                  title,
+                  excerpt: lines.slice(0, 8).filter((l: string) => l.trim() && !l.startsWith("#")).join(" ").slice(0, 250),
                   source: `${agent.name} / ${fname}`,
                 });
               }
             } catch { /* file doesn't exist */ }
           }
-        } catch { /* agent files not accessible */ }
-      }
+        }
 
-      // Try to load standup/memory files for schedule context
-      for (const agent of orgAgents.slice(0, 1)) {
-        try {
-          // Read recent standups via the MEMORY.md or similar
-          const memRes = await rpc.request<{ file: AgentFileEntry }>("agents.files.get", { agentId: agent.id, name: "MEMORY.md" });
-          if (memRes?.file?.content) {
-            standupEntries.push({ date: "Latest", content: memRes.file.content.slice(0, 1500) });
-          }
-        } catch { /* no memory file */ }
-      }
-
-      // If no project files found, try reading from the config for workspace paths and infer
-      if (parsed.length === 0) {
-        const configRes = await rpc.request<ConfigSnapshot>("config.get", {});
-        if (configRes?.config) {
-          const cfg = configRes.config as { agents?: { list?: Array<{ id: string; workspace?: string }> } };
-          for (const entry of cfg.agents?.list ?? []) {
-            const isOurs = orgAgents.some((a) => a.id === entry.id);
-            if (isOurs && entry.workspace) {
-              parsed.push({
-                name: entry.id,
-                status: "active",
-                description: `Workspace: ${entry.workspace}`,
-                source: "config",
-              });
+        // Read MEMORY.md for recent activity (first agent only)
+        if (activityEntries.length === 0) {
+          try {
+            const memRes = await rpc.request<{ file: AgentFileEntry }>("agents.files.get", { agentId: agent.id, name: "MEMORY.md" });
+            if (memRes?.file?.content) {
+              activityEntries.push({ date: "Latest Memory", content: memRes.file.content.slice(0, 2000) });
             }
-          }
+          } catch { /* no memory */ }
         }
       }
 
-      setProjects(parsed);
-      setStandups(standupEntries);
+      setProjects(allProjects);
+      setStrategyDocs(docs);
+      setActivity(activityEntries);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -245,9 +276,12 @@ function ProjectsTab({
 
   const statusColors: Record<string, string> = {
     active: "chip--accent",
+    demo: "chip--accent",
     completed: "chip--ok",
+    delivered: "chip--ok",
     blocked: "chip--danger",
     planned: "",
+    proposal: "chip--warn",
   };
 
   return (
@@ -261,52 +295,77 @@ function ProjectsTab({
       </div>
 
       {error && <div className="callout danger">{error}</div>}
-      {loading && <div className="muted" style={{ padding: 16 }}>Scanning workspace for projects...</div>}
+      {loading && <div className="muted" style={{ padding: 16 }}>Scanning workspaces for projects...</div>}
 
-      {!loading && projects.length === 0 && (
+      {!loading && projects.length === 0 && strategyDocs.length === 0 && (
         <div className="muted" style={{ padding: 20 }}>
-          No project files found in agent workspaces. Add STRATEGIC-PLAN.md, ROADMAP.md, or PRODUCT.md to an agent workspace to see them here.
+          No projects found. Add a "## Projects" table to an agent's AGENTS.md to list them here.
         </div>
       )}
 
+      {/* Project list */}
       {projects.length > 0 && (
-        <div className="org-projects-list">
-          {projects.map((p) => (
-            <button
-              key={p.name + p.source}
-              className={`org-project-row ${expandedProject === p.name ? "org-project-row--expanded" : ""}`}
-              onClick={() => setExpandedProject(expandedProject === p.name ? null : p.name)}
-            >
-              <div className="org-project-row__main">
-                <span className={`chip ${statusColors[p.status] ?? ""}`}>{p.status}</span>
-                <span className="org-project-row__name">{p.name}</span>
-                <span className="org-project-row__source muted">{p.source}</span>
+        <>
+          <h4 style={{ margin: "0 0 12px", fontSize: "0.95rem" }}>
+            Projects ({projects.length})
+          </h4>
+          <div className="org-projects-list">
+            {projects.map((p) => (
+              <button
+                key={p.name}
+                className={`org-project-row ${expandedProject === p.name ? "org-project-row--expanded" : ""}`}
+                onClick={() => setExpandedProject(expandedProject === p.name ? null : p.name)}
+              >
+                <div className="org-project-row__main">
+                  <span className={`chip ${statusColors[p.status.toLowerCase()] ?? ""}`}>{p.status}</span>
+                  <span className="org-project-row__name">{p.name}</span>
+                  <span className="org-project-row__source muted">{p.source}</span>
+                </div>
+                {expandedProject === p.name && p.description && (
+                  <div className="org-project-row__desc">{p.description}</div>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Strategy docs */}
+      {strategyDocs.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h4 style={{ margin: "0 0 12px", fontSize: "0.95rem" }}>Agent Docs</h4>
+          <div className="org-projects-list">
+            {strategyDocs.map((d) => (
+              <div key={d.source} className="org-project-row">
+                <div className="org-project-row__main">
+                  <span className="chip">doc</span>
+                  <span className="org-project-row__name">{d.title}</span>
+                  <span className="org-project-row__source muted">{d.source}</span>
+                </div>
+                <div className="org-project-row__desc">{d.excerpt}</div>
               </div>
-              {expandedProject === p.name && p.description && (
-                <div className="org-project-row__desc">{p.description}</div>
-              )}
-              {p.lastUpdate && <div className="org-project-row__date muted">Updated: {p.lastUpdate}</div>}
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
-      {standups.length > 0 && (
+      {/* Recent activity */}
+      {activity.length > 0 && (
         <div style={{ marginTop: 24 }}>
           <h4 style={{ margin: "0 0 12px", fontSize: "0.95rem" }}>Recent Activity</h4>
-          {standups.map((s) => (
-            <div key={s.date} className="org-standup-entry">
+          {activity.map((a) => (
+            <div key={a.date} className="org-standup-entry">
               <button
                 className="org-standup-entry__header"
-                onClick={() => setExpandedStandup(expandedStandup === s.date ? null : s.date)}
+                onClick={() => setExpandedActivity(expandedActivity === a.date ? null : a.date)}
               >
-                <span className="org-standup-entry__date">{s.date}</span>
+                <span className="org-standup-entry__date">{a.date}</span>
                 <span className="muted" style={{ fontSize: "0.75rem" }}>
-                  {expandedStandup === s.date ? "collapse" : "expand"}
+                  {expandedActivity === a.date ? "collapse" : "expand"}
                 </span>
               </button>
-              {expandedStandup === s.date && (
-                <pre className="org-standup-entry__content">{s.content}</pre>
+              {expandedActivity === a.date && (
+                <pre className="org-standup-entry__content">{a.content}</pre>
               )}
             </div>
           ))}
