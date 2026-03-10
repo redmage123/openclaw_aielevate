@@ -57,15 +57,24 @@ type OrgDef = {
 const ORG_DEFS: OrgDef[] = [
   { prefix: "techuni-", label: "TechUni AI", description: "Course-creator SaaS platform team", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
   { prefix: "gigforge-", label: "GigForge", description: "Freelance fulfillment team", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  { prefix: "*", label: "AI Elevate", description: "Core platform agents and utilities", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
 ];
 
 type OrgGroup = OrgDef & { agents: AgentEntry[] };
 
-function groupAgents(agents: AgentEntry[]): { orgs: OrgGroup[]; standalone: AgentEntry[] } {
+function groupAgents(agents: AgentEntry[]): OrgGroup[] {
   const remaining = [...agents];
   const orgs: OrgGroup[] = [];
 
   for (const def of ORG_DEFS) {
+    if (def.prefix === "*") {
+      // Catch-all: everything not matched by a previous prefix
+      if (remaining.length > 0) {
+        orgs.push({ ...def, agents: [...remaining] });
+        remaining.length = 0;
+      }
+      continue;
+    }
     const matched = remaining.filter((a) => a.id.startsWith(def.prefix));
     if (matched.length > 0) {
       orgs.push({ ...def, agents: matched });
@@ -76,7 +85,7 @@ function groupAgents(agents: AgentEntry[]): { orgs: OrgGroup[]; standalone: Agen
     }
   }
 
-  return { orgs, standalone: remaining };
+  return orgs;
 }
 
 export default function OrgPage() {
@@ -107,13 +116,13 @@ export default function OrgPage() {
     return [];
   })();
 
-  const { orgs, standalone } = groupAgents(agents);
+  const orgs = groupAgents(agents);
 
   return (
     <section>
       <PageHeader
         title="Organization"
-        description="Your teams of AI agents. Click a team to see its members, or chat directly with standalone agents."
+        description="Your teams of AI agents. Click a team to see its members."
         actions={
           <button className="btn" onClick={() => load()} disabled={agentsLoading}>
             {Icons.refreshCw({ width: "14px", height: "14px" })}
@@ -177,38 +186,12 @@ export default function OrgPage() {
       )}
 
       {/* Expanded sub-agents for selected org */}
-      {expandedOrg && (
+      {expandedOrg && orgs.find((o) => o.prefix === expandedOrg) && (
         <OrgSubAgents
           org={orgs.find((o) => o.prefix === expandedOrg)!}
           onChat={(id) => navigate(`/org/${id}/chat`)}
           onClose={() => setExpandedOrg(null)}
         />
-      )}
-
-      {/* Standalone agents shown directly */}
-      {standalone.length > 0 && (
-        <div className="org-section">
-          <div className="org-section__header">
-            <div className="org-section__indicator" style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }} />
-            <div>
-              <h2 className="org-section__title">AI Elevate</h2>
-              <p className="org-section__desc">Core platform agents and utilities</p>
-            </div>
-            <span className="org-section__count">
-              {standalone.length} {standalone.length === 1 ? "agent" : "agents"}
-            </span>
-          </div>
-          <div className="org-grid">
-            {standalone.map((agent, i) => (
-              <AgentCard
-                key={agent.id}
-                agent={agent}
-                gradient={AGENT_GRADIENTS[(i + 4) % AGENT_GRADIENTS.length]}
-                onClick={() => navigate(`/org/${agent.id}/chat`)}
-              />
-            ))}
-          </div>
-        </div>
       )}
     </section>
   );
