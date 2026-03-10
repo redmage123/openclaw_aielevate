@@ -334,6 +334,38 @@ function transcriptHasIdempotencyKey(transcriptPath: string, idempotencyKey: str
   }
 }
 
+/**
+ * Check if the last message entry in a transcript file is an assistant message.
+ * Used to detect whether the agent runtime already persisted its response,
+ * avoiding duplicate entries when the gateway also tries to persist.
+ */
+function transcriptTailIsAssistant(transcriptPath: string): boolean {
+  try {
+    const content = fs.readFileSync(transcriptPath, "utf-8");
+    const lines = content.split(/\r?\n/);
+    // Walk backwards to find the last parseable non-header entry
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i].trim();
+      if (!line) {
+        continue;
+      }
+      try {
+        const entry = JSON.parse(line) as Record<string, unknown>;
+        if (entry.type === "session") {
+          continue; // skip header
+        }
+        const role = entry.role ?? (entry.message as Record<string, unknown> | undefined)?.role;
+        return role === "assistant";
+      } catch {
+        continue;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function appendAssistantTranscriptMessage(params: {
   message: string;
   label?: string;
@@ -899,19 +931,37 @@ export const chatHandlers: GatewayRequestHandlers = {
         },
       })
         .then(() => {
-          if (!agentRunStarted) {
-            const combinedReply = finalReplyParts
-              .map((part) => part.trim())
-              .filter(Boolean)
-              .join("\n\n")
-              .trim();
-            let message: Record<string, unknown> | undefined;
-            if (combinedReply) {
-              const { storePath: latestStorePath, entry: latestEntry } = loadSessionEntry(
-                sessionKey,
-                userContext?.userStateDir,
-              );
-              const sessionId = latestEntry?.sessionId ?? entry?.sessionId ?? clientRunId;
+          const combinedReply = finalReplyParts
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .join("\n\n")
+            .trim();
+
+          let message: Record<string, unknown> | undefined;
+          if (combinedReply) {
+            const { storePath: latestStorePath, entry: latestEntry } = loadSessionEntry(
+              sessionKey,
+              userContext?.userStateDir,
+            );
+            const sessionId = latestEntry?.sessionId ?? entry?.sessionId ?? clientRunId;
+
+            // When the agent runtime was used, check if it already persisted the
+            // response.  If the transcript's last entry is already an assistant
+            // message, skip gateway-side persistence to avoid duplicates.
+            let runtimeAlreadyPersisted = false;
+            if (agentRunStarted) {
+              const tPath = resolveTranscriptPath({
+                sessionId,
+                storePath: latestStorePath,
+                sessionFile: latestEntry?.sessionFile,
+                agentId,
+              });
+              if (tPath) {
+                runtimeAlreadyPersisted = transcriptTailIsAssistant(tPath);
+              }
+            }
+
+            if (!runtimeAlreadyPersisted) {
               const appended = appendAssistantTranscriptMessage({
                 message: combinedReply,
                 sessionId,
@@ -931,20 +981,19 @@ export const chatHandlers: GatewayRequestHandlers = {
                   role: "assistant",
                   content: [{ type: "text", text: combinedReply }],
                   timestamp: now,
-                  // Keep this compatible with Pi stopReason enums even though this message isn't
-                  // persisted to the transcript due to the append failure.
                   stopReason: "stop",
                   usage: { input: 0, output: 0, totalTokens: 0 },
                 };
               }
             }
-            broadcastChatFinal({
-              context,
-              runId: clientRunId,
-              sessionKey: rawSessionKey,
-              message,
-            });
           }
+          broadcastChatFinal({
+            context,
+            runId: clientRunId,
+            sessionKey: rawSessionKey,
+            message,
+          });
+
           context.dedupe.set(`chat:${clientRunId}`, {
             ts: Date.now(),
             ok: true,

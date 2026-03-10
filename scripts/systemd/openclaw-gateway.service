@@ -1,0 +1,19 @@
+[Unit]
+Description=OpenClaw Gateway
+After=network.target
+StartLimitIntervalSec=3600
+StartLimitBurst=5
+
+[Service]
+Type=exec
+ExecStart=/home/bbrelin/bin/openclaw gateway run --bind loopback --port 18789 --force
+Restart=on-failure
+RestartSec=5
+Environment=PATH=/home/bbrelin/.nvm/versions/node/v22.20.0/bin:/home/bbrelin/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/bbrelin
+Environment=NODE_ENV=production
+StandardOutput=append:/tmp/openclaw-gateway.log
+StandardError=append:/tmp/openclaw-gateway.log
+
+[Install]
+WantedBy=default.target

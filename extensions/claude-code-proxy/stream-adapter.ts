@@ -75,7 +75,11 @@ export async function pipeStreamToSSE(
   // Track tool activity for progress reporting
   let lastContentAt = Date.now();
   let toolsActive = false;
-  let progressCount = 0;
+  let lastToolProgress = "";
+  let toolCount = 0;
+
+  // CLI readiness — only log the first fully-populated system event
+  let cliReady = false;
 
   // Stale stream detection — destroy if no data arrives for staleTimeoutMs
   let staleTimer = setTimeout(() => cliStream.destroy(), staleTimeoutMs);
@@ -131,12 +135,12 @@ export async function pipeStreamToSSE(
   // been emitted for a while, inject a status line so the user knows
   // the CLI is still working.
   const progressTimer = setInterval(() => {
-    if (!toolsActive) return;
+    if (!toolsActive || !lastToolProgress) return;
     const silenceMs = Date.now() - lastContentAt;
     if (silenceMs >= PROGRESS_INTERVAL_MS) {
-      progressCount++;
-      const dots = ".".repeat((progressCount % 3) + 1);
-      sendContentDelta(`\n*Working${dots}*\n`);
+      const elapsed = Math.floor(silenceMs / 1000);
+      const suffix = toolCount > 1 ? ` · ${toolCount} tools` : "";
+      sendContentDelta(`\n*${lastToolProgress} (${elapsed}s)${suffix}*\n`);
     }
   }, PROGRESS_INTERVAL_MS);
   progressTimer.unref();
@@ -152,15 +156,28 @@ export async function pipeStreamToSSE(
     }
 
     if (event.type === "system") {
-      // Init event — capture session_id early and log metadata
+      // Capture session_id from every system event
       capturedSessionId =
         capturedSessionId || ((event as Record<string, unknown>).session_id as string | undefined);
-      const toolCount = Array.isArray(event.tools) ? event.tools.length : 0;
+
+      const sysToolCount = Array.isArray(event.tools) ? event.tools.length : 0;
       const mcpCount = Array.isArray(event.mcp_servers) ? event.mcp_servers.length : 0;
       const version = (event.claude_code_version as string) || "unknown";
-      console.log(
-        `[claude-code-proxy] CLI init: v${version} tools=${toolCount} mcp=${mcpCount} model=${event.model ?? "?"}`,
-      );
+      const isReady = version !== "unknown" && sysToolCount > 0;
+
+      if (!cliReady && isReady) {
+        // First fully-populated system event — log it
+        cliReady = true;
+        console.error(
+          `[claude-code-proxy] CLI init: v${version} tools=${sysToolCount} mcp=${mcpCount} model=${event.model ?? "?"}`,
+        );
+      } else if (cliReady && !isReady) {
+        // Post-ready empty system event — warn
+        console.error(
+          `[claude-code-proxy] unexpected system event after init: v${version} tools=${sysToolCount}`,
+        );
+      }
+      // Pre-ready empty events are expected during startup — skip silently
     } else if (event.type === "assistant") {
       const message = event.message as
         | {
@@ -174,7 +191,6 @@ export async function pipeStreamToSSE(
           // Real text content from the model
           lastContentAt = Date.now();
           toolsActive = false;
-          progressCount = 0;
 
           if (hasTools) {
             toolBuffer.push(part.text);
@@ -184,8 +200,10 @@ export async function pipeStreamToSSE(
           // The CLI is about to execute a tool — inject a progress line
           // so the user can see what's happening during long tool loops.
           toolsActive = true;
+          toolCount++;
           const progress = formatToolProgress(part);
-          console.log(`[claude-code-proxy] tool: ${progress}`);
+          lastToolProgress = progress;
+          console.error(`[claude-code-proxy] tool: ${progress}`);
           sendContentDelta(`\n*${progress}*\n`);
           lastContentAt = Date.now();
         } else if (part.type === "tool_result") {

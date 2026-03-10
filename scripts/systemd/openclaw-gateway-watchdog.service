@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenClaw Gateway Health Watchdog
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/bbrelin/openclaw/scripts/gateway-watchdog.sh
+Environment=PATH=/home/bbrelin/.nvm/versions/node/v22.20.0/bin:/home/bbrelin/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/bbrelin
+
+[Install]
+WantedBy=default.target

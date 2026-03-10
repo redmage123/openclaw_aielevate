@@ -25,7 +25,7 @@ export function renderLogin(props: LoginProps) {
   return html`
     <div class="auth-page">
       <div class="auth-card">
-        <h1 class="auth-title">Sign in to OpenClaw</h1>
+        <h1 class="auth-title">Sign in to AI Elevate</h1>
         ${error ? html`<div class="auth-error">${error}</div>` : nothing}
         <form class="auth-form" @submit=${handleSubmit}>
           <label class="auth-label">

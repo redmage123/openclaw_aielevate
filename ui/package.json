@@ -12,12 +12,19 @@
     "@lit-labs/signals": "^0.2.0",
     "@lit/context": "^1.1.6",
     "@noble/ed25519": "3.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
     "dompurify": "^3.3.1",
     "lit": "^3.3.2",
     "marked": "^17.0.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
     "signal-polyfill": "^0.2.2",
     "signal-utils": "^0.21.1",
-    "vite": "7.3.1"
+    "vite": "7.3.1",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "4.0.18",

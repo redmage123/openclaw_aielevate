@@ -218,11 +218,11 @@ export async function runCli(opts: {
       (fn as (v: ClaudeCliJsonResult | Error) => void)(value);
     };
 
-    console.log(`[claude-code-proxy] [TIMING] spawning CLI: ${binary} ${args.join(" ")}`);
+    console.error(`[claude-code-proxy] [TIMING] spawning CLI: ${binary} ${args.join(" ")}`);
     const spawnT0 = Date.now();
     const proc = spawnIsolated(binary, args, cleanEnv());
     activeProcesses.add(proc);
-    console.log(
+    console.error(
       `[claude-code-proxy] [TIMING] spawn returned pid=${proc.pid} +${Date.now() - spawnT0}ms`,
     );
 
@@ -313,11 +313,11 @@ export function runCliStream(opts: {
     extraFlags: ["--verbose"],
   });
 
-  console.log(`[claude-code-proxy] [TIMING] stream spawning CLI: ${binary}`);
+  console.error(`[claude-code-proxy] [TIMING] stream spawning CLI: ${binary}`);
   const spawnT0 = Date.now();
   const proc = spawnIsolated(binary, args, cleanEnv());
   activeProcesses.add(proc);
-  console.log(
+  console.error(
     `[claude-code-proxy] [TIMING] stream spawn returned pid=${proc.pid} +${Date.now() - spawnT0}ms`,
   );
 
@@ -330,7 +330,7 @@ export function runCliStream(opts: {
   // Write prompt to stdin and close
   proc.stdin!.write(prompt);
   proc.stdin!.end();
-  console.log(`[claude-code-proxy] [TIMING] stdin written +${Date.now() - spawnT0}ms`);
+  console.error(`[claude-code-proxy] [TIMING] stdin written +${Date.now() - spawnT0}ms`);
 
   const timer = setTimeout(() => {
     killWithEscalation(proc);
@@ -342,7 +342,7 @@ export function runCliStream(opts: {
   signal?.addEventListener("abort", onAbort, { once: true });
 
   proc.on("close", (code) => {
-    console.log(
+    console.error(
       `[claude-code-proxy] [TIMING] stream CLI closed code=${code} +${Date.now() - spawnT0}ms`,
     );
     clearTimeout(timer);
