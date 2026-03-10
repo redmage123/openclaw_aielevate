@@ -146,9 +146,67 @@ type ProjectEntry = {
   status: string;
   description: string;
   source: string;
+  detail?: ProjectDetail;
 };
 
-/** Parse a markdown table from AGENTS.md under "## Projects" heading. */
+type ProjectDetail = {
+  stack?: string;
+  port?: string;
+  link?: string;
+  tests?: string;
+  docker?: string;
+  deps?: string;
+  arch?: string;
+  about?: string;
+  features?: string[];
+};
+
+/** Parse `### project-name` detail blocks under ## Projects. */
+function parseProjectDetails(content: string): Record<string, ProjectDetail> {
+  const details: Record<string, ProjectDetail> = {};
+  const lines = content.split("\n");
+  let inSection = false;
+  let currentProject: string | null = null;
+  let currentDetail: ProjectDetail = {};
+
+  for (const line of lines) {
+    if (/^##\s+Projects\b/i.test(line)) { inSection = true; continue; }
+    if (inSection && /^##\s[^#]/.test(line)) break; // next h2 section
+    if (!inSection) continue;
+
+    // h3 = project detail block
+    const h3 = line.match(/^###\s+(.+)/);
+    if (h3) {
+      if (currentProject) details[currentProject] = currentDetail;
+      currentProject = h3[1].trim();
+      currentDetail = {};
+      continue;
+    }
+    if (!currentProject) continue;
+
+    // Parse "- **Key**: Value" lines
+    const kvMatch = line.match(/^-\s+\*\*(.+?)\*\*:\s*(.+)/);
+    if (kvMatch) {
+      const key = kvMatch[1].toLowerCase();
+      const val = kvMatch[2].trim();
+      if (key === "stack") currentDetail.stack = val;
+      else if (key === "port") currentDetail.port = val;
+      else if (key === "link") currentDetail.link = val;
+      else if (key === "tests") currentDetail.tests = val;
+      else if (key === "docker") currentDetail.docker = val;
+      else if (key === "deps") currentDetail.deps = val;
+      else if (key === "arch") currentDetail.arch = val;
+      else if (key === "about") currentDetail.about = val;
+      else if (key === "features") {
+        currentDetail.features = val.split(/,\s*/);
+      }
+    }
+  }
+  if (currentProject) details[currentProject] = currentDetail;
+  return details;
+}
+
+/** Parse markdown table + detail blocks from AGENTS.md under "## Projects". */
 function parseProjectsTable(content: string): ProjectEntry[] {
   const lines = content.split("\n");
   const projects: ProjectEntry[] = [];
@@ -161,10 +219,9 @@ function parseProjectsTable(content: string): ProjectEntry[] {
       headerParsed = false;
       continue;
     }
-    if (inSection && /^##\s/.test(line)) break; // next section
+    if (inSection && /^##\s[^#]/.test(line)) break; // next h2 section
     if (!inSection) continue;
 
-    // Skip table header and separator rows
     if (!headerParsed) {
       if (line.includes("|") && (line.includes("---") || line.toLowerCase().includes("project"))) {
         if (line.includes("---")) headerParsed = true;
@@ -172,7 +229,6 @@ function parseProjectsTable(content: string): ProjectEntry[] {
       }
     }
 
-    // Parse table rows: | name | status | description |
     const match = line.match(/^\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]*)\s*\|?$/);
     if (match) {
       headerParsed = true;
@@ -183,6 +239,12 @@ function parseProjectsTable(content: string): ProjectEntry[] {
         projects.push({ name, status, description: desc, source: "AGENTS.md" });
       }
     }
+  }
+
+  // Merge detail blocks
+  const details = parseProjectDetails(content);
+  for (const p of projects) {
+    if (details[p.name]) p.detail = details[p.name];
   }
 
   return projects;
@@ -310,22 +372,103 @@ function ProjectsTab({
             Projects ({projects.length})
           </h4>
           <div className="org-projects-list">
-            {projects.map((p) => (
-              <button
-                key={p.name}
-                className={`org-project-row ${expandedProject === p.name ? "org-project-row--expanded" : ""}`}
-                onClick={() => setExpandedProject(expandedProject === p.name ? null : p.name)}
-              >
-                <div className="org-project-row__main">
-                  <span className={`chip ${statusColors[p.status.toLowerCase()] ?? ""}`}>{p.status}</span>
-                  <span className="org-project-row__name">{p.name}</span>
-                  <span className="org-project-row__source muted">{p.source}</span>
+            {projects.map((p) => {
+              const d = p.detail;
+              const isOpen = expandedProject === p.name;
+              return (
+                <div key={p.name} className={`org-project-card ${isOpen ? "org-project-card--open" : ""}`}>
+                  <button
+                    className="org-project-card__header"
+                    onClick={() => setExpandedProject(isOpen ? null : p.name)}
+                  >
+                    <span className={`chip ${statusColors[p.status.toLowerCase()] ?? ""}`}>{p.status}</span>
+                    <span className="org-project-card__name">{p.name}</span>
+                    {d?.port && <span className="chip mono">:{d.port}</span>}
+                    {d?.tests && <span className="chip chip--ok">{d.tests}</span>}
+                    <span className="org-project-card__chevron">{isOpen ? "▾" : "▸"}</span>
+                  </button>
+
+                  {!isOpen && <div className="org-project-card__summary">{p.description}</div>}
+
+                  {isOpen && (
+                    <div className="org-project-card__detail">
+                      {/* Action buttons bar */}
+                      <div className="org-project-card__actions">
+                        {d?.link && (
+                          <a href={d.link} target="_blank" rel="noopener noreferrer" className="btn btn--sm btn--launch">
+                            {Icons.zap({ width: "13px", height: "13px" })}
+                            <span>Launch Demo</span>
+                          </a>
+                        )}
+                        {d?.arch && (
+                          <a href={d.arch} target="_blank" rel="noopener noreferrer" className="btn btn--sm btn--doc"
+                             title="Architecture Diagram + Spec + Runbook (PDF)"
+                          >
+                            {Icons.fileText({ width: "13px", height: "13px" })}
+                            <span>Architecture PDF</span>
+                          </a>
+                        )}
+                      </div>
+
+                      {d?.about && <p className="org-project-card__about">{d.about}</p>}
+                      {!d?.about && p.description && <p className="org-project-card__about">{p.description}</p>}
+
+                      <div className="org-project-card__meta">
+                        {d?.stack && (
+                          <div className="org-project-card__meta-row">
+                            <span className="org-project-card__meta-label">Stack</span>
+                            <span className="org-project-card__meta-value">
+                              {d.stack.split(/,\s*/).map((t) => (
+                                <span key={t} className="chip chip--tech">{t.trim()}</span>
+                              ))}
+                            </span>
+                          </div>
+                        )}
+                        {d?.port && (
+                          <div className="org-project-card__meta-row">
+                            <span className="org-project-card__meta-label">Port</span>
+                            <span className="org-project-card__meta-value mono">{d.port}</span>
+                          </div>
+                        )}
+                        {d?.tests && (
+                          <div className="org-project-card__meta-row">
+                            <span className="org-project-card__meta-label">Tests</span>
+                            <span className="org-project-card__meta-value">{d.tests}</span>
+                          </div>
+                        )}
+                        {d?.docker && (
+                          <div className="org-project-card__meta-row">
+                            <span className="org-project-card__meta-label">Docker</span>
+                            <span className="org-project-card__meta-value">{d.docker}</span>
+                          </div>
+                        )}
+                        {d?.deps && (
+                          <div className="org-project-card__meta-row">
+                            <span className="org-project-card__meta-label">Deps</span>
+                            <span className="org-project-card__meta-value">
+                              {d.deps.split(/,\s*/).map((dep) => (
+                                <span key={dep} className="chip chip--dep mono">{dep.trim()}</span>
+                              ))}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {d?.features && d.features.length > 0 && (
+                        <div className="org-project-card__features">
+                          <span className="org-project-card__meta-label">Features</span>
+                          <ul className="org-project-card__feature-list">
+                            {d.features.map((f, i) => (
+                              <li key={i}>{f.trim()}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {expandedProject === p.name && p.description && (
-                  <div className="org-project-row__desc">{p.description}</div>
-                )}
-              </button>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
@@ -336,13 +479,13 @@ function ProjectsTab({
           <h4 style={{ margin: "0 0 12px", fontSize: "0.95rem" }}>Agent Docs</h4>
           <div className="org-projects-list">
             {strategyDocs.map((d) => (
-              <div key={d.source} className="org-project-row">
-                <div className="org-project-row__main">
+              <div key={d.source} className="org-project-card">
+                <div className="org-project-card__header" style={{ cursor: "default" }}>
                   <span className="chip">doc</span>
-                  <span className="org-project-row__name">{d.title}</span>
-                  <span className="org-project-row__source muted">{d.source}</span>
+                  <span className="org-project-card__name">{d.title}</span>
+                  <span style={{ fontSize: "0.75rem" }} className="muted">{d.source}</span>
                 </div>
-                <div className="org-project-row__desc">{d.excerpt}</div>
+                <div className="org-project-card__summary">{d.excerpt}</div>
               </div>
             ))}
           </div>

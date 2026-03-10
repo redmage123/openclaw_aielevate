@@ -49,10 +49,20 @@ export function initials(name: string): string {
 
 export function inferRole(agent: AgentEntry): string {
   const id = agent.id.toLowerCase();
-  if (id.includes("market")) return "Marketing";
+  if (id.includes("scout")) return "Business Development";
   if (id.includes("sales") || id.includes("intake")) return "Sales";
-  if (id.includes("support")) return "Support";
+  if (id.includes("advocate")) return "Quality Assurance";
+  if (id.includes("qa")) return "Quality Assurance";
+  if (id.includes("pm") || id.includes("project")) return "Project Management";
+  if (id.includes("dev-frontend")) return "Frontend Engineering";
+  if (id.includes("dev-backend")) return "Backend Engineering";
+  if (id.includes("dev-ai")) return "AI/ML Engineering";
+  if (id.includes("devops")) return "DevOps";
   if (id.includes("engineer") || id.includes("dev") || id.includes("cto")) return "Engineering";
+  if (id.includes("social")) return "Social Media Marketing";
+  if (id.includes("creative")) return "Creative";
+  if (id.includes("market")) return "Marketing";
+  if (id.includes("support")) return "Support";
   if (id.includes("finance") || id.includes("cfo")) return "Finance";
   if (id.includes("ops")) return "Operations";
   if (id.includes("ceo") || id.includes("exec")) return "Executive";
@@ -73,7 +83,7 @@ export function groupAgents(agents: AgentEntry[]): OrgGroup[] {
       }
       continue;
     }
-    const matched = remaining.filter((a) => a.id.startsWith(def.prefix));
+    const matched = remaining.filter((a) => a.id.startsWith(def.prefix) || a.id === def.id);
     if (matched.length > 0) {
       orgs.push({ ...def, agents: matched });
       for (const m of matched) {
@@ -107,7 +117,7 @@ export function findOrgById(orgId: string): OrgDef | undefined {
 export function findOrgForAgent(agentId: string): OrgDef | undefined {
   for (const def of ORG_DEFS) {
     if (def.prefix === "*") continue;
-    if (agentId.startsWith(def.prefix)) return def;
+    if (agentId.startsWith(def.prefix) || agentId === def.id) return def;
   }
   return ORG_DEFS.find((d) => d.prefix === "*");
 }
