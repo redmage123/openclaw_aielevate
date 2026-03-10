@@ -5,6 +5,7 @@ import { useAgentsStore } from "../stores/agents.ts";
 import { toSanitizedMarkdownHtml } from "../../ui/markdown.ts";
 import { Icons } from "../icons.tsx";
 import type { GatewayBrowserClient } from "../../ui/gateway.ts";
+import { type AgentEntry, AGENT_GRADIENTS, initials, parseAgentsList, findOrgForAgent } from "./org-shared.ts";
 
 type Message = {
   id: string;
@@ -12,33 +13,6 @@ type Message = {
   content: string;
   timestamp: number;
 };
-
-type AgentEntry = {
-  id: string;
-  name: string;
-  workspace?: string;
-  model?: string;
-  isDefault?: boolean;
-};
-
-const AGENT_GRADIENTS = [
-  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-  "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-  "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-  "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-  "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-  "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
-  "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)",
-  "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
-];
-
-function initials(name: string): string {
-  return (name || "?")
-    .split(/[\s-_]+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 function extractTextContent(content: unknown): string {
   if (typeof content === "string") return content;
@@ -70,13 +44,7 @@ export default function OrgChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const agents: AgentEntry[] = (() => {
-    if (!agentsList) return [];
-    const result = agentsList as { agents?: AgentEntry[] };
-    if (Array.isArray(result.agents)) return result.agents.map((a) => ({ ...a, name: a.name || a.id }));
-    if (Array.isArray(agentsList)) return agentsList as AgentEntry[];
-    return [];
-  })();
+  const agents = parseAgentsList(agentsList);
   const agent = agents.find((a) => a.id === agentId);
   const agentIndex = agents.findIndex((a) => a.id === agentId);
   const gradient = AGENT_GRADIENTS[(agentIndex >= 0 ? agentIndex : 0) % AGENT_GRADIENTS.length];
@@ -196,7 +164,10 @@ export default function OrgChatPage() {
     <div className="org-chat">
       {/* Header */}
       <div className="org-chat__header">
-        <button className="btn btn--icon" onClick={() => navigate("/org")} title="Back to organization">
+        <button className="btn btn--icon" onClick={() => {
+              const orgDef = findOrgForAgent(agentId ?? "");
+              navigate(orgDef ? `/org/${orgDef.id}` : "/org");
+            }} title="Back to organization">
           {Icons.chevronLeft({ width: "18px", height: "18px" })}
         </button>
         <div className="org-chat__header-avatar" style={{ background: gradient }}>

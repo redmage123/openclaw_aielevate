@@ -23,6 +23,7 @@ const ConfigPage = lazy(() => import("./pages/ConfigPage.tsx"));
 const DebugPage = lazy(() => import("./pages/DebugPage.tsx"));
 const LogsPage = lazy(() => import("./pages/LogsPage.tsx"));
 const OrgPage = lazy(() => import("./pages/OrgPage.tsx"));
+const OrgDetailPage = lazy(() => import("./pages/OrgDetailPage.tsx"));
 const OrgChatPage = lazy(() => import("./pages/OrgChatPage.tsx"));
 const LoginPage = lazy(() => import("./pages/LoginPage.tsx"));
 const SignupPage = lazy(() => import("./pages/SignupPage.tsx"));
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="debug" element={<Suspense fallback={<PageSpinner />}><DebugPage /></Suspense>} />
             <Route path="logs" element={<Suspense fallback={<PageSpinner />}><LogsPage /></Suspense>} />
             <Route path="org" element={<Suspense fallback={<PageSpinner />}><OrgPage /></Suspense>} />
+            <Route path="org/:orgId" element={<Suspense fallback={<PageSpinner />}><OrgDetailPage /></Suspense>} />
             <Route path="org/:agentId/chat" element={<Suspense fallback={<PageSpinner />}><OrgChatPage /></Suspense>} />
             <Route path="*" element={<Navigate to="/chat" replace />} />
           </Route>
