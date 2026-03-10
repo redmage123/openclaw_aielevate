@@ -33,7 +33,7 @@ const AGENT_GRADIENTS = [
 ];
 
 function initials(name: string): string {
-  return name
+  return (name || "?")
     .split(/[\s-_]+/)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
@@ -73,7 +73,7 @@ export default function OrgChatPage() {
   const agents: AgentEntry[] = (() => {
     if (!agentsList) return [];
     const result = agentsList as { agents?: AgentEntry[] };
-    if (Array.isArray(result.agents)) return result.agents;
+    if (Array.isArray(result.agents)) return result.agents.map((a) => ({ ...a, name: a.name || a.id }));
     if (Array.isArray(agentsList)) return agentsList as AgentEntry[];
     return [];
   })();
