@@ -70,7 +70,13 @@ export default function OrgChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const agents: AgentEntry[] = Array.isArray(agentsList) ? (agentsList as AgentEntry[]) : [];
+  const agents: AgentEntry[] = (() => {
+    if (!agentsList) return [];
+    const result = agentsList as { agents?: AgentEntry[] };
+    if (Array.isArray(result.agents)) return result.agents;
+    if (Array.isArray(agentsList)) return agentsList as AgentEntry[];
+    return [];
+  })();
   const agent = agents.find((a) => a.id === agentId);
   const agentIndex = agents.findIndex((a) => a.id === agentId);
   const gradient = AGENT_GRADIENTS[(agentIndex >= 0 ? agentIndex : 0) % AGENT_GRADIENTS.length];

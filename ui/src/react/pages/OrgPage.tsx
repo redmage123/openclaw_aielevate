@@ -92,9 +92,19 @@ export default function OrgPage() {
     if (connected) load();
   }, [connected, load]);
 
-  const agents: AgentEntry[] = Array.isArray(agentsList)
-    ? (agentsList as AgentEntry[])
-    : [];
+  const agents: AgentEntry[] = (() => {
+    if (!agentsList) return [];
+    // agentsList is AgentsListResult { agents: [...], defaultId }
+    const result = agentsList as { agents?: AgentEntry[]; defaultId?: string };
+    if (Array.isArray(result.agents)) {
+      return result.agents.map((a) => ({
+        ...a,
+        isDefault: a.id === result.defaultId,
+      }));
+    }
+    if (Array.isArray(agentsList)) return agentsList as AgentEntry[];
+    return [];
+  })();
 
   const { orgs, standalone } = groupAgents(agents);
 
