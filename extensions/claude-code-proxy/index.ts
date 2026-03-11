@@ -1,4 +1,8 @@
+import { writeFileSync, mkdirSync } from "node:fs";
 import type { Server } from "node:http";
+import { homedir } from "node:os";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   emptyPluginConfigSchema,
   type OpenClawPluginApi,
@@ -72,6 +76,39 @@ function resolveConfig(
     appendSystemPrompt: (pluginConfig?.appendSystemPrompt as string) || undefined,
     maxBudgetUsd: (pluginConfig?.maxBudgetUsd as number) || undefined,
   };
+}
+
+/**
+ * Generate an MCP config file for the OpenClaw bridge server.
+ * This allows Claude Code sessions to access OpenClaw's multi-agent tools
+ * (sessions_send, sessions_spawn, agents_list) via MCP.
+ */
+function generateMcpBridgeConfig(authToken: string | undefined): string | undefined {
+  const pluginDir = dirname(fileURLToPath(import.meta.url));
+  const bridgeScript = join(pluginDir, "mcp-bridge.ts");
+  const configPath = join(homedir(), ".openclaw", "mcp-bridge-config.json");
+
+  try {
+    const config = {
+      mcpServers: {
+        "openclaw-bridge": {
+          command: "npx",
+          args: ["tsx", bridgeScript],
+          env: {
+            OPENCLAW_GATEWAY_URL: "http://127.0.0.1:18789",
+            ...(authToken ? { OPENCLAW_GATEWAY_TOKEN: authToken } : {}),
+            // OPENCLAW_AGENT_ID will be set by the caller if needed
+          },
+        },
+      },
+    };
+
+    mkdirSync(dirname(configPath), { recursive: true });
+    writeFileSync(configPath, JSON.stringify(config, null, 2));
+    return configPath;
+  } catch {
+    return undefined;
+  }
 }
 
 const claudeCodeProxyPlugin = {
@@ -169,6 +206,18 @@ const claudeCodeProxyPlugin = {
       id: PROVIDER_ID,
       async start(ctx) {
         const svcConfig = resolveConfig(api.pluginConfig, api.config.gateway);
+
+        // Generate MCP bridge config for multi-agent tool access
+        const mcpBridgePath = generateMcpBridgeConfig(svcConfig.authToken);
+        if (mcpBridgePath) {
+          // Inject the bridge MCP config so Claude Code sessions get multi-agent tools
+          if (!svcConfig.mcpConfig) svcConfig.mcpConfig = [];
+          if (!svcConfig.mcpConfig.includes(mcpBridgePath)) {
+            svcConfig.mcpConfig.push(mcpBridgePath);
+          }
+          ctx.logger.info(`claude-code-proxy: MCP bridge config at ${mcpBridgePath}`);
+        }
+
         try {
           server = await startServer(svcConfig, ctx.logger);
         } catch (err) {
