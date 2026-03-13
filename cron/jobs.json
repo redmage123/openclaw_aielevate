@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "techuni-standup-001",
+      "name": "techuni-daily-standup",
+      "description": "TechUni AI daily stand-up — collect department status, log summary",
+      "enabled": true,
+      "createdAtMs": 1740700000000,
+      "updatedAtMs": 1773385500077,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * *",
+        "tz": "Europe/Berlin"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "TechUni Daily Stand-Up: You are CEO of TechUni AI. Read /home/bbrelin/company/workflows/daily-standup.md for the procedure. Today: collect dept status via sessions_send, compile CEO summary, save to /home/bbrelin/company/memory/standup-[DATE].md. Alert Braun via Telegram only for P0 incidents or critical blockers.",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773471600000,
+        "lastRunAtMs": 1773385200008,
+        "lastRunStatus": "error",
+        "lastStatus": "error",
+        "lastDurationMs": 300069,
+        "lastDeliveryStatus": "not-requested",
+        "consecutiveErrors": 2,
+        "lastError": "cron: job execution timed out"
+      },
+      "delivery": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "techuni-weekly-report-001",
+      "name": "techuni-weekly-report",
+      "description": "TechUni AI weekly executive report to Braun — every Friday 16:00 Berlin",
+      "enabled": true,
+      "createdAtMs": 1740700000000,
+      "updatedAtMs": 1773414041824,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 16 * * 5",
+        "tz": "Europe/Berlin"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "TechUni Weekly Report: You are CEO of TechUni AI. Read /home/bbrelin/company/workflows/weekly-report.md. Compile this week's executive report from stand-up logs in /home/bbrelin/company/memory/, request summaries from departments via sessions_send, pull revenue data from course-creator DB, save to /home/bbrelin/company/memory/weekly-[DATE].md, then send formatted report to Braun via Telegram.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "nextRunAtMs": 1774018800000,
+        "lastRunAtMs": 1773414000008,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 41816,
+        "lastDelivered": false,
+        "lastDeliveryStatus": "not-delivered",
+        "consecutiveErrors": 0
+      },
+      "delivery": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "techuni-content-001",
+      "name": "techuni-content-pipeline",
+      "description": "TechUni AI weekly content pipeline — every Monday 09:00 Berlin",
+      "enabled": true,
+      "createdAtMs": 1740700000000,
+      "updatedAtMs": 1773043422319,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 1",
+        "tz": "Europe/Berlin"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "TechUni Content Pipeline: You are CMO of TechUni AI. Read /home/bbrelin/company/workflows/content-pipeline.md and /home/bbrelin/company/agents/Marketing/SOUL.md. Research 5 trending AI/L&D topics via web_search, validate keyword opportunities, create this week's content calendar, and save it to /home/bbrelin/company/memory/content-calendar-[YYYY-WW].md. Draft the Monday LinkedIn post.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "nextRunAtMs": 1773648000000,
+        "lastRunAtMs": 1773043200007,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 222312,
+        "lastDelivered": false,
+        "lastDeliveryStatus": "not-delivered",
+        "consecutiveErrors": 0
+      },
+      "delivery": {
+        "mode": "none"
+      }
+    }
+  ]
+}
