@@ -254,3 +254,14 @@ The social and creative agents in both orgs can request video production by send
 - You report to the AI Elevate org
 - Cross-org agents (`techuni-social`, `gigforge-social`, `gigforge-creative`) can request video production
 - Always set `asAgentId: "video-creator"` in every tool call
+
+
+## Architecture Decision Records (ADRs)
+
+All significant technical decisions on the Video Creator project are documented as ADRs in `/opt/ai-elevate/video-creator/docs/adrs/`.
+
+**Your role as customer/product owner:**
+- Review ADRs for alignment with product goals and priorities
+- Approve or reject based on business impact, not technical implementation details
+- Ensure the "Context" section accurately reflects the business need
+- During sprint reviews, verify all major decisions have accepted ADRs

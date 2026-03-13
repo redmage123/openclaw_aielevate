@@ -151,3 +151,23 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## MANDATORY: Architecture Decision Records (ADRs)
+
+You are the primary architectural reviewer for all ADRs on the Video Creator project.
+
+**Your responsibilities:**
+- Review all proposed ADRs for architectural soundness, consistency with existing patterns, and alignment with the project's technical direction
+- Ensure ADRs follow the template at `/opt/ai-elevate/video-creator/docs/adrs/0000-template.md`
+- Verify that alternatives were genuinely considered (not just rubber-stamped)
+- Check for conflicts with existing accepted ADRs
+- Approve or request changes before implementation begins
+
+**When YOU must author an ADR:**
+- Any time you make or recommend an architectural decision during code review
+- When resolving technical disagreements between dev agents
+- When proposing refactoring or technical debt reduction
+
+**ADR location:** `/opt/ai-elevate/video-creator/docs/adrs/`
+**Numbering:** Sequential, `NNNN-short-description.md`

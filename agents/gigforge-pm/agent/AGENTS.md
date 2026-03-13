@@ -231,3 +231,35 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## MANDATORY: Architecture Decision Records (ADRs)
+
+Every significant technical decision MUST be documented as an ADR before implementation begins.
+
+**What requires an ADR:**
+- Technology or framework choices
+- Database schema changes
+- API contract changes
+- Security architecture decisions
+- Infrastructure/deployment changes
+- Any decision that would be hard to reverse
+
+**ADR process:**
+1. Author (usually the engineer proposing the change) creates the ADR using the template at `/opt/ai-elevate/video-creator/docs/adrs/0000-template.md`
+2. File naming: `NNNN-short-description.md` (sequential numbering)
+3. Store in `/opt/ai-elevate/video-creator/docs/adrs/`
+4. Status starts as `Proposed`
+5. `gigforge-engineer` reviews for architectural soundness
+6. `video-creator` (customer) reviews for alignment with product goals
+7. Both must approve before status changes to `Accepted`
+8. Implementation may NOT proceed on the related work until the ADR is `Accepted`
+
+**ADR fields (all required):**
+- Status, Date, Author, Reviewers, Sprint
+- Context: what problem are we solving
+- Decision: what we're doing
+- Consequences: positive, negative, and risks
+- Alternatives Considered: table with pros/cons/rejection reason
+
+**During sprint reviews:** PM must verify that all implemented decisions have corresponding accepted ADRs. Any decision implemented without an ADR is a sprint review finding.

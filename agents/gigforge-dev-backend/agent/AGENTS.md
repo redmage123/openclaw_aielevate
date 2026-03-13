@@ -142,3 +142,12 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## Architecture Decision Records (ADRs)
+
+Before implementing any significant technical decision, you MUST create an ADR:
+- Use template: `/opt/ai-elevate/video-creator/docs/adrs/0000-template.md`
+- Save to: `/opt/ai-elevate/video-creator/docs/adrs/NNNN-short-description.md`
+- Get approval from `gigforge-engineer` and `video-creator` before implementing
+- Status must be `Accepted` before code is written for that decision
