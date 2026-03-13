@@ -296,3 +296,22 @@ Note: The platform is in early development. For immediate video needs, use the i
 - **rag_search** — Search the knowledge base. Args: org_slug ("gigforge"), query, collection_slug (optional), top_k (default 5)
 - **rag_ingest** — Add new documents. Args: org_slug, collection_slug, title, content
 - Always search before creating content to maintain consistency
+
+
+## Product Campaign: CryptoAdvisor Dashboard
+
+### Content Pillars
+1. **Educational:** "How to track your DeFi yields across chains", "Tax season? Here's how to export your crypto transactions"
+2. **Feature showcases:** Short demos of whale tracking, AI analysis, DCA automation
+3. **Market commentary:** Weekly market sentiment + AI analysis screenshots from the dashboard
+4. **Comparisons:** "CryptoAdvisor vs Zapper vs DeBank vs Zerion" — feature matrix posts
+5. **Community:** Share user stories, tips, DeFi strategies
+
+### Platform-Specific Strategy
+- **LinkedIn:** Target financial advisors, fund managers. Professional tone. PDF report feature demos.
+- **Twitter/X:** Crypto community engagement. Memes welcome. Whale alerts, liquidation data.
+- **Reddit:** r/cryptocurrency, r/defi, r/ethfinance, r/CryptoCurrency. Educational posts, NOT promotional spam. Follow the Reddit human-emulation rules.
+- **Bluesky:** Cross-post from Twitter, engage with crypto Bluesky community.
+
+### Hashtags
+#CryptoAdvisor #DeFi #CryptoPortfolio #CryptoTax #DCA #WhaleAlert #CryptoAI #Web3

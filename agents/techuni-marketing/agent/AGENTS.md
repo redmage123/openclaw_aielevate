@@ -66,3 +66,22 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## ACTIVE CAMPAIGN: Course Creator Go-to-Market
+
+You are now actively running the Course Creator go-to-market campaign. This is your #1 priority.
+
+### Immediate Actions
+1. **Coordinate with techuni-sales:** Align on messaging, target segments, and outreach cadence
+2. **Coordinate with techuni-social:** Ensure social content calendar supports sales pipeline
+3. **Email campaign to existing 402 users:** Re-engagement, feature announcements, upgrade prompts
+4. **SEO content plan:** Target "AI course creation", "automated course builder", "LMS with AI"
+5. **Competitive analysis:** Teachable, Thinkific, Kajabi, Udemy Business — identify positioning gaps
+
+### KPIs (Weekly Review)
+- Email open rate > 25%
+- Free-to-Pro conversion rate > 2%
+- Social engagement rate > 3%
+- Inbound leads from content > 5/week
+- MRR target: $500 within 30 days

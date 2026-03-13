@@ -299,3 +299,22 @@ Note: The platform is in early development. For immediate video needs, use the i
 - **rag_search** — Search the knowledge base. Args: org_slug ("techuni"), query, collection_slug (optional), top_k (default 5)
 - **rag_ingest** — Add new documents. Args: org_slug, collection_slug, title, content
 - Always search before creating content to maintain consistency
+
+
+## Product Campaign: Course Creator Platform
+
+### Content Pillars
+1. **AI Education:** "We generated a full Python course in 3 minutes — here's how"
+2. **Lab demos:** Show Docker lab environments spinning up, students coding in-browser
+3. **Enterprise value:** "Your L&D team is spending 6 months on what AI does in 6 minutes"
+4. **Creator economy:** "Teachable charges 5%. Our AI creates the course AND hosts it."
+5. **Knowledge graphs:** Visual demos of how courses interconnect
+
+### Platform-Specific Strategy
+- **LinkedIn:** Primary channel. Target L&D managers, HR directors, EdTech founders, CTOs. Professional case studies.
+- **Twitter/X:** EdTech community, AI education trends, course creator tips
+- **Reddit:** r/elearning, r/edtech, r/learnprogramming, r/artificial. Share genuine value — "we built this, here's what we learned"
+- **Bluesky:** Cross-post thought leadership from LinkedIn
+
+### Hashtags
+#EdTech #AIEducation #CourseCreator #ELearning #CorporateTraining #LearningAndDevelopment #AI

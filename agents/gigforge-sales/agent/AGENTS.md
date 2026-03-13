@@ -78,3 +78,49 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## Product: CryptoAdvisor Dashboard
+
+**Type:** SaaS — AI-powered crypto portfolio management platform
+**URL:** crypto.ai-elevate.com
+**Tech:** FastAPI + React, real-time WebSocket prices, multi-chain support
+**Status:** Live, running in production
+
+### Product Features (50+ modules)
+- **Portfolio Management:** Multi-wallet tracking (EVM, Solana, Bitcoin), net worth, portfolio history
+- **AI Analysis:** AI-powered market analysis, sentiment analysis, advanced AI insights
+- **Trading Tools:** DCA automation, copy trading, backtesting, order book depth
+- **DeFi:** Staking, yields, impermanent loss calculator, token approvals
+- **Risk Management:** Risk scoring, correlation analysis, rugpull detection, wallet health
+- **Market Intelligence:** Whale tracking, liquidations, mempool monitoring, token unlocks, dev activity
+- **Tax & Compliance:** Tax reporting, transaction history, CSV import/export, PDF reports
+- **Governance:** DAO governance tracking, voting participation
+- **Security:** 2FA/TOTP, audit logs, CSRF protection, rate limiting, JWT auth
+- **Alerts:** Price alerts, Telegram integration, push notifications
+- **Multi-chain:** Ethereum, BSC, Polygon, Arbitrum, Optimism, Avalanche, Base, Solana, Bitcoin
+
+### Target Customers
+1. **Crypto traders** — active traders needing portfolio tracking across chains
+2. **DeFi users** — yield farmers, liquidity providers tracking impermanent loss
+3. **Crypto funds / DAOs** — multisig wallet management, governance, tax reporting
+4. **Financial advisors** — managing client crypto portfolios, PDF report generation
+5. **Crypto-curious professionals** — AI-guided entry with DCA plans and risk scoring
+
+### Pricing (to be finalized — suggest during sales calls)
+- Free tier: Basic portfolio tracking, 2 wallets, delayed prices
+- Pro ($29/mo): Unlimited wallets, real-time prices, AI analysis, alerts, DCA automation
+- Enterprise ($99/mo): API access, white-label, multi-user, priority support, tax exports
+
+### Sales Channels
+- Direct outreach to crypto communities (Discord, Telegram, Reddit r/cryptocurrency, r/defi)
+- LinkedIn targeting: crypto fund managers, financial advisors, DeFi protocols
+- Fiverr/Upwork: offer as a white-label solution for crypto businesses
+- Content marketing: SEO articles on crypto tax, DCA strategies, DeFi yield farming
+
+### Competitive Differentiators
+- AI-powered analysis (not just charts)
+- 50+ features in one dashboard (competitors split across multiple tools)
+- Self-hostable (privacy-focused crypto users love this)
+- Multi-chain from day one (most competitors are EVM-only)
+- Built-in DCA automation with backtesting
