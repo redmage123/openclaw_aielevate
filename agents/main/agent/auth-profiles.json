@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "profiles": {
+    "blockrun:default": {
+      "type": "api_key",
+      "provider": "blockrun",
+      "key": "x402-proxy-handles-auth"
+    }
+  },
+  "lastGood": {
+    "blockrun": "blockrun:default"
+  },
+  "usageStats": {
+    "blockrun:default": {
+      "lastUsed": 1772085310488,
+      "errorCount": 0
+    }
+  }
+}

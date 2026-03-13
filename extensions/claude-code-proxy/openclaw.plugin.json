@@ -1,0 +1,63 @@
+{
+  "id": "claude-code-proxy",
+  "providers": ["claude-code-proxy"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "port": {
+        "type": "number",
+        "description": "Port for the local proxy server (default: 3456)"
+      },
+      "claudeBinaryPath": {
+        "type": "string",
+        "description": "Path to the claude CLI binary (default: 'claude')"
+      },
+      "timeoutMs": {
+        "type": "number",
+        "description": "Request timeout in milliseconds (default: 600000)"
+      },
+      "authToken": {
+        "type": "string",
+        "description": "Bearer token for proxy auth (default: uses gateway token)"
+      },
+      "mcpConfig": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Paths to MCP server config JSON files (passed as --mcp-config)"
+      },
+      "allowedTools": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Tool names to allow (e.g. [\"Bash\", \"Read\", \"Edit\"]). Passed as --allowedTools"
+      },
+      "disallowedTools": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Tool names to deny (e.g. [\"Bash(rm:*)\"]). Passed as --disallowedTools"
+      },
+      "permissionMode": {
+        "type": "string",
+        "description": "Permission mode for the CLI session (e.g. 'default', 'plan', 'bypassPermissions')"
+      },
+      "pluginDirs": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Directories to load Claude Code plugins from (passed as --plugin-dir)"
+      },
+      "addDirs": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Additional directories to allow tool access to (passed as --add-dir)"
+      },
+      "appendSystemPrompt": {
+        "type": "string",
+        "description": "Extra system prompt text appended to every CLI invocation"
+      },
+      "maxBudgetUsd": {
+        "type": "number",
+        "description": "Maximum dollar amount to spend per request (passed as --max-budget-usd)"
+      }
+    }
+  }
+}
