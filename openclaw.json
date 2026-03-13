@@ -1703,6 +1703,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1731,6 +1744,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1760,6 +1786,19 @@
             "techuni-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1788,6 +1827,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1816,6 +1868,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1844,6 +1909,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1872,6 +1950,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1900,6 +1991,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1922,6 +2026,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1944,6 +2061,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1966,6 +2096,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -1988,6 +2131,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2010,6 +2166,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2032,6 +2201,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2054,6 +2236,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2076,6 +2271,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2098,6 +2306,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2105,7 +2326,20 @@
         "name": "Operations Director",
         "workspace": "/opt/ai-elevate/gigforge",
         "model": "claude-code-proxy/claude-sonnet-4-6",
-        "agentDir": "/home/aielevate/.openclaw/agents/gigforge/agent"
+        "agentDir": "/home/aielevate/.openclaw/agents/gigforge/agent",
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
+        }
       },
       {
         "id": "gigforge-scout",
@@ -2132,6 +2366,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2160,6 +2407,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2188,6 +2448,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2216,6 +2489,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2244,6 +2530,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2272,6 +2571,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2300,6 +2612,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2329,6 +2654,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2357,6 +2695,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2385,6 +2736,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2413,6 +2777,19 @@
             "gigforge-brand-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2440,6 +2817,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2467,6 +2857,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2514,6 +2917,19 @@
             "devops",
             "main"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2542,6 +2958,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2564,6 +2993,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2592,6 +3034,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2620,6 +3075,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2642,6 +3110,19 @@
             "ai-elevate-devops",
             "ai-elevate-monitor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2670,6 +3151,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2698,6 +3192,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2726,6 +3233,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2754,6 +3274,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2782,6 +3315,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2810,6 +3356,19 @@
             "techuni-social",
             "techuni-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2837,6 +3396,19 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2852,6 +3424,19 @@
             "ai-elevate-researcher",
             "ai-elevate-editor"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2865,6 +3450,19 @@
             "neuro-book",
             "neuro-book-reviewer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2885,6 +3483,19 @@
             "techuni-ux-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2903,6 +3514,19 @@
             "techuni-ux-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2921,6 +3545,19 @@
             "gigforge-ux-designer",
             "video-creator"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       },
       {
@@ -2948,6 +3585,19 @@
             "gigforge-creative",
             "gigforge-brand-designer"
           ]
+        },
+        "mcpServers": {
+          "openclaw-bridge": {
+            "command": "npx",
+            "args": [
+              "tsx",
+              "/home/aielevate/.openclaw/extensions/claude-code-proxy/mcp-bridge.ts"
+            ],
+            "env": {
+              "OPENCLAW_GATEWAY_URL": "http://127.0.0.1:18789",
+              "OPENCLAW_GATEWAY_TOKEN": "${GATEWAY_TOKEN}"
+            }
+          }
         }
       }
     ]
