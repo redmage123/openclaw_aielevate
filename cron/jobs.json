@@ -7,7 +7,7 @@
       "description": "TechUni AI daily stand-up — collect department status, log summary",
       "enabled": true,
       "createdAtMs": 1740700000000,
-      "updatedAtMs": 1773385500077,
+      "updatedAtMs": 1773471900106,
       "schedule": {
         "kind": "cron",
         "expr": "0 8 * * *",
@@ -21,13 +21,13 @@
         "timeoutSeconds": 300
       },
       "state": {
-        "nextRunAtMs": 1773471600000,
-        "lastRunAtMs": 1773385200008,
+        "nextRunAtMs": 1773558000000,
+        "lastRunAtMs": 1773471600011,
         "lastRunStatus": "error",
         "lastStatus": "error",
-        "lastDurationMs": 300069,
+        "lastDurationMs": 300095,
         "lastDeliveryStatus": "not-requested",
-        "consecutiveErrors": 2,
+        "consecutiveErrors": 3,
         "lastError": "cron: job execution timed out"
       },
       "delivery": {
