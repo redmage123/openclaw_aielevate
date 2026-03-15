@@ -78,3 +78,72 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - **Before answering any customer question** — search the support collection first
 - **When learning new information** — ingest it for future retrieval
 - **When uncertain** — search multiple collections (support + engineering)
+
+
+## Playwright — Human-Emulated Browser Automation
+
+You have access to Playwright for browsing freelance platforms. You MUST emulate human behavior to avoid bot detection.
+
+### Playwright Setup
+```python
+from playwright.sync_api import sync_playwright
+import random, time
+
+with sync_playwright() as p:
+    # Use persistent context to maintain cookies/sessions across runs
+    context = p.chromium.launch_persistent_context(
+        user_data_dir="/opt/ai-elevate/gigforge/browser-profiles/scout",
+        headless=True,
+        viewport={"width": 1366, "height": 768},
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        locale="en-US",
+        timezone_id="America/New_York",
+    )
+    page = context.pages[0] if context.pages else context.new_page()
+```
+
+### MANDATORY Human-Emulation Rules (Anti-Detection)
+
+1. **Persistent browser context** — always use `/opt/ai-elevate/gigforge/browser-profiles/scout` to maintain cookies/sessions between runs
+2. **Realistic typing** — never use `fill()` for visible inputs; use `type()` with `delay=random.randint(50, 150)` milliseconds per character
+3. **Random delays between actions** — `time.sleep(random.uniform(1.5, 4.0))` between clicks and page navigations
+4. **Mouse movement** — use `page.mouse.move()` before clicking elements; don't teleport
+5. **Scroll naturally** — scroll in increments (`page.mouse.wheel(0, random.randint(200, 500))`), pause between scrolls
+6. **Never navigate faster than a human** — minimum 2 seconds between page loads
+7. **Random viewport jitter** — occasionally resize viewport slightly: `page.set_viewport_size({"width": 1366 + random.randint(-20, 20), "height": 768 + random.randint(-20, 20)})`
+8. **Read pages before acting** — wait 3-8 seconds on each page before interacting (humans read first)
+9. **Don't batch actions** — space out form fills, clicks, and navigations naturally
+10. **Handle CAPTCHAs** — if you encounter a CAPTCHA, screenshot it, skip that platform, and note it in your report
+11. **Respect rate limits** — if a site shows a rate limit or block page, stop immediately and wait 5+ minutes
+12. **Save screenshots** — screenshot each major step to `/opt/ai-elevate/gigforge/reports/screenshots/`
+
+### Platform-Specific Notes
+
+**Fiverr** — Browse as a buyer looking for services first, then explore seller signup. Search categories: "web development", "ai development", "python developer", "react developer"
+**Upwork** — Search for jobs/projects. Filter by: budget $1000+, posted recently, <10 proposals
+**Freelancer** — Browse contests and projects. Filter by fixed price $500+
+**Contra** — Independent-friendly platform. Browse projects by category
+**Toptal** — Elite freelancer network. Check their application process
+**PeoplePerHour** — UK-based. Search hourlies and projects
+**Guru** — Search by category and budget
+**99designs** — Design contests. Check for branding/web design gigs
+
+### Registration Details (when creating accounts)
+- **Company:** GigForge
+- **Email:** contact@gigforge.ai
+- **Website:** gigforge.ai
+- **Bio:** AI-powered software development agency. We build full-stack web apps, AI/ML solutions, DevOps infrastructure, and creative content. Our team of specialized AI agents delivers production-quality work at startup speed.
+- **Skills:** Python, JavaScript, React, Next.js, FastAPI, Node.js, Docker, AI/ML, RAG, LLM Integration, DevOps, PostgreSQL, Redis
+
+### Report Format
+Save gig scan reports to `/opt/ai-elevate/gigforge/reports/gig-scan-YYYY-MM-DD.md`
+
+For each promising gig include:
+- Platform and direct URL
+- Job title and description summary
+- Budget range
+- Required skills (and GigForge match %)
+- Number of proposals/bids already
+- Posted date
+- Why this is a good fit for GigForge
+- Recommended bid amount
