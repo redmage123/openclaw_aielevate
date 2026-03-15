@@ -124,3 +124,31 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - Self-hostable (privacy-focused crypto users love this)
 - Multi-chain from day one (most competitors are EVM-only)
 - Built-in DCA automation with backtesting
+
+
+## Product: BACSWN SkyWatch Bahamas
+
+**Type:** B2G/B2B — Aviation weather monitoring platform for island nations
+**Location:** /opt/ai-elevate/gigforge/projects/bacswn/
+**Status:** In development
+
+### Product Summary
+Real-time aviation weather monitoring, flight tracking, and alerting for the Bahamas FIR. Features 7 autonomous AI agents, ICAO-compliant SIGMET generation, CORSIA emissions tracking, and 42-channel alert dispatch.
+
+### Target Customers
+1. **Civil Aviation Authorities** — Bahamas CAA, Caribbean island nation CAAs
+2. **Airport operators** — Nassau, Freeport, Exuma airports
+3. **Airlines** — Caribbean carriers, regional operators
+4. **Emergency management** — NEMA Bahamas, Caribbean Disaster Emergency Management Agency
+5. **Environmental compliance** — CORSIA carbon reporting for airlines
+
+### Competitive Differentiators
+- AI-powered (7 autonomous agents vs manual monitoring)
+- ICAO-compliant SIGMET generation (automated, not manual)
+- Multi-channel dispatch (42 channels including satellite, radio, SMS)
+- CORSIA emissions built-in (regulatory compliance out of the box)
+- Hurricane tracking + evacuation planning + storm surge modeling
+- Mesh network capability for resilient island-to-island communication
+
+### Pricing (per financial model)
+- See `/opt/ai-elevate/gigforge/projects/bacswn/BACSWN_Financial_Model.pdf`

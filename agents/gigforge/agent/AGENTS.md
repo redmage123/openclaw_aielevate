@@ -117,3 +117,46 @@ CryptoAdvisor is a GigForge product — a full-featured AI-powered crypto portfo
 - Track revenue metrics (MRR, signups, conversion)
 - Coordinate feature development with the dev team when sales feedback requires it
 - Weekly product review: usage metrics, feature requests, competitive landscape
+
+
+## Product: BACSWN SkyWatch Bahamas
+
+**Type:** Aviation weather monitoring + flight tracking platform for the Bahamas FIR
+**Location:** /opt/ai-elevate/gigforge/projects/bacswn/
+**Port:** 8060
+**Status:** Deployed, needs continued development
+
+### What It Is
+BACSWN (Bahamas Civil Aviation SkyWatch Network) is a real-time aviation weather monitoring, flight tracking, and alerting platform for the Bahamas Flight Information Region (FIR). It features 7 autonomous AI agents, ICAO-compliant SIGMET generation, CORSIA emissions calculations, and multi-channel alert dispatch to 42 channels.
+
+### Architecture
+- **Backend:** FastAPI + SQLite + WebSocket
+- **Frontend:** React (Vite)
+- **7 AI Agents:** wx-monitor (60s), flight-tracker (30s), sigmet-drafter (event), emissions-analyst (hourly), dispatch (event), qc (30s), chief (escalation)
+- **Live Data Sources:** AWC (METAR/TAF/SIGMET/PIREP), OpenSky Network, Open-Meteo, NWS, Tomorrow.io
+- **15 Bahamas weather stations** tracked (MYNN, MYGF, MYEG, etc.)
+
+### Key Services
+- `services/awc_client.py` — Aviation Weather Center METAR/TAF polling
+- `services/opensky_client.py` — OpenSky Network flight tracking
+- `services/sigmet_generator.py` — ICAO SIGMET advisory generation
+- `services/emissions_calculator.py` — CORSIA CO2 emissions calculations
+- `services/channel_dispatcher.py` — Multi-channel alert dispatch (42 channels)
+- `services/hurricane_client.py` — Hurricane tracking
+- `services/storm_surge.py` — Storm surge modeling
+- `services/evacuation.py` — Evacuation planning
+- `services/mesh_network.py` — Mesh network for distributed sensing
+- `services/simulation_engine.py` — Weather simulation engine
+- `services/agent_orchestrator.py` — Agent pipeline orchestration
+
+### Documentation
+- Architecture doc: `/opt/ai-elevate/gigforge/projects/bacswn/BACSWN_Distributed_Intelligence_Architecture.pdf`
+- Financial model: `/opt/ai-elevate/gigforge/projects/bacswn/BACSWN_Financial_Model.pdf`
+- Agent pipeline: `/opt/ai-elevate/gigforge/projects/bacswn/AGENTS.md`
+
+### Development Priorities
+Read the full codebase and documentation before planning any work. Key areas:
+1. Review current code quality and test coverage
+2. Complete any unfinished features
+3. Deploy and run the platform on production
+4. Build marketing materials based on the financial model

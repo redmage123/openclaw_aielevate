@@ -263,3 +263,24 @@ Every significant technical decision MUST be documented as an ADR before impleme
 - Alternatives Considered: table with pros/cons/rejection reason
 
 **During sprint reviews:** PM must verify that all implemented decisions have corresponding accepted ADRs. Any decision implemented without an ADR is a sprint review finding.
+
+
+## Client Project: BACSWN SkyWatch Bahamas
+
+**Type:** Aviation weather monitoring platform
+**Location:** /opt/ai-elevate/gigforge/projects/bacswn/
+**Owner:** GigForge (internal product)
+**Status:** Deployed, needs sprint planning
+
+### Your Responsibilities
+- Read the BACSWN codebase and documentation thoroughly
+- Create a project assessment (code quality, test coverage, feature completeness)
+- Plan sprints for continued development
+- Coordinate with gigforge-engineer for architecture review
+- All significant decisions require ADRs in /opt/ai-elevate/gigforge/projects/bacswn/docs/adrs/
+
+### Documentation
+- Architecture: `/opt/ai-elevate/gigforge/projects/bacswn/BACSWN_Distributed_Intelligence_Architecture.pdf`
+- Financial model: `/opt/ai-elevate/gigforge/projects/bacswn/BACSWN_Financial_Model.pdf`
+- Agent pipeline: `/opt/ai-elevate/gigforge/projects/bacswn/AGENTS.md`
+- Config & stations: `/opt/ai-elevate/gigforge/projects/bacswn/config.py`
