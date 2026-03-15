@@ -136,3 +136,78 @@ Before implementing any significant technical decision, you MUST create an ADR:
 - Save to: `/opt/ai-elevate/video-creator/docs/adrs/NNNN-short-description.md`
 - Get approval from `gigforge-engineer` and `video-creator` before implementing
 - Status must be `Accepted` before code is written for that decision
+
+
+## Cloudflare DNS Management
+
+You manage DNS for GigForge and TechUni domains via the Cloudflare API.
+
+### Credentials
+- **API Token:** stored at `/opt/ai-elevate/credentials/cloudflare.env`
+- **Load with:** `source /opt/ai-elevate/credentials/cloudflare.env`
+- **IP Restricted:** Must use `curl -4` (IPv4 only — token is locked to 78.47.104.139)
+- **Expires:** 2026-06-14
+
+### Zones
+
+| Domain | Zone ID | Usage |
+|--------|---------|-------|
+| `gigforge.ai` | `b505b782089d811fcf071b63c889ed71` | GigForge website, email (Zoho MX) |
+| `techuni.ai` | `171a66ce758395713f7bd02cbb2a995f` | TechUni platform, courses.techuni.ai |
+
+### Current DNS Records
+
+**gigforge.ai:**
+- A record: `gigforge.ai` → `78.47.104.139` (Hetzner server)
+- MX: Zoho Mail (mx.zoho.eu, mx2.zoho.eu, mx3.zoho.eu)
+- TXT: SPF (`v=spf1 include:zohomail.eu -all`)
+- TXT: Zoho verification
+- TXT: DKIM (zoho._domainkey)
+
+**techuni.ai:**
+- A record: `techuni.ai` → `78.47.104.139`
+- A record: `mail.techuni.ai` → `78.47.104.139`
+- CNAME: `courses.techuni.ai` → AWS ALB (prod-alb-950438197.eu-west-1.elb.amazonaws.com)
+- MX: `mail.techuni.ai` (NOTE: was previously typo'd as `mail.technuni.ai`)
+
+### API Usage (ALWAYS use `-4` flag)
+
+```bash
+source /opt/ai-elevate/credentials/cloudflare.env
+
+# List records for a zone
+curl -4 -s "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | python3 -m json.tool
+
+# Create a record
+curl -4 -s -X POST "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"A","name":"subdomain","content":"78.47.104.139","ttl":1,"proxied":false}'
+
+# Update a record
+curl -4 -s -X PUT "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records/RECORD_ID" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"A","name":"subdomain","content":"78.47.104.139","ttl":1,"proxied":false}'
+
+# Delete a record
+curl -4 -s -X DELETE "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records/RECORD_ID" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+```
+
+### Zone IDs (for quick reference)
+```
+GIGFORGE_ZONE=b505b782089d811fcf071b63c889ed71
+TECHUNI_ZONE=171a66ce758395713f7bd02cbb2a995f
+```
+
+### Known Issues
+- techuni.ai MX record had a typo (`technuni.ai` instead of `techuni.ai`) — verify and fix if still present
+- `ai-elevate.com` is NOT on this Cloudflare token — Mailgun DNS for `mg.ai-elevate.com` needs separate access
+
+### Rules
+- NEVER delete MX, SPF, or DKIM records without explicit approval
+- ALWAYS use `-4` flag with curl (token is IPv4-restricted)
+- When adding new subdomains, set `proxied: false` for services that need direct access (WebSocket, SSH)
+- Set `proxied: true` for public-facing web services (adds Cloudflare CDN/DDoS protection)
