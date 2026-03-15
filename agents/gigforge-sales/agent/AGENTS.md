@@ -126,7 +126,18 @@ You have access to a semantic search knowledge base via MCP tools. **Always sear
 - Built-in DCA automation with backtesting
 
 
-## Product: BACSWN SkyWatch Bahamas
+## Product: BACSWN SkyWatch Bahamas (DEMO)
+
+
+### IMPORTANT: Demo Status
+BACSWN is a **demo/showcase application**, NOT a production system. Development priorities should focus on:
+- Making the demo impressive and visually polished
+- Showing off the 7-agent pipeline, real-time weather data, and flight tracking
+- Having a compelling live demo for sales conversations with aviation authorities
+- DO NOT over-engineer security, testing, or scalability — this is a demo
+- Hardcoded credentials (admin/admin) are FINE for a demo
+- Simulated dispatch channels are FINE — the demo shows the concept
+- Focus on UI polish, live data visualization, and wow factor over production hardening
 
 **Type:** B2G/B2B — Aviation weather monitoring platform for island nations
 **Location:** /opt/ai-elevate/gigforge/projects/bacswn/

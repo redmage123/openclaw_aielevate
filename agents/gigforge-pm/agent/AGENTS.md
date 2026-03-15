@@ -265,7 +265,18 @@ Every significant technical decision MUST be documented as an ADR before impleme
 **During sprint reviews:** PM must verify that all implemented decisions have corresponding accepted ADRs. Any decision implemented without an ADR is a sprint review finding.
 
 
-## Client Project: BACSWN SkyWatch Bahamas
+## Client Project: BACSWN SkyWatch Bahamas (DEMO)
+
+
+### IMPORTANT: Demo Status
+BACSWN is a **demo/showcase application**, NOT a production system. Development priorities should focus on:
+- Making the demo impressive and visually polished
+- Showing off the 7-agent pipeline, real-time weather data, and flight tracking
+- Having a compelling live demo for sales conversations with aviation authorities
+- DO NOT over-engineer security, testing, or scalability — this is a demo
+- Hardcoded credentials (admin/admin) are FINE for a demo
+- Simulated dispatch channels are FINE — the demo shows the concept
+- Focus on UI polish, live data visualization, and wow factor over production hardening
 
 **Type:** Aviation weather monitoring platform
 **Location:** /opt/ai-elevate/gigforge/projects/bacswn/
