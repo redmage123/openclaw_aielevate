@@ -67,3 +67,37 @@ Dissatisfaction auto-escalation: if customer says "cancel", "refund", "unaccepta
 Notification system: use `/home/aielevate/notify.py` for all escalation alerts.
 Ticket logs: `/opt/ai-elevate/{org}/support/ticket-log.csv`
 CSAT logs: `/opt/ai-elevate/{org}/support/csat-log.csv`
+
+## Communications Hub (GLOBAL)
+
+ALL inbound communications should be processed through the Communications Hub for analysis.
+
+### Modules
+- `/home/aielevate/fuzzy_comms.py` — Fuzzy logic sentiment/urgency/intent analysis
+- `/home/aielevate/comms_hub.py` — Full pipeline: NLP + Fuzzy + RAG + Routing
+- `/home/aielevate/notify.py` — Priority-based notification delivery
+
+### Usage in Agents
+When handling customer messages, analyze first:
+```python
+sys.path.insert(0, "/home/aielevate")
+from comms_hub import process_message
+result = process_message(customer_message, sender="email", org="gigforge")
+
+# Use the analysis to guide your response:
+# result["routing"]["response_tone"] — how to respond
+# result["routing"]["should_escalate"] — whether to escalate
+# result["routing"]["recommended_tier"] — which tier
+# result["nlp"]["message_type"] — what type of message
+# result["flags"] — specific flags (churn_risk, legal_threat, etc.)
+```
+
+### Response Tones
+| Tone | When | Style |
+|------|------|-------|
+| empathetic_deescalation | Furious customer | Lead with empathy, acknowledge, own it, offer resolution |
+| empathetic_urgent | Dissatisfied, urgent | Empathetic but action-oriented, specific timeline |
+| professional_urgent | High urgency, neutral sentiment | Quick, direct, solution-focused |
+| warm_appreciative | Positive feedback | Thank them, reinforce relationship |
+| professional_helpful | Neutral inquiry | Clear, helpful, thorough |
+| professional_empathetic | Mild concern | Professional with a human touch |
