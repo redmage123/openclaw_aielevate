@@ -1,0 +1,39 @@
+{
+  "id": "ai-elevate-ops",
+  "name": "AI Elevate Operations",
+  "description": "Org management, session cleanup, cron retries, and org API tokens for multi-tenant AI Elevate deployment",
+  "gatewayMethods": [
+    { "method": "ops.orgTokens.list", "description": "List org API tokens" },
+    { "method": "ops.orgTokens.create", "description": "Create per-org API token" },
+    { "method": "ops.orgTokens.revoke", "description": "Revoke an org token" },
+    { "method": "ops.sessions.cleanup", "description": "Clean up expired sessions" },
+    { "method": "ops.sessions.stats", "description": "Get session statistics" },
+    { "method": "ops.cron.retry", "description": "Retry a failed cron job" },
+    { "method": "ops.cron.history", "description": "Get cron execution history" },
+    { "method": "ops.orgs.list", "description": "List all organizations" },
+    { "method": "ops.orgs.create", "description": "Create a new organization" },
+    { "method": "ops.orgs.delete", "description": "Delete an organization" },
+    { "method": "ops.health", "description": "Full system health check" }
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "sessionTtlDays": {
+        "type": "number",
+        "description": "Auto-cleanup sessions older than N days (default: 30)"
+      },
+      "cronRetryAttempts": {
+        "type": "number",
+        "description": "Number of retry attempts for failed cron jobs (default: 3)"
+      },
+      "cronRetryDelayMs": {
+        "type": "number",
+        "description": "Delay between cron retries in ms (default: 60000)"
+      },
+      "cleanupIntervalHours": {
+        "type": "number",
+        "description": "How often to run session cleanup (default: 24)"
+      }
+    }
+  }
+}

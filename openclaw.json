@@ -7,7 +7,7 @@
     "providers": {
       "anthropic": {
         "baseUrl": "https://api.anthropic.com",
-        "apiKey": "${GATEWAY_TOKEN}",
+        "apiKey": "REDACTED_FOR_GIT",
         "models": []
       },
       "blockrun": {
@@ -1497,7 +1497,7 @@
       },
       "claude-code-proxy": {
         "baseUrl": "http://127.0.0.1:3456/v1",
-        "apiKey": "${GATEWAY_TOKEN}",
+        "apiKey": "REDACTED_FOR_GIT",
         "api": "openai-completions",
         "authHeader": true,
         "models": [
@@ -1649,7 +1649,11 @@
       "compaction": {
         "mode": "safeguard"
       },
-      "timeoutSeconds": 3600
+      "timeoutSeconds": 3600,
+      "memorySearch": {
+        "enabled": true,
+        "queryExpansion": true
+      }
     },
     "list": [
       {
@@ -3084,7 +3088,7 @@
     },
     "auth": {
       "mode": "token",
-      "token": "${GATEWAY_TOKEN}"
+      "token": "REDACTED_FOR_GIT"
     },
     "tools": {
       "allow": [
@@ -3111,7 +3115,8 @@
   "plugins": {
     "allow": [
       "clawrouter",
-      "claude-code-proxy"
+      "claude-code-proxy",
+      "ai-elevate-ops"
     ],
     "entries": {
       "clawrouter": {
@@ -3126,6 +3131,15 @@
           "mcpConfig": [
             "/home/aielevate/.claude/empty-mcp.json"
           ]
+        }
+      },
+      "ai-elevate-ops": {
+        "enabled": true,
+        "config": {
+          "sessionTtlDays": 30,
+          "cronRetryAttempts": 3,
+          "cronRetryDelayMs": 60000,
+          "cleanupIntervalHours": 24
         }
       }
     },
@@ -3151,5 +3165,8 @@
         "installedAt": "2026-03-11T16:53:00.000Z"
       }
     }
+  },
+  "channels": {
+    "sessionScope": "per-peer"
   }
 }
