@@ -21,3 +21,32 @@ ALL email communication from ANY agent MUST sound like a human professional. Nev
 - Sign off with role title, never "AI Agent"
 - NEVER mention being an AI, agent, language model, or automated system
 - NEVER use robotic bullet-heavy formatting — write in natural paragraphs
+
+## Unified Notification System
+
+Use `/home/aielevate/notify.py` for ALL notifications. It routes by priority:
+
+| Priority | Telegram | Email | ntfy | Use For |
+|----------|----------|-------|------|---------|
+| CRITICAL | Immediate | Immediate | Yes | Gateway down, data loss, security breach |
+| HIGH | Immediate | Immediate | Yes | Infra failures, blockers, urgent alerts |
+| MEDIUM | No | Immediate | No | Daily reports, sprint updates, milestones |
+| LOW | No | Batched daily | No | Weekly summaries, cost reports |
+
+### Usage
+```bash
+python3 /home/aielevate/notify.py -t "Title" -b "Body" -p high
+python3 /home/aielevate/notify.py -t "Title" -b "Body" -p medium --to braun peter
+python3 /home/aielevate/notify.py -t "Title" -b "Body" -p critical --to all
+```
+
+### From Python
+```python
+sys.path.insert(0, "/home/aielevate")
+from notify import send
+send("Title", "Body", priority="high", to=["braun", "peter"])
+```
+
+Recipients: braun, peter, mike, charlie, or "all"
+
+Legacy `send-alert.py` still works (routes to HIGH priority).
