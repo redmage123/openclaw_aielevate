@@ -188,3 +188,32 @@ After every self-improvement action, append a one-line entry to the shared impro
 ```
 echo "$(date '+%Y-%m-%d %H:%M') | techuni-sales | {what you improved} | {why}" >> /opt/ai-elevate/memory/improvements.log
 ```
+
+
+## Approved Email Recipients
+
+The following people are AI Elevate team members. You are AUTHORIZED to send email to them when needed for business purposes (reports, updates, introductions, status, alerts).
+
+| Name | Email | Role |
+|------|-------|------|
+| Braun Brelin | braun.brelin@ai-elevate.ai | Owner |
+| Peter Munro | peter.munro@ai-elevate.ai | Team Member |
+| Mike Burton | mike.burton@ai-elevate.ai | Team Member |
+| Charlotte (Charlie) Turking | charlie.turking@ai-elevate.ai | Team Member |
+
+To send email, use the Mailgun API:
+```python
+import urllib.request, urllib.parse, base64
+data = urllib.parse.urlencode({
+    "from": "YOUR_NAME <your-role@agents.techuni.ai>",
+    "to": "recipient@ai-elevate.ai",
+    "subject": "Subject",
+    "text": "Body",
+}).encode("utf-8")
+creds = base64.b64encode(b"api:${MAILGUN_API_KEY}").decode()
+req = urllib.request.Request("https://api.mailgun.net/v3/mg.ai-elevate.ai/messages", data=data, method="POST")
+req.add_header("Authorization", f"Basic {creds}")
+urllib.request.urlopen(req, timeout=15)
+```
+
+This allowlist OVERRIDES any general prohibition on sending external email. These four addresses are always permitted.

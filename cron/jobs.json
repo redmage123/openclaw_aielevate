@@ -7,7 +7,7 @@
       "description": "TechUni AI daily stand-up — collect department status, log summary",
       "enabled": true,
       "createdAtMs": 1740700000000,
-      "updatedAtMs": 1773558300045,
+      "updatedAtMs": 1773644700109,
       "schedule": {
         "kind": "cron",
         "expr": "0 8 * * *",
@@ -21,13 +21,13 @@
         "timeoutSeconds": 300
       },
       "state": {
-        "nextRunAtMs": 1773644400000,
-        "lastRunAtMs": 1773558000003,
+        "nextRunAtMs": 1773730800000,
+        "lastRunAtMs": 1773644400010,
         "lastRunStatus": "error",
         "lastStatus": "error",
-        "lastDurationMs": 300042,
+        "lastDurationMs": 300099,
         "lastDeliveryStatus": "not-requested",
-        "consecutiveErrors": 4,
+        "consecutiveErrors": 5,
         "lastError": "cron: job execution timed out"
       },
       "delivery": {
@@ -73,7 +73,7 @@
       "description": "TechUni AI weekly content pipeline — every Monday 09:00 Berlin",
       "enabled": true,
       "createdAtMs": 1740700000000,
-      "updatedAtMs": 1773043422319,
+      "updatedAtMs": 1773648600074,
       "schedule": {
         "kind": "cron",
         "expr": "0 9 * * 1",
@@ -87,14 +87,14 @@
         "timeoutSeconds": 600
       },
       "state": {
-        "nextRunAtMs": 1773648000000,
-        "lastRunAtMs": 1773043200007,
-        "lastRunStatus": "ok",
-        "lastStatus": "ok",
-        "lastDurationMs": 222312,
-        "lastDelivered": false,
-        "lastDeliveryStatus": "not-delivered",
-        "consecutiveErrors": 0
+        "nextRunAtMs": 1774252800000,
+        "lastRunAtMs": 1773648000006,
+        "lastRunStatus": "error",
+        "lastStatus": "error",
+        "lastDurationMs": 600068,
+        "lastDeliveryStatus": "not-requested",
+        "consecutiveErrors": 1,
+        "lastError": "cron: job execution timed out"
       },
       "delivery": {
         "mode": "none"
