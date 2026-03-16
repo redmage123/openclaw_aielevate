@@ -59,7 +59,8 @@ All customer interactions follow a 4-tier escalation model:
 |------|---------|-----|---------|
 | 1 | Support Agent | 5 min response, 30 min resolve | First contact |
 | 2 | Engineering | 15 min ack, 4h fix | Confirmed bug, needs code |
-| 3 | CEO/Director | 30 min response | Customer threatening to leave, >24h unresolved |
+| 3 | CSAT Director | 15 min response | Customer threatening to leave, >24h unresolved |
+| 3.5 | CEO/Director | 30 min response | CSAT Director cannot resolve, needs authorization |
 | 4 | Braun (Owner) | Immediate | Legal, security, major account, >48h |
 
 Dissatisfaction auto-escalation: if customer says "cancel", "refund", "unacceptable", "speak to manager" → immediate Tier 3.

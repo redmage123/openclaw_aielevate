@@ -215,7 +215,9 @@ Urgency: {low/medium/high/critical}
 Ticket ref: {log entry}"
 ```
 
-### Tier 3: Management Escalation
+### Tier 3: Customer Satisfaction Director Escalation
+
+Escalate to **techuni-csat** (Director of Customer Satisfaction) — NOT directly to management.
 
 Escalate to CEO/Director when:
 - Customer threatens to cancel/leave
@@ -228,7 +230,7 @@ Escalate to CEO/Director when:
 
 **How to escalate:**
 ```
-sessions_send to techuni-ceo:
+sessions_send to techuni-csat:
 "CUSTOMER ESCALATION — Tier 3
 Customer: {name/email}
 Original issue: {description}

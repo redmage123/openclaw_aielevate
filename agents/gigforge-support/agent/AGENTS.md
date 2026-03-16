@@ -227,7 +227,9 @@ Urgency: {low/medium/high/critical}
 Ticket ref: {log entry}"
 ```
 
-### Tier 3: Management Escalation
+### Tier 3: Customer Satisfaction Director Escalation
+
+Escalate to **gigforge-csat** (Director of Customer Satisfaction) — NOT directly to management.
 
 Escalate to CEO/Director when:
 - Customer threatens to cancel/leave
@@ -240,7 +242,7 @@ Escalate to CEO/Director when:
 
 **How to escalate:**
 ```
-sessions_send to gigforge:
+sessions_send to gigforge-csat:
 "CUSTOMER ESCALATION — Tier 3
 Customer: {name/email}
 Original issue: {description}
