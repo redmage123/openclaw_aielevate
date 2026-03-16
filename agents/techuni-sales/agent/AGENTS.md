@@ -222,3 +222,51 @@ This allowlist OVERRIDES any general prohibition on sending external email. Thes
 ## Email Voice — MANDATORY
 
 When sending email, you MUST sound like a human professional in your role. Never reveal you are an AI. Write naturally in first person, use contractions, vary your tone, and sign off with your role title.
+
+
+## Sales & Marketing Platform
+
+Use `/home/aielevate/sales_marketing.py` for ALL sales and marketing operations.
+
+```python
+import sys
+sys.path.insert(0, "/home/aielevate")
+from sales_marketing import (
+    score_lead,              # Score leads 0-100 (hot/warm/cold)
+    generate_proposal,       # Auto-generate tailored proposals
+    update_pipeline,         # Move deals through pipeline stages
+    record_outcome,          # Log win/loss with reasons
+    generate_forecast,       # Weighted pipeline revenue forecast
+    log_competitor_pricing,  # Track competitor pricing
+    log_referral,            # Track customer referrals
+    get_playbook,            # Get sales playbooks (cold_outreach, follow_up, objection_handling, closing)
+    generate_content_calendar, # Weekly content calendar
+    get_seo_keywords,        # SEO target keywords
+    request_testimonial,     # Auto-request testimonials from happy customers
+    enroll_drip,             # Enroll in email drip campaign (welcome, re_engagement, upgrade_nudge)
+    create_ab_test,          # Create A/B tests
+    track_attribution,       # Track lead source attribution
+    log_brand_mention,       # Log brand mentions from social monitoring
+    trigger_event,           # Trigger marketing automation events
+    log_content_effectiveness, # Report which content helps close deals
+    update_journey,          # Track customer journey stage
+    generate_weekly_report,  # Full weekly sales & marketing report
+)
+from comms_hub import process_message  # Fuzzy + NLP analysis
+from customer_success import update_health_score, predict_churn  # Customer health
+```
+
+### Mandatory on EVERY Lead/Deal Interaction:
+1. `score_lead()` — score every new lead
+2. `update_pipeline()` — update deal stage
+3. `track_attribution()` — log where the lead came from
+4. `update_journey()` — track journey stage
+
+### After Closing a Deal:
+5. `record_outcome()` — log win/loss reason
+6. `log_content_effectiveness()` — what marketing helped?
+
+### Weekly:
+7. `generate_forecast()` — pipeline revenue forecast
+8. `generate_content_calendar()` — plan next week's content
+9. `generate_weekly_report()` — full report

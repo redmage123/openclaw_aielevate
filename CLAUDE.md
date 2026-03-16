@@ -120,3 +120,26 @@ All customer-facing agents must use `/home/aielevate/customer_success.py`:
 - Support quality scoring (empathy, speed, resolution, tone)
 - Predictive churn model (alerts at >70% probability)
 - Escalation replay archive for agent training
+
+## Sales & Marketing Platform
+
+All sales/marketing agents use `/home/aielevate/sales_marketing.py`:
+- Lead scoring (0-100, auto-routes hot leads)
+- Proposal auto-generation (AI/ML, fullstack, devops templates)
+- Pipeline stage automation (auto follow-ups, stale deal detection)
+- Win/loss analysis with competitor tracking
+- Revenue forecasting (weighted pipeline)
+- Sales playbooks (cold outreach, objection handling, closing)
+- Content calendar automation
+- SEO keyword targeting
+- Social proof collection (auto-request testimonials from NPS 9-10)
+- Email drip campaigns (welcome, re-engagement, upgrade nudge)
+- A/B testing framework
+- Marketing attribution tracking
+- Brand monitoring with negative mention alerts
+- Event-triggered marketing automation
+- Sales-marketing feedback loop
+- Customer journey mapping
+- Weekly automated reports
+
+Integrated with: Fuzzy Logic (sentiment analysis on leads), NLP (intent classification), RAG (context retrieval), Notification System (alerts).
