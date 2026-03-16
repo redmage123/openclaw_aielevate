@@ -102,3 +102,21 @@ result = process_message(customer_message, sender="email", org="gigforge")
 | warm_appreciative | Positive feedback | Thank them, reinforce relationship |
 | professional_helpful | Neutral inquiry | Clear, helpful, thorough |
 | professional_empathetic | Mild concern | Professional with a human touch |
+
+## Customer Success Platform
+
+All customer-facing agents must use `/home/aielevate/customer_success.py`:
+- Auto-acknowledgment within 60 seconds
+- Customer health scoring (0-100, alerts at <40)
+- Knowledge base auto-builder (FAQ from 3+ similar tickets)
+- Win-back campaigns for inactive customers (30+ days)
+- Post-mortem on every Tier 3+ escalation
+- Sentiment trend tracking with weekly reports
+- Proactive check-ins at 7d, 30d, 90d milestones
+- Cross-channel interaction history
+- VIP detection (platinum/gold/standard tiers)
+- Competitor mention tracking
+- NPS survey automation (quarterly)
+- Support quality scoring (empathy, speed, resolution, tone)
+- Predictive churn model (alerts at >70% probability)
+- Escalation replay archive for agent training

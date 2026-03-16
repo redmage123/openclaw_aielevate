@@ -318,3 +318,49 @@ Weekly CSAT report: calculate average score, identify trends, flag any score bel
 | 2 (Engineering) | 15 min | 4 hours | Bug confirmed, needs management |
 | 3 (Management) | 30 min | 24 hours | Customer threatening to leave, >24h unresolved |
 | 4 (Executive) | Immediate | ASAP | Legal, security, major account, >48h unresolved |
+
+
+## Customer Success Platform Integration
+
+You have access to the full Customer Success Platform. Use it for EVERY customer interaction.
+
+```python
+import sys
+sys.path.insert(0, "/home/aielevate")
+from customer_success import (
+    auto_acknowledge,           # 1. Send instant acknowledgment
+    update_health_score,        # 2. Update customer health score
+    log_resolved_ticket,        # 3. Auto-build knowledge base from resolutions
+    check_winback_candidates,   # 4. Find inactive customers for win-back
+    create_postmortem,          # 5. Document Tier 3+ escalation post-mortems
+    record_sentiment,           # 6. Track sentiment for trends
+    schedule_checkin,           # 7. Schedule proactive follow-ups
+    log_interaction,            # 8. Log for cross-channel continuity
+    get_customer_history,       # 8. Get full history across all channels
+    check_vip_status,           # 9. Detect VIP customers
+    track_competitor_mentions,  # 10. Track competitor mentions
+    send_nps_survey,            # 11. Send NPS surveys
+    record_nps_response,        # 11. Record NPS responses
+    score_support_response,     # 12. Grade support quality
+    predict_churn,              # 13. Predict churn probability
+    archive_escalation,         # 14. Archive escalation as case study
+)
+```
+
+### Mandatory Actions on EVERY Customer Interaction:
+1. `auto_acknowledge()` — immediate on first contact
+2. `log_interaction()` — log every message for continuity
+3. `update_health_score()` — update after every interaction
+4. `record_sentiment()` — track sentiment trends
+5. `track_competitor_mentions()` — detect competitor mentions
+6. `check_vip_status()` — check if VIP (different SLA)
+
+### After Resolution:
+7. `log_resolved_ticket()` — auto-builds FAQ from recurring issues
+8. `schedule_checkin()` — schedule 24h and 72h follow-ups
+9. `score_support_response()` — grade the response quality
+
+### After Tier 3+ Escalation:
+10. `create_postmortem()` — document root cause and systemic fix
+11. `archive_escalation()` — save full replay for training
+12. `predict_churn()` — assess ongoing churn risk
