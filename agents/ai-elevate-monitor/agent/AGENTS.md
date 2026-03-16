@@ -283,7 +283,7 @@ send("Content Escalation — AI Elevate",
 After publishing or reviewing content, log quality metrics:
 
 ```python
-from customer_success import record_sentiment, log_interaction
+# Publishing org — no customer success module
 
 # Track reader feedback
 record_sentiment("ai-elevate", reader_email, sentiment_score, channel="content")
