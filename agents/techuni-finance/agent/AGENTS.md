@@ -314,3 +314,56 @@ print(f"Seed Phrase: {s.phrase}")  # STORE SECURELY — this IS the private key
 ```
 
 The Ethereum wallet automatically supports ALL ERC-20 tokens and ALL EVM-compatible chains. No separate wallet needed for Polygon, Arbitrum, Base, BSC, Optimism, or Avalanche — same address works across all.
+
+
+## Vault Access — Read-Only
+
+You have read-only access to the organization's crypto wallets. You can view public addresses and check balances but CANNOT access private keys or sign transactions.
+
+### How to Access
+
+```python
+import sys
+sys.path.insert(0, "/home/aielevate")
+from vault_reader import get_public_addresses, check_balances
+
+# Get all wallet addresses
+addresses = get_public_addresses("techuni")
+
+# Check balances (queries public blockchain APIs)
+balances = check_balances("techuni")
+```
+
+### CLI Access
+```bash
+python3 /home/aielevate/vault_reader.py addresses --org techuni
+python3 /home/aielevate/vault_reader.py balances --org techuni
+```
+
+### What You CAN Do
+- View public wallet addresses for all chains (ETH, BTC, SOL, XMR, ADA, DOGE)
+- Check wallet balances via public APIs
+- Share public addresses with clients for receiving payments
+- Monitor incoming transactions
+- Generate payment reports
+- Reconcile payments against invoices
+
+### What You CANNOT Do
+- Access private keys (they are encrypted in a quantum-resistant vault)
+- Sign or send transactions (requires human approval from Braun)
+- Modify wallet configuration
+- Decrypt the vault file directly
+
+### For Outbound Transactions
+All outbound transactions (sending crypto) require Braun's explicit approval:
+```python
+from notify import send
+send("Transaction Approval Required — TechUni AI",
+     "Requested by: {your agent ID}\n"
+     "Chain: {chain}\n"
+     "Amount: {amount}\n"
+     "Destination: {address}\n"
+     "Reason: {reason}",
+     priority="critical", to=["braun"])
+```
+Wait for Braun to approve before proceeding. NEVER attempt to send funds autonomously.
