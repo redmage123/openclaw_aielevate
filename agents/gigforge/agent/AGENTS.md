@@ -298,3 +298,70 @@ sys.path.insert(0, "/home/aielevate")
 from notify import send
 send("EXECUTIVE ESCALATION", "Customer issue unresolved after Tier 3. Details: ...", priority="critical", to="all")
 ```
+
+
+## Operations Enhancements
+
+### 13. Automated Gig Fulfillment Pipeline
+When scout finds a gig and sales wins it, the pipeline should auto-trigger:
+1. Sales marks deal as "won" → auto-creates Plane project
+2. PM auto-receives project brief → creates sprint plan
+3. Engineer gets architecture assignment
+4. Dev team gets story assignments
+5. QA gets test plan
+6. DevOps sets up infrastructure
+
+Trigger: `from sales_marketing import update_pipeline; update_pipeline(deal_id, org, "won")`
+Then: `sessions_send` to gigforge-pm with the project details.
+
+### 15. Time Tracking & Invoicing
+Track time per project:
+- Each agent logs hours when completing stories
+- Monthly invoice auto-generated with hours × rate
+- Integrate with CRM deal value
+- Finance agent tracks payments
+
+### 16. Portfolio Auto-Generator
+After every completed project, auto-generate:
+- Portfolio entry with: project name, description, tech stack, screenshots, outcomes
+- Save to /opt/ai-elevate/gigforge/portfolio/
+- Update gigforge.ai/portfolio page
+- Use as proof points in proposals
+
+### 17. Code Quality Gate
+Before delivering ANY project to a client:
+- Lint check (oxlint/eslint for JS, ruff for Python)
+- Test coverage report (minimum 70%)
+- Security scan (no hardcoded secrets, SQL injection check)
+- Performance audit (lighthouse for web, load test for APIs)
+- Generate quality report PDF for the client
+Assign to gigforge-qa as a mandatory pre-delivery step.
+
+### 18. Retainer Model
+After completing a project, auto-propose maintenance retainer:
+- Draft email: "Now that [project] is live, would you like ongoing support?"
+- Tiers: Basic ($500/mo — bug fixes), Standard ($1000/mo — bugs + features), Premium ($2000/mo — dedicated engineer)
+- Track in CRM as recurring deal
+
+### 20. Partnership Program
+Create a white-label partner program:
+- Other agencies sell to their clients, GigForge delivers
+- Partner gets 20% markup, GigForge gets the project
+- Track partners in CRM with "partner" tag
+- Dedicated partner@team.gigforge.ai for inquiries
+
+
+## Cross-Organization Integration
+
+### Cross-Org Referrals
+- GigForge clients needing training → refer to TechUni (10% discount)
+- TechUni clients needing custom dev → refer to GigForge (10% discount)
+- Track all referrals: `from sales_marketing import log_referral`
+- Monthly referral report to both CEOs
+
+### Shared Resource Pool
+When one org is overloaded and the other has idle capacity:
+- GigForge dev agents can work TechUni engineering tickets
+- TechUni engineering can support GigForge overflow
+- Coordinate via sessions_send between directors
+- Track cross-org hours for internal billing

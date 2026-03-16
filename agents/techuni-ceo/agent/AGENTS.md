@@ -216,3 +216,79 @@ sys.path.insert(0, "/home/aielevate")
 from notify import send
 send("EXECUTIVE ESCALATION", "Customer issue unresolved after Tier 3. Details: ...", priority="critical", to="all")
 ```
+
+
+## Revenue Priority Initiatives
+
+### 1. Paywall Enforcement
+The free tier gives away too much. Enforce these limits:
+- Free: 1 course, basic editor, no labs, no analytics, no AI generation
+- Pro ($49/mo): Unlimited courses, AI generation, Docker labs, analytics
+- Enterprise ($199/mo): White-label, SSO, API access, priority support
+
+When users hit free limits, show upgrade modal — never silently block.
+API endpoint: POST /api/v1/billing/check-limit (returns {allowed: bool, upgrade_prompt: str})
+
+### 2. Trial Expiration Engine
+All new signups get 14-day Pro trial. Automated email sequence:
+- Day 0: Welcome + trial starts
+- Day 7: "You've created X courses — here's what Pro gives you"
+- Day 12: "2 days left on your trial"
+- Day 14: Auto-downgrade + "Here's what you'll lose" email with 20% discount
+Use drip campaigns: `from sales_marketing import enroll_drip`
+
+### 3. Publish the 391 Courses
+391 courses sit unpublished. Have engineering bulk-publish them as a marketplace:
+- Create a /courses public page with search and categories
+- Each published course is SEO-indexed (title, description, tags)
+- This alone could drive organic signups
+
+### 4. Course Completion Certificates
+Auto-generate PDF certificates when students complete a course:
+- Student name, course title, completion date, org logo
+- Downloadable + shareable LinkedIn link
+- Corporate training buyers consider this essential
+
+### 5. Student Progress Notifications
+Email students who started but didn't finish:
+- 3 days after last activity: "You're 60% through — keep going!"
+- 7 days: "Pick up where you left off in Module 4"
+- 14 days: "We miss you — here's what you'll learn next"
+
+### 6. Course Analytics Dashboard
+Surface the engagement data to course creators:
+- Student enrollment count, completion rate, avg time per module
+- Quiz scores distribution, drop-off points
+- AI suggestion: "Module 3 has 40% drop-off — consider splitting"
+
+### 7. White-Label Offering
+Let Enterprise orgs rebrand: custom logo, colors, domain (courses.theircompany.com)
+This is the #1 feature corporate buyers ask for.
+
+### 8. AI Course Improvement Agent
+Create techuni-course-optimizer agent that:
+- Analyzes completion data weekly
+- Identifies courses with <50% completion
+- Suggests specific improvements (split long modules, add quizzes, improve intro)
+- Sends recommendations to the course creator
+
+### 9. Cross-Org Referrals
+When TechUni clients need custom development, refer them to GigForge.
+Track referrals: `from sales_marketing import log_referral`
+Offer 10% discount on first GigForge project for TechUni referrals.
+
+
+## Cross-Organization Integration
+
+### Cross-Org Referrals
+- GigForge clients needing training → refer to TechUni (10% discount)
+- TechUni clients needing custom dev → refer to GigForge (10% discount)
+- Track all referrals: `from sales_marketing import log_referral`
+- Monthly referral report to both CEOs
+
+### Shared Resource Pool
+When one org is overloaded and the other has idle capacity:
+- GigForge dev agents can work TechUni engineering tickets
+- TechUni engineering can support GigForge overflow
+- Coordinate via sessions_send between directors
+- Track cross-org hours for internal billing

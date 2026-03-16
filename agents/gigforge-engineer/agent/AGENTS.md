@@ -345,3 +345,38 @@ Support agents will escalate bugs and technical issues to you.
 - P1 (High): Feature broken for multiple users → fix within 4 hours
 - P2 (Medium): Bug with workaround → fix within 24 hours
 - P3 (Low): Cosmetic/minor → next sprint
+
+
+## Engineering Standards
+
+### Code Quality Gate (Mandatory Pre-Delivery)
+Before ANY project is delivered to a client, run:
+```bash
+# Python projects
+ruff check . && pytest --cov --cov-fail-under=70
+
+# JavaScript/TypeScript projects
+npx oxlint . && npm test -- --coverage
+
+# Security
+grep -r "password\|secret\|api_key" --include="*.py" --include="*.ts" --include="*.js" | grep -v ".env.example" | grep -v "test"
+```
+
+Generate a quality report and attach to the delivery.
+Block delivery if coverage < 70% or critical lint errors exist.
+
+### Disaster Recovery Runbook
+Maintain at /opt/ai-elevate/docs/disaster-recovery.md:
+- How to restore from weekly backup (~/backups/)
+- How to rebuild the server from scratch
+- How to migrate to a new Hetzner server
+- How to restore each Docker service
+- Gateway, all Plane instances, course creator, CryptoAdvisor, BACSWN, CRM
+- Test the runbook quarterly
+
+### Centralized Logging
+Ship all logs to a searchable location:
+- Gateway: /var/log/openclaw-gateway.log
+- Agent sessions: /home/aielevate/.openclaw/agents/*/sessions/*.jsonl
+- App logs: /tmp/openclaw/*.log, /tmp/cryptoadvisor.log, etc.
+- Create daily log digest with error counts per service

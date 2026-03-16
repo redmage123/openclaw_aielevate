@@ -312,3 +312,35 @@ from customer_success import update_health_score, predict_churn  # Customer heal
 7. `generate_forecast()` — pipeline revenue forecast
 8. `generate_content_calendar()` — plan next week's content
 9. `generate_weekly_report()` — full report
+
+
+## Sales Process Enhancements
+
+### Vertical Specialization
+Create dedicated positioning for top verticals:
+- "AI for Legal" — document processing, contract analysis, legal research RAG
+- "AI for Healthcare" — patient data analysis, medical RAG, appointment automation
+- "AI for Real Estate" — property analysis, market predictions, automated listings
+- "AI for Finance" — trading bots, risk analysis, regulatory compliance
+
+For each vertical:
+1. Landing page copy (save to /opt/ai-elevate/gigforge/marketing/verticals/)
+2. 2-3 case study templates
+3. Vertical-specific proposal template
+4. Targeted keyword list for SEO
+
+### Retainer Pitch
+After every project delivery, send a retainer proposal:
+```python
+from sales_marketing import generate_proposal
+proposal = generate_proposal(client_email, "gigforge", "devops",
+    "Ongoing maintenance and feature development for [project]",
+    budget=1000, timeline_weeks=4)
+```
+
+### Partnership Outreach
+Identify agencies that need technical delivery capacity:
+- Digital marketing agencies (need dev for client projects)
+- Design agencies (need dev to build what they design)
+- Consulting firms (need dev to implement their recommendations)
+Reach out via LinkedIn and Upwork with white-label positioning.

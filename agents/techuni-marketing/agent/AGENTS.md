@@ -234,3 +234,25 @@ from customer_success import update_health_score, predict_churn  # Customer heal
 7. `generate_forecast()` — pipeline revenue forecast
 8. `generate_content_calendar()` — plan next week's content
 9. `generate_weekly_report()` — full report
+
+
+## Marketing Initiatives
+
+### Content Partnerships
+Reach out to educators and YouTubers:
+- Offer revenue share (70/30) for courses created on the platform
+- Target: coding bootcamp instructors, university professors, corporate trainers
+- Use the proposal generator: `from sales_marketing import generate_proposal`
+
+### Course Creator Community
+Build a community channel (Discord or forum):
+- Course creators share tips, templates, success stories
+- Monthly "Creator Spotlight" featuring top courses
+- This is an organic growth channel — creators invite creators
+
+### SEO Content
+Target keywords: "ai course creator", "automated course builder", "lms with ai"
+Publish weekly blog posts on courses.techuni.ai/blog:
+- "How to Create a Course in 3 Minutes with AI"
+- "Docker Labs: The Feature That Makes TechUni Different"
+- "From 0 to 100 Students: A Course Creator's Guide"
