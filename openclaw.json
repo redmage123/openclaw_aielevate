@@ -7,7 +7,7 @@
     "providers": {
       "anthropic": {
         "baseUrl": "https://api.anthropic.com",
-        "apiKey": "REDACTED_FOR_GIT",
+        "apiKey": "b8f1afb652fe20adae78b3e2c2a31917f16d9738470733ea",
         "models": []
       },
       "blockrun": {
@@ -1497,7 +1497,7 @@
       },
       "claude-code-proxy": {
         "baseUrl": "http://127.0.0.1:3456/v1",
-        "apiKey": "REDACTED_FOR_GIT",
+        "apiKey": "b8f1afb652fe20adae78b3e2c2a31917f16d9738470733ea",
         "api": "openai-completions",
         "authHeader": true,
         "models": [
@@ -1651,8 +1651,7 @@
       },
       "timeoutSeconds": 3600,
       "memorySearch": {
-        "enabled": true,
-        "queryExpansion": true
+        "enabled": true
       }
     },
     "list": [
@@ -1705,7 +1704,8 @@
             "techuni-social",
             "techuni-brand-designer",
             "gigforge-brand-designer",
-            "video-creator"
+            "video-creator",
+            "cybersecurity"
           ]
         }
       },
@@ -1734,7 +1734,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1764,7 +1765,8 @@
             "techuni-social",
             "techuni-brand-designer",
             "video-creator",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1793,7 +1795,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1822,7 +1825,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1851,7 +1855,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1880,7 +1885,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1909,7 +1915,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -1931,7 +1938,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -1953,7 +1961,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -1975,7 +1984,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -1997,7 +2007,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2019,7 +2030,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2041,7 +2053,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2063,7 +2076,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2085,7 +2099,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2107,7 +2122,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2142,7 +2158,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2171,7 +2188,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2200,7 +2218,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2229,7 +2248,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2258,7 +2278,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2287,7 +2308,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2316,7 +2338,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2346,7 +2369,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2375,7 +2399,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2404,7 +2429,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2433,7 +2459,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2461,7 +2488,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2489,7 +2517,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2536,7 +2565,8 @@
             "ai-elevate-devops",
             "ai-elevate-monitor",
             "devops",
-            "main"
+            "main",
+            "cybersecurity"
           ]
         }
       },
@@ -2565,7 +2595,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2587,7 +2618,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2616,7 +2648,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2645,7 +2678,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2667,7 +2701,8 @@
             "ai-elevate-factchecker",
             "ai-elevate-publisher",
             "ai-elevate-devops",
-            "ai-elevate-monitor"
+            "ai-elevate-monitor",
+            "cybersecurity"
           ]
         }
       },
@@ -2696,7 +2731,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2725,7 +2761,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2754,7 +2791,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2783,7 +2821,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2812,7 +2851,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2841,7 +2881,8 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2869,7 +2910,8 @@
             "gigforge-social",
             "gigforge-ux-designer",
             "gigforge-brand-designer",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2884,7 +2926,8 @@
             "neuro-book",
             "neuro-book-reviewer",
             "ai-elevate-researcher",
-            "ai-elevate-editor"
+            "ai-elevate-editor",
+            "cybersecurity"
           ]
         }
       },
@@ -2897,7 +2940,8 @@
         "subagents": {
           "allowAgents": [
             "neuro-book",
-            "neuro-book-reviewer"
+            "neuro-book-reviewer",
+            "cybersecurity"
           ]
         }
       },
@@ -2918,7 +2962,8 @@
             "techuni-support",
             "techuni-ux-designer",
             "video-creator",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2937,7 +2982,8 @@
             "techuni-brand-designer",
             "techuni-ux-designer",
             "video-creator",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2956,7 +3002,8 @@
             "gigforge-creative",
             "gigforge-ux-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -2983,7 +3030,8 @@
             "techuni-brand-designer",
             "gigforge-social",
             "gigforge-creative",
-            "gigforge-brand-designer"
+            "gigforge-brand-designer",
+            "cybersecurity"
           ]
         }
       },
@@ -3013,7 +3061,8 @@
             "gigforge-ux-designer",
             "gigforge-brand-designer",
             "video-creator",
-            "gigforge-csat"
+            "gigforge-csat",
+            "cybersecurity"
           ]
         }
       },
@@ -3042,7 +3091,72 @@
             "techuni-ux-designer",
             "techuni-social",
             "techuni-brand-designer",
-            "techuni-csat"
+            "techuni-csat",
+            "cybersecurity"
+          ]
+        }
+      },
+      {
+        "id": "cybersecurity",
+        "name": "Chief Information Security Officer",
+        "workspace": "/opt/ai-elevate",
+        "agentDir": "/home/aielevate/.openclaw/agents/cybersecurity/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "main",
+            "techuni-ceo",
+            "techuni-marketing",
+            "techuni-sales",
+            "techuni-support",
+            "techuni-engineering",
+            "techuni-qa",
+            "techuni-finance",
+            "ai-elevate",
+            "ai-elevate-scraper",
+            "ai-elevate-reviewer",
+            "ai-elevate-editor",
+            "ai-elevate-content",
+            "ai-elevate-writer",
+            "ai-elevate-researcher",
+            "ai-elevate-factchecker",
+            "ai-elevate-publisher",
+            "gigforge",
+            "gigforge-scout",
+            "gigforge-sales",
+            "gigforge-pm",
+            "gigforge-engineer",
+            "gigforge-dev-frontend",
+            "gigforge-dev-backend",
+            "gigforge-dev-ai",
+            "gigforge-devops",
+            "gigforge-qa",
+            "gigforge-creative",
+            "gigforge-social",
+            "gigforge-advocate",
+            "gigforge-finance",
+            "devops",
+            "techuni-devops",
+            "ai-elevate-devops",
+            "gigforge-monitor",
+            "techuni-monitor",
+            "ai-elevate-monitor",
+            "techuni-pm",
+            "techuni-scrum-master",
+            "techuni-dev-frontend",
+            "techuni-dev-backend",
+            "techuni-dev-ai",
+            "techuni-ux-designer",
+            "gigforge-ux-designer",
+            "neuro-book",
+            "neuro-book-reviewer",
+            "techuni-social",
+            "techuni-brand-designer",
+            "gigforge-brand-designer",
+            "video-creator",
+            "gigforge-csat",
+            "techuni-csat",
+            "cybersecurity"
           ]
         }
       }
@@ -3066,7 +3180,8 @@
         "neuro-book",
         "neuro-book-reviewer",
         "gigforge-csat",
-        "techuni-csat"
+        "techuni-csat",
+        "cybersecurity"
       ]
     },
     "sessions": {
@@ -3088,7 +3203,7 @@
     },
     "auth": {
       "mode": "token",
-      "token": "REDACTED_FOR_GIT"
+      "token": "b8f1afb652fe20adae78b3e2c2a31917f16d9738470733ea"
     },
     "tools": {
       "allow": [
@@ -3137,8 +3252,6 @@
         "enabled": true,
         "config": {
           "sessionTtlDays": 30,
-          "cronRetryAttempts": 3,
-          "cronRetryDelayMs": 60000,
           "cleanupIntervalHours": 24
         }
       }
@@ -3166,7 +3279,5 @@
       }
     }
   },
-  "channels": {
-    "sessionScope": "per-peer"
-  }
+  "channels": {}
 }
