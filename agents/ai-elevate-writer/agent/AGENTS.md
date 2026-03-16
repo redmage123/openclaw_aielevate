@@ -155,7 +155,7 @@ To send email, use the Mailgun API:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@mg.ai-elevate.ai>",
+    "from": "YOUR_NAME <ai-elevate-writer@team.ai-elevate.ai>",
     "to": "recipient@ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
