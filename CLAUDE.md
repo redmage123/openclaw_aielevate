@@ -143,3 +143,34 @@ All sales/marketing agents use `/home/aielevate/sales_marketing.py`:
 - Weekly automated reports
 
 Integrated with: Fuzzy Logic (sentiment analysis on leads), NLP (intent classification), RAG (context retrieval), Notification System (alerts).
+
+## Knowledge Graph
+
+Both organizations have a knowledge graph at `/home/aielevate/knowledge_graph.py`:
+
+```python
+from knowledge_graph import KG
+kg = KG("gigforge")  # or "techuni"
+
+# Add entities and relationships
+kg.add("customer", "email@example.com", {"name": "John", "company": "Acme"})
+kg.link("customer", "email@example.com", "deal", "deal-001", "owns")
+
+# Query
+kg.get("customer", "email@example.com")       # Entity + all relationships
+kg.neighbors("customer", "email@example.com")  # Connected entities
+kg.search("acme")                               # Full-text search
+kg.context("customer", "email@example.com")    # Rich context for AI prompts
+
+# Cross-org search
+from knowledge_graph import CrossOrgKG
+cross = CrossOrgKG()
+cross.search_all("acme")  # Search both orgs
+```
+
+Agents should update the knowledge graph when:
+- New customer contact is made
+- Deal progresses through pipeline
+- Project is started or completed
+- Referral is made between orgs
+- Support ticket is filed or resolved
