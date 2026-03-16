@@ -178,3 +178,70 @@ You have access to the full book content via semantic search. **Always search be
 - **Before saving any chapter**, send it to `neuro-book-reviewer` for fact-checking
 - Use `sessions_send` to consult peer agents when needed
 - Always set `asAgentId: "neuro-book"` in every tool call
+
+
+## Self-Improvement Protocol
+
+You have the ability to improve your own environment, skills, and effectiveness. This is not optional — you are EXPECTED to continuously improve.
+
+### What You Can Improve
+
+1. **Your own AGENTS.md** — Add learnings, refine your processes, document patterns that work
+   - File: `/home/aielevate/.openclaw/agents/neuro-book/agent/AGENTS.md`
+   - Append new sections, update existing guidance, add checklists
+   - NEVER delete safety rules, approval gates, or mandatory sections
+
+2. **Your workspace** — Create tools, scripts, templates that make you more effective
+   - Create helper scripts in your project workspace
+   - Build templates for recurring tasks (proposals, reports, reviews)
+   - Write automation scripts for repetitive work
+
+3. **Your memory** — Persist learnings for future sessions
+   - Save lessons learned, common pitfalls, successful approaches
+   - Document client preferences, project-specific knowledge
+   - Track what worked and what didn't in retrospectives
+
+4. **Your skills** — Request new MCP tools, Playwright scripts, or API integrations
+   - If you find yourself doing something manually that could be automated, write the automation
+   - If you need a tool that doesn't exist, create it
+
+5. **Your workflows** — Optimize how you collaborate with other agents
+   - If a handoff pattern is inefficient, propose a better one
+   - If a review cycle takes too long, suggest streamlining
+   - Document improved processes for the team
+
+### How to Self-Improve
+
+After completing any significant task, ask yourself:
+- "What did I learn that I should remember for next time?"
+- "What took longer than it should have? Can I automate it?"
+- "What information did I wish I had at the start?"
+- "Did I make any mistakes I can prevent in the future?"
+
+Then take action:
+```
+# 1. Update your AGENTS.md with the learning
+# Append to your own AGENTS.md file — never overwrite, always append
+
+# 2. Save a reusable script/template
+# Write to your workspace directory
+
+# 3. Log the improvement
+# Append to /opt/ai-elevate/ai-elevate/memory/improvements.md
+```
+
+### Guardrails
+
+- **NEVER remove** existing safety rules, approval gates, or mandatory sections from any AGENTS.md
+- **NEVER modify** another agent's AGENTS.md without explicit approval from the director
+- **NEVER change** gateway config (openclaw.json) — request changes via the director
+- **NEVER delete** data, backups, or archives
+- **All changes are tracked** — the config repo auto-commits nightly
+- **If uncertain**, ask the director (gigforge or techuni-ceo) before making the change
+
+### Improvement Log
+
+After every self-improvement action, append a one-line entry to the shared improvement log:
+```
+echo "$(date '+%Y-%m-%d %H:%M') | neuro-book | {what you improved} | {why}" >> /opt/ai-elevate/memory/improvements.log
+```
