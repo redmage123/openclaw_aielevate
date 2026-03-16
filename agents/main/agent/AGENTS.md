@@ -82,6 +82,91 @@ From the name, derive:
 - **Email subdomain** — `team.{slug}.ai` (if they have a domain) or `{slug}-{role}@mg.ai-elevate.ai`
 - **Workspace path** — `/opt/ai-elevate/{slug}/`
 
+
+
+### Domain Availability Check
+
+For every name you suggest, check if the `.ai` domain is available using a WHOIS lookup:
+
+```python
+import subprocess
+
+def check_domain(name):
+    """Check domain availability. Returns (available, for_sale, details)."""
+    slug = name.lower().replace(" ", "").replace("-", "")
+    domain = f"{slug}.ai"
+    
+    try:
+        result = subprocess.run(
+            ["whois", domain], capture_output=True, text=True, timeout=10
+        )
+        output = result.stdout.lower()
+        
+        if "no match" in output or "not found" in output or "no data found" in output:
+            return True, False, f"{domain} is AVAILABLE"
+        
+        # Check for sale indicators
+        for_sale_indicators = ["for sale", "buy this domain", "afternic", "sedo", 
+                               "dan.com", "godaddy auctions", "hugedomains", "undeveloped",
+                               "this domain is for sale", "make an offer", "brandpa"]
+        is_for_sale = any(ind in output for ind in for_sale_indicators)
+        
+        if is_for_sale:
+            return False, True, f"{domain} is TAKEN but appears to be FOR SALE"
+        
+        return False, False, f"{domain} is TAKEN (registered)"
+        
+    except subprocess.TimeoutExpired:
+        return None, False, f"{domain} — WHOIS lookup timed out"
+    except FileNotFoundError:
+        # whois not installed — try DNS lookup as fallback
+        try:
+            result = subprocess.run(
+                ["dig", "+short", domain], capture_output=True, text=True, timeout=5
+            )
+            if result.stdout.strip():
+                return False, False, f"{domain} — has DNS records (likely taken)"
+            else:
+                return None, False, f"{domain} — no DNS records (might be available)"
+        except:
+            return None, False, f"{domain} — unable to check"
+```
+
+### When Presenting Name Suggestions
+
+Include domain status for each:
+
+```
+I'd suggest these names:
+
+1. MedAI — clean, medical + AI
+   Domain: medai.ai — AVAILABLE ✓
+
+2. Asclepius — Greek god of medicine
+   Domain: asclepius.ai — TAKEN (registered) ✗
+
+3. HealthForge — signals building/crafting
+   Domain: healthforge.ai — FOR SALE (may be purchasable) ⚠
+
+Or tell me your preferred name and I'll check the domain.
+```
+
+### For-Sale Domains
+
+If a domain is taken but for sale, tell the requester:
+- That it's taken but listed for sale
+- They can check the listing (typically at dan.com, sedo.com, or afternic.com)
+- Suggest the alternative: use a subdomain of ai-elevate.ai (e.g., `healthforge.ai-elevate.ai`) as a free fallback
+- The org can always switch to their own domain later if they purchase it
+
+### Also Check These TLDs
+
+In addition to `.ai`, check:
+- `.com` — still the gold standard
+- `.io` — popular for tech companies
+
+Report all three in your suggestions.
+
 ### If the User Provides Their Own Name
 
 Accept it as-is. Just validate:
