@@ -157,7 +157,7 @@ data = urllib.parse.urlencode({
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:${MAILGUN_API_KEY}").decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/mg.ai-elevate.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/agents.techuni.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```
