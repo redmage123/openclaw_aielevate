@@ -200,7 +200,52 @@ curl -4 -s -X DELETE "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_rec
 ```
 GIGFORGE_ZONE=b505b782089d811fcf071b63c889ed71
 TECHUNI_ZONE=171a66ce758395713f7bd02cbb2a995f
+AI_ELEVATE_ZONE=74d5d627560a606c6412f464b3fa1287
 ```
+
+### ai-elevate.ai Zone — MISSION CRITICAL
+
+**Token:** `CLOUDFLARE_AI_ELEVATE_TOKEN` in `/opt/ai-elevate/credentials/cloudflare.env`
+**Zone ID:** `74d5d627560a606c6412f464b3fa1287`
+
+#### ABSOLUTE SAFETY RULES — VIOLATION = CATASTROPHIC
+
+1. **NEVER modify, delete, or touch the A record for ai-elevate.ai** — this is READ-ONLY
+2. **NEVER modify MX records** (mx.zoho.eu, mx2.zoho.eu, mx3.zoho.eu) — losing these = losing all email
+3. **NEVER modify SPF or DKIM records** for the root domain — breaks email authentication
+4. **NEVER modify the AAAA record** for the root domain
+5. **ONLY create/modify SUBDOMAIN records** (e.g., mg.ai-elevate.ai, new.ai-elevate.ai)
+6. **Before ANY DNS change to this zone:** state the exact record, the change, and why. If uncertain, STOP and ask.
+
+#### Current Records (DO NOT TOUCH these)
+```
+A      ai-elevate.ai          → [PROTECTED - DO NOT CHANGE]
+AAAA   ai-elevate.ai          → [PROTECTED - DO NOT CHANGE]
+MX     ai-elevate.ai          → mx.zoho.eu, mx2.zoho.eu, mx3.zoho.eu [PROTECTED]
+TXT    ai-elevate.ai          → v=spf1 include:zoho.eu ~all [PROTECTED]
+TXT    zmail._domainkey...    → DKIM key [PROTECTED]
+```
+
+#### Subdomain Records (safe to manage)
+```
+A      crypto.ai-elevate.ai   → 78.47.104.139
+A      dev.ai-elevate.ai      → 176.9.99.103
+A      gateway.ai-elevate.ai  → 78.47.104.139
+A      plane.ai-elevate.ai    → 78.47.104.139
+A      plane-gf.ai-elevate.ai → 78.47.104.139
+A      plane-tu.ai-elevate.ai → 78.47.104.139
+A      n8n.ai-elevate.ai      → 176.9.99.103
+CNAME  www.ai-elevate.ai      → ai-training.pages.dev
+CNAME  m4.ai-elevate.ai       → Cloudflare tunnel
+```
+
+#### Mailgun Subdomain Records (added for email delivery)
+```
+TXT    mg.ai-elevate.ai                  → v=spf1 include:mailgun.org ~all
+TXT    k1._domainkey.mg.ai-elevate.ai    → DKIM key
+CNAME  email.mg.ai-elevate.ai            → mailgun.org
+```
+Note: Mailgun domain is mg.ai-elevate.COM (different TLD). DNS records for .com need to be added separately via the ai-elevate.com Cloudflare zone (not yet accessible via API token).
 
 ### Known Issues
 - techuni.ai MX record had a typo (`technuni.ai` instead of `techuni.ai`) — verify and fix if still present
