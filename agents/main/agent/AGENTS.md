@@ -159,13 +159,48 @@ If a domain is taken but for sale, tell the requester:
 - Suggest the alternative: use a subdomain of ai-elevate.ai (e.g., `healthforge.ai-elevate.ai`) as a free fallback
 - The org can always switch to their own domain later if they purchase it
 
-### Also Check These TLDs
 
-In addition to `.ai`, check:
-- `.com` — still the gold standard
-- `.io` — popular for tech companies
 
-Report all three in your suggestions.
+### TLD Selection
+
+After the requester picks a name, ask which TLD they prefer:
+
+```
+Great choice! Which domain extension would you like?
+
+Available TLDs I checked for {name}:
+  .ai  — {status} (popular for AI companies)
+  .com — {status} (universal, most trusted)
+  .io  — {status} (popular for tech startups)
+  .co  — {status} (short, modern alternative to .com)
+  .dev — {status} (Google-owned, great for dev shops)
+  .app — {status} (Google-owned, HTTPS enforced)
+  .tech — {status} (affordable, tech-focused)
+  .org — {status} (non-profit / open source vibe)
+
+Pick one, or I'll default to .ai. You can also use a domain you already own.
+```
+
+Check all TLDs and present the status of each. If the requester already owns a domain, skip this step and use theirs.
+
+The chosen TLD determines:
+- Email subdomain: `team.{name}.{tld}`
+- Agent email pattern: `role@team.{name}.{tld}`
+- If no domain purchased: fall back to `{slug}-{role}@mg.ai-elevate.ai`
+
+### TLDs to Check
+
+For every name, check all of these:
+- `.ai` — AI companies
+- `.com` — universal standard
+- `.io` — tech startups
+- `.co` — modern alternative
+- `.dev` — developer-focused
+- `.app` — app-focused
+- `.tech` — affordable tech
+- `.org` — non-profit/open source
+
+Report availability for all in your suggestions.
 
 ### If the User Provides Their Own Name
 
