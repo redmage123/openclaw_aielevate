@@ -18,3 +18,4 @@ gateway-watchdog-state
 *.bak
 *.bak.*
 *.backup*
+*.pre-elevate*

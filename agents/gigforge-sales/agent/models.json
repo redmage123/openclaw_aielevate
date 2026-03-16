@@ -2056,7 +2056,7 @@
     },
     "anthropic": {
       "baseUrl": "https://api.anthropic.com",
-      "apiKey": "${ANTHROPIC_API_KEY}",
+      "apiKey": "REDACTED_FOR_GIT",
       "models": []
     },
     "blockrun": {
@@ -3546,7 +3546,7 @@
     },
     "claude-code-proxy": {
       "baseUrl": "http://127.0.0.1:3456/v1",
-      "apiKey": "${GATEWAY_TOKEN}",
+      "apiKey": "REDACTED_FOR_GIT",
       "api": "openai-completions",
       "authHeader": true,
       "models": [
