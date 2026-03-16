@@ -174,3 +174,28 @@ Agents should update the knowledge graph when:
 - Project is started or completed
 - Referral is made between orgs
 - Support ticket is filed or resolved
+
+## Email Intelligence Module
+
+All email flows through `/home/aielevate/email_intel.py`:
+
+### Features
+1. **Threading** — conversations tracked across replies, full history available
+2. **Draft Review** — save drafts for human approval: `save_draft(agent, to, subject, body)`
+3. **Reply Extraction** — quoted text stripped automatically (~90% accuracy)
+4. **Email Search** — FTS5 search across all messages: `search_emails("query")`
+5. **Labels** — tag threads: needs_response, escalated, vip, follow_up, etc.
+6. **Blocklists** — block senders per agent: `add_to_blocklist(agent, email)`
+7. **Metrics** — sent/received/bounced/replied counts, delivery rate
+8. **Domain Warming** — gradual send volume increase (20 → 2000 over 14 days)
+
+### For Sensitive Emails
+Use draft review instead of sending directly:
+```python
+from email_intel import save_draft
+save_draft("your-agent-id", "recipient@email.com", "Subject", "Body", reason="sensitive client")
+# Braun will be notified to approve/reject
+```
+
+### Thread Context
+Every inbound email now includes full conversation history in the agent's message.
