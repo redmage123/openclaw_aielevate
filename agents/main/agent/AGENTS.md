@@ -419,6 +419,174 @@ schedule_checkin(requester_email, "ai-elevate", "onboarding_7d", 7)
 schedule_checkin(requester_email, "ai-elevate", "onboarding_30d", 30)
 ```
 
+
+
+## End-User Notification Channels
+
+Every organization you build must support multiple notification channels for its end users (the requester's customers or team). During discovery, ask the requester which channels they want.
+
+### Available Channels
+
+| Channel | How It Works | Setup Required |
+|---------|-------------|----------------|
+| **Email** | Mailgun HTTP API via mg.ai-elevate.ai | None — works out of the box |
+| **WhatsApp** | WhatsApp Business API or OpenClaw WhatsApp channel | WhatsApp Business account + phone number |
+| **Telegram** | Telegram Bot API | Bot token from @BotFather + chat IDs |
+
+### Discovery Questions
+
+Add these to your Phase 1 discovery:
+
+```
+How should your agents communicate with your customers/team?
+
+1. Email (included by default)
+2. WhatsApp — requires a WhatsApp Business account. Do you have one?
+3. Telegram — I'll create a bot for your org. Sound good?
+
+You can pick multiple. I'll set up all the channels you need.
+```
+
+### Implementation Per Channel
+
+#### Email (Default — Always Included)
+Already covered by the standard email setup (team.{domain} addresses via Mailgun).
+
+#### Telegram Setup
+When the requester wants Telegram:
+
+1. Ask them to create a bot via @BotFather (or offer to guide them):
+   - Message @BotFather on Telegram
+   - /newbot → name it "{OrgName} Assistant" → pick a username
+   - Copy the bot token
+
+2. Store the token:
+```python
+import json, os
+config = {
+    "bot_token": "TOKEN_FROM_USER",
+    "org": "{org-slug}",
+    "chat_ids": {}
+}
+os.makedirs(f"/opt/ai-elevate/{org-slug}/credentials", exist_ok=True)
+with open(f"/opt/ai-elevate/{org-slug}/credentials/telegram.json", "w") as f:
+    json.dump(config, f, indent=2)
+os.chmod(f"/opt/ai-elevate/{org-slug}/credentials/telegram.json", 0o600)
+```
+
+3. Add Telegram send capability to the org's agents:
+```python
+def send_telegram(chat_id, text, bot_token):
+    import urllib.request, urllib.parse
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    data = urllib.parse.urlencode({
+        "chat_id": chat_id, "text": text,
+        "parse_mode": "HTML", "disable_web_page_preview": "true",
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method="POST")
+    urllib.request.urlopen(req, timeout=10)
+```
+
+4. Create a webhook for incoming Telegram messages (optional — for two-way chat):
+   - Set webhook URL to `http://78.47.104.139:8065/webhook/telegram/{org-slug}`
+   - Route messages to the appropriate agent
+
+#### WhatsApp Setup
+When the requester wants WhatsApp:
+
+1. Ask if they have:
+   - A WhatsApp Business account
+   - A WhatsApp Business API provider (Twilio, MessageBird, 360dialog, or Meta direct)
+   - A registered phone number
+
+2. If they use OpenClaw's built-in WhatsApp channel:
+   - Configure in openclaw.json under the org's agents
+   - Set the WhatsApp channel with their credentials
+
+3. If they use a third-party API (e.g., Twilio):
+```python
+def send_whatsapp(to_number, text, account_sid, auth_token, from_number):
+    import urllib.request, urllib.parse, base64
+    url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+    data = urllib.parse.urlencode({
+        "To": f"whatsapp:{to_number}",
+        "From": f"whatsapp:{from_number}",
+        "Body": text,
+    }).encode("utf-8")
+    creds = base64.b64encode(f"{account_sid}:{auth_token}".encode()).decode()
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Authorization", f"Basic {creds}")
+    urllib.request.urlopen(req, timeout=15)
+```
+
+4. Store credentials securely:
+```python
+os.makedirs(f"/opt/ai-elevate/{org-slug}/credentials", exist_ok=True)
+# Save to {org-slug}/credentials/whatsapp.json (chmod 600)
+```
+
+### Org-Level Notification Wrapper
+
+For every org you build, create a notification wrapper at `/opt/ai-elevate/{org-slug}/notify.py`:
+
+```python
+#!/usr/bin/env python3
+"""Notification wrapper for {OrgName} — routes to user-preferred channel."""
+
+import json, os, sys
+sys.path.insert(0, "/home/aielevate")
+from notify import send as system_send  # Internal team notifications
+
+ORG = "{org-slug}"
+CREDS_DIR = f"/opt/ai-elevate/{ORG}/credentials"
+
+# Load channel configs
+def _load_config(name):
+    try:
+        with open(f"{CREDS_DIR}/{name}.json") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def send_to_user(user_id, title, body, channel="email", **kwargs):
+    """Send notification to an end user via their preferred channel."""
+    if channel == "email":
+        _send_email(kwargs.get("email", user_id), title, body)
+    elif channel == "telegram":
+        config = _load_config("telegram")
+        chat_id = config.get("chat_ids", {}).get(user_id, user_id)
+        _send_telegram(chat_id, f"<b>{title}</b>\n\n{body}", config.get("bot_token", ""))
+    elif channel == "whatsapp":
+        config = _load_config("whatsapp")
+        _send_whatsapp(kwargs.get("phone", user_id), body, config)
+    else:
+        _send_email(user_id, title, body)  # Default to email
+
+# ... (include the send functions from above)
+```
+
+### User Preferences
+
+Track each end user's preferred notification channel:
+```python
+# In the org's knowledge graph
+from knowledge_graph import KG
+kg = KG("{org-slug}")
+kg.add("user", user_email, {
+    "name": "...",
+    "preferred_channel": "telegram",  # or "email" or "whatsapp"
+    "telegram_chat_id": "12345",
+    "whatsapp_number": "+1234567890",
+})
+```
+
+Agents should check the user's preference before sending:
+```python
+user = kg.get("user", user_email)
+channel = user["properties"].get("preferred_channel", "email")
+send_to_user(user_email, "Title", "Body", channel=channel)
+```
+
 ## Quality Checklist
 
 Before marking an org as delivered, verify ALL of these:
@@ -434,6 +602,8 @@ Before marking an org as delivered, verify ALL of these:
 - [ ] Workflows documented
 - [ ] Git committed
 - [ ] Delivery email sent
+- [ ] Notification channels configured (email + Telegram/WhatsApp if requested)
+- [ ] End-user notification wrapper created
 
 ## Constraints
 
