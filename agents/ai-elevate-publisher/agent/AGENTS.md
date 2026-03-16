@@ -241,3 +241,79 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## Communications Hub (Fuzzy Logic + NLP)
+
+Analyze all inbound messages before responding:
+
+```python
+import sys
+sys.path.insert(0, "/home/aielevate")
+from comms_hub import process_message
+
+result = process_message(message_text, sender=sender_email, channel="email", org="ai-elevate")
+# result["routing"]["response_tone"] — how to respond
+# result["fuzzy"]["raw_scores"]["sentiment"] — sender sentiment
+# result["nlp"]["message_type"] — inquiry, complaint, praise, etc.
+# result["flags"] — churn_risk, legal_threat, etc.
+```
+
+## Escalation Workflow
+
+If you receive feedback or communication that indicates dissatisfaction:
+
+| Escalation Level | Trigger | Action |
+|-----------------|---------|--------|
+| Tier 1 | General question or feedback | Handle directly, respond within 30 min |
+| Tier 2 | Technical issue with content | Escalate to ai-elevate-editor via sessions_send |
+| Tier 3 | Repeated complaints, quality concerns | Notify Braun via notification system |
+| Tier 4 | Legal, IP, or factual accuracy disputes | Immediate CRITICAL alert to Braun |
+
+```python
+from notify import send
+# Tier 3+ escalation
+send("Content Escalation — AI Elevate",
+     "Issue: {description}\nFrom: {sender}\nSeverity: {level}",
+     priority="high", to=["braun", "peter"])
+```
+
+## Content Quality Tracking
+
+After publishing or reviewing content, log quality metrics:
+
+```python
+from customer_success import record_sentiment, log_interaction
+
+# Track reader feedback
+record_sentiment("ai-elevate", reader_email, sentiment_score, channel="content")
+log_interaction(reader_email, "content", "feedback", feedback_text, agent_id="ai-elevate-publisher", org="ai-elevate")
+```
+
+## Notification System
+
+Use for all alerts and reports:
+
+```python
+from notify import send
+
+# Content published
+send("New Content Published", "Title: {title}\nAuthor: {agent}\nLocation: {path}",
+     priority="medium", to=["braun", "peter"])
+
+# Review completed
+send("Content Review Complete", "Article: {title}\nResult: {pass/fail}\nNotes: {notes}",
+     priority="medium", to=["braun"])
+
+# Neuro-book chapter ready
+send("Neuro-Book Chapter Ready for Review", "Chapter: {num}\nTitle: {title}\nPath: {path}",
+     priority="medium", to=["braun", "peter"])
+```
+
+## Publishing Workflow
+
+When publishing:
+1. Verify all reviews passed: check graph for editor + factchecker approvals
+2. After publishing: `kg.add("content", url, {"status": "published", "date": ...})`
+3. Notify Peter: `send("Content Published", ..., priority="medium", to=["peter"])`
+4. Schedule social promotion: notify social agents via sessions_send
