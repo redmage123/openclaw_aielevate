@@ -278,3 +278,141 @@ Before marking an org as delivered, verify ALL of these:
 - All agents must follow the human voice email rule
 - Refunds always require human (Braun) approval
 - The ai-elevate.ai A record and MX records are NEVER to be modified
+
+
+## Role-Based Access Control (RBAC)
+
+Not everyone can create, modify, or delete organizations and agents. Permissions are strictly enforced.
+
+### Roles
+
+| Role | Who | Permissions |
+|------|-----|-------------|
+| **Owner** | braun.brelin@ai-elevate.ai | Full access: create/modify/delete orgs and agents, approve plans, override any restriction |
+| **Admin** | peter.munro@ai-elevate.ai, mike.burton@ai-elevate.ai | Create orgs, modify agents within orgs they manage, cannot delete entire orgs |
+| **Member** | charlie.turking@ai-elevate.ai | Request new orgs/agents (goes through approval), modify agents they own, cannot delete |
+| **External** | Anyone else | Request only — all actions require Owner approval before execution |
+
+### Permission Matrix
+
+| Action | Owner | Admin | Member | External |
+|--------|-------|-------|--------|----------|
+| Create new organization | Direct | Direct | Requires Owner approval | Requires Owner approval |
+| Delete entire organization | Direct | DENIED | DENIED | DENIED |
+| Add agent to existing org | Direct | Direct (their orgs) | Requires Admin approval | Requires Owner approval |
+| Modify agent AGENTS.md | Direct | Direct (their orgs) | Own agents only | DENIED |
+| Delete agent | Direct | Requires Owner approval | DENIED | DENIED |
+| Modify gateway config | Direct | DENIED | DENIED | DENIED |
+| Modify cron jobs | Direct | Requires Owner approval | DENIED | DENIED |
+| Modify DNS records | Direct | DENIED | DENIED | DENIED |
+| Access crypto wallets | Direct (read-only) | DENIED | DENIED | DENIED |
+
+### How to Determine Requester Role
+
+When you receive a request, check the sender email:
+```python
+ROLES = {
+    "braun.brelin@ai-elevate.ai": "owner",
+    "peter.munro@ai-elevate.ai": "admin",
+    "mike.burton@ai-elevate.ai": "admin",
+    "charlie.turking@ai-elevate.ai": "member",
+}
+
+def get_role(sender_email):
+    return ROLES.get(sender_email.lower().strip(), "external")
+```
+
+### Enforcement
+
+Before executing ANY action, verify:
+1. Identify the requester's role from their email
+2. Check the permission matrix above
+3. If the action requires approval, send the plan to the appropriate approver and WAIT
+4. Log every action with who requested it, who approved it, and what was done
+
+```python
+# Log every org-builder action
+from email_intel import _append_jsonl
+from pathlib import Path
+_append_jsonl(Path("/opt/ai-elevate/org-builder/audit-log.jsonl"), {
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "requester": sender_email,
+    "role": role,
+    "action": action_type,
+    "target": target_org_or_agent,
+    "approved_by": approver_email or "self" if role == "owner" else "pending",
+    "status": "executed" or "pending_approval" or "denied",
+})
+```
+
+## Organization Modification
+
+### Adding Agents to Existing Org
+
+When asked to add an agent to an existing org:
+1. Check requester permissions
+2. Read the org's existing AGENTS.md files to understand the team structure
+3. Design the new agent to fit the org's patterns and workflows
+4. Create the plan and get approval (per RBAC)
+5. Implement: create agent dir, AGENTS.md, update openclaw.json, update peer agents' allowAgents
+6. Restart gateway
+7. Send confirmation email
+
+### Modifying Existing Agents
+
+When asked to modify an agent:
+1. Check requester permissions
+2. Read the current AGENTS.md
+3. Propose changes (send diff to requester)
+4. On approval, apply changes
+5. Restart gateway if config changed
+6. Confirm via email
+
+### Deleting Agents
+
+When asked to delete an agent (Owner only, or Admin with Owner approval):
+1. Verify Owner role or Owner approval
+2. Check if any other agents depend on this agent (allowAgents references)
+3. Warn about impact: "Deleting {agent} will affect {X} agents that communicate with it"
+4. On confirmation:
+   - Remove from openclaw.json agents.list
+   - Remove from all other agents' allowAgents lists
+   - Archive the agent directory (don't delete — move to /opt/ai-elevate/org-builder/archived/)
+   - Remove cron jobs referencing this agent
+   - Restart gateway
+5. Confirm via email
+
+### Deleting Entire Organizations
+
+**Owner only.** This is a destructive action requiring explicit confirmation.
+
+When Braun requests org deletion:
+1. List everything that will be affected: agents, cron jobs, Docker services, DNS records, data
+2. Send a confirmation email: "This will permanently archive {X} agents, {Y} cron jobs, and {Z} services. Reply CONFIRM DELETE to proceed."
+3. On "CONFIRM DELETE":
+   - Stop all Docker services for the org
+   - Remove agents from openclaw.json
+   - Archive workspace to /opt/ai-elevate/org-builder/archived/{org}-{date}/
+   - Remove cron jobs
+   - Do NOT delete DNS records (leave for manual cleanup)
+   - Restart gateway
+   - Send confirmation with archive location
+4. Archive is kept for 90 days in case of recovery
+
+## Audit Trail
+
+Every action is logged to `/opt/ai-elevate/org-builder/audit-log.jsonl`:
+```json
+{
+  "timestamp": "...",
+  "requester": "email",
+  "role": "owner/admin/member/external",
+  "action": "create_org/add_agent/modify_agent/delete_agent/delete_org",
+  "target": "org-slug or agent-id",
+  "approved_by": "email or self",
+  "status": "executed/pending/denied",
+  "details": "description of what was done"
+}
+```
+
+Weekly audit report sent to Braun every Monday via notification system.
