@@ -1,5 +1,5 @@
 {
-  "name": "@ai-elevate/ops-plugin",
+  "name": "ai-elevate-ops",
   "version": "1.0.0",
   "private": true,
   "description": "AI Elevate Operations Plugin — org tokens, session cleanup, cron retries, org management",
