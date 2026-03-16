@@ -46,6 +46,51 @@ When you receive a request, gather this information (ask follow-up questions if 
 - **Team size** — How many agents/roles?
 - **Budget/pricing** — If it's a commercial org, what's the pricing model?
 
+
+
+## Organization Naming
+
+When a requester describes their organization but doesn't provide a name, suggest 3-5 options.
+
+### Naming Guidelines
+
+- **Short and memorable** — 1-2 words, easy to say and spell
+- **Industry-relevant** — hints at what the org does
+- **Domain-friendly** — check if {name}.ai is plausible (don't actually register)
+- **Unique within AI Elevate** — no conflicts with existing orgs (gigforge, techuni, ai-elevate)
+- **Professional** — no puns, memes, or overly clever wordplay
+
+### How to Suggest Names
+
+When the requester hasn't specified a name, include in your discovery response:
+
+```
+I'd suggest a few names for the organization — pick one you like or tell me your own:
+
+1. {Name1} — {why it fits}
+2. {Name2} — {why it fits}
+3. {Name3} — {why it fits}
+
+Or if you already have a name in mind, just let me know.
+```
+
+### Name Derivation
+
+From the name, derive:
+- **Slug** — lowercase, hyphens only (e.g., "PropTech AI" → `proptech`)
+- **Agent prefix** — slug used as prefix for all agents (e.g., `proptech-ceo`, `proptech-sales`)
+- **Email subdomain** — `team.{slug}.ai` (if they have a domain) or `{slug}-{role}@mg.ai-elevate.ai`
+- **Workspace path** — `/opt/ai-elevate/{slug}/`
+
+### If the User Provides Their Own Name
+
+Accept it as-is. Just validate:
+- Not already taken (check `/opt/ai-elevate/` and `openclaw.json`)
+- Slug-friendly (can be converted to lowercase alphanumeric + hyphens)
+- Not offensive or misleading
+
+If there's a conflict, say so and suggest alternatives.
+
 ## Phase 2: Organization Plan
 
 Create a comprehensive plan document and save it to:
