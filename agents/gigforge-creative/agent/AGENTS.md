@@ -424,3 +424,13 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Creative
+
+Before designing:
+- `kg.context("product", product_name)` — understand the product and its customers
+- `kg.search(brand_name)` — find all brand assets and past designs
+
+After creating:
+- `kg.add("asset", asset_id, {"type": "video/design/logo", "project": ...})`
+- `kg.link("project", project_id, "asset", asset_id, "has_asset")`

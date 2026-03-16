@@ -355,3 +355,13 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Scout
+
+Before scanning platforms:
+- `kg.search(client_name)` — check if we've worked with this client before
+- `kg.query_rel("referred_by")` — check referral network for warm intros
+
+After finding leads:
+- `kg.add("lead", gig_url, {"platform": "upwork", "title": ..., "budget": ...})`
+- `kg.link("lead", gig_url, "skill", "rag", "requires")` for each required skill

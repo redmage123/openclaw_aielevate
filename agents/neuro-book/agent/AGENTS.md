@@ -338,3 +338,13 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage
+
+Before any task involving a customer, deal, or project:
+- `context = kg.context(entity_type, key)` — get full relationship context
+- `kg.search(keyword)` — find related entities
+
+After completing work:
+- Update relevant entities with new information
+- Create relationships to connect your work to the broader context

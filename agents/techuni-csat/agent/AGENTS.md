@@ -225,3 +225,13 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — CSAT Director
+
+On EVERY escalation:
+1. `context = kg.context("customer", customer_email)` — full history before responding
+2. `kg.neighbors("customer", customer_email, depth=2)` — see their full network
+   Are they connected to other customers? Were they referred? Do they have multiple deals?
+3. Check: `kg.search(company)` — are other people from the same company also customers?
+4. After resolution: `kg.link("ticket", ticket_id, "agent", "your-id", "escalated_to")`
+5. After postmortem: `kg.add("postmortem", pm_id, {...})` + link to ticket

@@ -439,3 +439,16 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Engineer
+
+When reviewing architecture:
+- `kg.search(technology)` — find all projects using this technology
+- `kg.neighbors("project", project_id)` — see related deliverables, agents, tickets
+
+When resolving bugs:
+- `kg.search(error_description)` — check if similar issue existed before
+- `kg.link("ticket", ticket_id, "ticket", old_ticket_id, "related_to")` if recurring
+
+After delivery:
+- `kg.add("deliverable", name, {"tech_stack": [...], "quality_score": ...})`

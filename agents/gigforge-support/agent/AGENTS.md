@@ -435,3 +435,16 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Support
+
+On EVERY customer interaction:
+1. `context = kg.context("customer", customer_email)` — read BEFORE responding
+   This shows: past tickets, deals, health score, referrals, connected people
+2. If new customer: `kg.add("customer", email, {"name": ..., "company": ...})`
+3. `kg.add("ticket", ticket_id, {"issue": ..., "status": "open", "tier": 1})`
+4. `kg.link("customer", email, "ticket", ticket_id, "filed")`
+
+On resolution:
+5. Update ticket: `kg.add("ticket", ticket_id, {"status": "resolved", "resolution": ...})`
+6. `kg.link("ticket", ticket_id, "agent", your_agent_id, "resolved_by")`

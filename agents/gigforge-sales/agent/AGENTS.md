@@ -403,3 +403,21 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Sales
+
+Before writing ANY proposal:
+- `context = kg.context("customer", client_email)` — get full relationship history
+- `kg.search(company_name)` — find all prior interactions across both orgs
+- `kg.neighbors("customer", client_email, depth=2)` — discover connections (referrals, shared companies)
+- Use this context to personalize the proposal
+
+After sending a proposal:
+- `kg.add("deal", deal_id, {"title": ..., "value": ..., "stage": "proposal_sent"})`
+- `kg.link("customer", client_email, "deal", deal_id, "owns")`
+- `kg.link("deal", deal_id, "agent", "gigforge-sales", "managed_by")`
+- `kg.link("deal", deal_id, "proposal", proposal_id, "has_proposal")`
+
+After winning/losing:
+- Update deal properties with outcome
+- `kg.link("deal", deal_id, "competitor", comp_name, "lost_to")` if lost to competitor

@@ -315,3 +315,14 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Marketing
+
+Before any campaign:
+- `kg.search(segment)` — find customers matching the campaign target
+- `kg.query_rel("purchased")` — understand buying patterns
+- `kg.neighbors("product", product_name, depth=2)` — find connected customers and their feedback
+
+After campaign:
+- `kg.add("campaign", campaign_id, {"type": ..., "target": ..., "results": ...})`
+- `kg.link("campaign", campaign_id, "customer", email, "targeted")` for each recipient

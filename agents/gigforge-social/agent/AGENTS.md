@@ -523,3 +523,13 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Social Media
+
+Before creating content:
+- `kg.search(topic)` — find related projects, deals, customers for authentic case studies
+- `kg.neighbors("product", product_name)` — find features and customer feedback to highlight
+
+After publishing:
+- `kg.add("content", post_id, {"platform": "linkedin", "topic": ..., "url": ...})`
+- `kg.link("content", post_id, "product", product_name, "promotes")`

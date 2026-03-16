@@ -426,3 +426,14 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — Finance
+
+On every transaction:
+- `kg.add("invoice", invoice_id, {"deal": deal_id, "amount": ..., "status": "sent"})`
+- `kg.link("deal", deal_id, "invoice", invoice_id, "billed_via")`
+- `kg.link("customer", email, "invoice", invoice_id, "owes")`
+
+On payment received:
+- Update invoice status
+- `kg.link("invoice", invoice_id, "payment", payment_id, "paid_with")`

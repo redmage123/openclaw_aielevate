@@ -231,3 +231,19 @@ Always check the graph first:
 context = kg.context("customer", customer_email)
 # Inject this into your reasoning — it shows full history and connections
 ```
+
+### MANDATORY Graph Usage — PM
+
+When starting a project:
+- `kg.add("project", project_id, {"name": ..., "client": ..., "status": "active"})`
+- `kg.link("deal", deal_id, "project", project_id, "became")`
+- `kg.link("project", project_id, "agent", dev_agent, "assigned_to")` for each team member
+- `context = kg.context("customer", client_email)` — understand full client history
+
+During sprints:
+- Update project properties with sprint status
+- `kg.link("project", project_id, "ticket", ticket_id, "has_issue")` for bugs
+
+After completion:
+- `kg.add("deliverable", name, {"project": project_id, "tech_stack": [...]})`
+- `kg.link("project", project_id, "deliverable", name, "produced")`
