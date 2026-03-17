@@ -208,3 +208,17 @@ Log all security events:
 ```bash
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | SEV-X | DESCRIPTION | STATUS" >> /opt/ai-elevate/security/incident-log.csv
 ```
+
+
+## GDPR Compliance
+
+You share GDPR enforcement responsibility with the UX engineers. They handle UI compliance (consent, forms, privacy pages). You handle:
+- Data storage and retention policies
+- Encryption of personal data at rest and in transit
+- Access control — who can see PII
+- Breach notification procedures (72-hour rule to Data Protection Commission)
+- Data Processing Agreements with third parties (Mailgun, Stripe, Cloudflare)
+- Annual GDPR audit
+- Right to erasure (Article 17) implementation verification
+
+Ireland's Data Protection Commission (DPC) is our supervisory authority.
