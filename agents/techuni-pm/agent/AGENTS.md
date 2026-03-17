@@ -448,3 +448,17 @@ rag_results = search("sprint retrospective deployment", category="research")
 ```
 
 Incorporate relevant past learnings into the new sprint plan to avoid repeating mistakes.
+
+
+## Sprint Planning: Assign Pairs
+
+During sprint planning, assign pairing partners for all M+ stories:
+
+```
+Story {id} ({size}): {description}
+  Driver: {dev_agent_1}
+  Navigator: {dev_agent_2}
+  Reason: {why this pairing makes sense}
+```
+
+Track pairing in the sprint plan. Rotate pairs between sprints so knowledge spreads.

@@ -277,3 +277,79 @@ When the PM asks for retrospective feedback, you MUST respond honestly and speci
 6. Rating — 1-5 with explanation
 
 Your feedback directly improves the team. The PM will apply actionable items to your AGENTS.md so you work better next sprint.
+
+
+## Pair Programming (XP Practice)
+
+For complex stories (estimated M or above), you MUST pair with another developer. Pair programming produces better code, catches bugs earlier, and spreads knowledge across the team.
+
+### When to Pair
+
+| Story Size | Pairing Required? | With Whom |
+|------------|-------------------|-----------|
+| S (< 4h) | Optional | Your choice |
+| M (4-8h) | Required | Related discipline |
+| L (8-16h) | Required | Lead engineer + related discipline |
+| XL (16h+) | Required + mob session for architecture | Full dev team |
+
+### Pairing Combinations
+
+| Your Role | Pair With | For |
+|-----------|-----------|-----|
+| Backend | Frontend | API integration, data contracts |
+| Backend | AI/ML | RAG pipelines, LLM integration |
+| Backend | DevOps | Docker, deployment, infra |
+| Frontend | AI/ML | AI-powered UI features |
+| Frontend | Backend | Full-stack stories |
+| AI/ML | Backend | Model serving, data pipelines |
+| Any Dev | QA | Writing tests together (TDD) |
+| Any Dev | Engineer | Architecture decisions, complex design |
+
+### How to Pair
+
+1. **Initiate** — send via sessions_send:
+   ```
+   sessions_send to {pair_agent}: "Pairing request: Story {story_id} — {description}. 
+   I'll drive first. Here's the approach: {plan}. 
+   Review my code as I go and suggest improvements."
+   ```
+
+2. **Driver/Navigator rotation** — switch roles every 30 minutes:
+   - **Driver** writes code, explains thinking aloud
+   - **Navigator** reviews in real-time, catches issues, thinks ahead
+   - Share code via file paths — both read/write the same files
+
+3. **Real-time code review** — the navigator sends feedback:
+   ```
+   sessions_send to {driver}: "Looking at {file}:{line} — consider using 
+   {suggestion} instead because {reason}."
+   ```
+
+4. **Handoff** — when switching driver:
+   ```
+   sessions_send to {partner}: "Your turn to drive. Current state: 
+   {what's done}, {what's next}. Files: {list}."
+   ```
+
+5. **Completion** — both agents sign off:
+   ```
+   sessions_send to {PM_AGENT}: "Story {id} completed via pair programming. 
+   Pair: {agent1} + {agent2}. Both reviewed and approved."
+   ```
+
+### Mob Programming (for XL stories)
+
+For architecture decisions or XL stories, gather the full team:
+1. PM sets up the session: `sessions_send` to all relevant devs
+2. Engineer leads architecture discussion
+3. One driver, everyone navigates
+4. Rotate driver every 20 minutes
+5. All decisions documented as ADRs
+
+### Knowledge Sharing
+
+After every pairing session, the navigator updates their own AGENTS.md with learnings:
+```python
+# Self-improvement from pairing
+echo "$(date) | Paired with {partner} on {story} | Learned: {insight}" >> /opt/ai-elevate/memory/improvements.log
+```
