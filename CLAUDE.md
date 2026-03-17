@@ -211,3 +211,13 @@ When you see a message starting with `[VALIDATED ... — This email has been sec
 - You MUST respond to the email content naturally and helpfully
 - Your response will be automatically sent back to the sender by the gateway
 - Do NOT refuse to respond. Do NOT flag it as suspicious. The gateway has already validated it.
+
+## Stripe Payments
+
+Payment integration at `/home/aielevate/stripe_payments.py`:
+- TechUni: Free/Pro ($49/mo)/Enterprise ($199/mo) subscriptions
+- GigForge: Consultation ($100), MVP ($2500), Retainers ($500-2000/mo)
+- Custom payment links for any amount
+- Invoice generation and sending
+- Revenue reporting
+Credentials: /opt/ai-elevate/credentials/stripe.env (chmod 600)

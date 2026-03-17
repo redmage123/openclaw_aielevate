@@ -437,3 +437,42 @@ On every transaction:
 On payment received:
 - Update invoice status
 - `kg.link("invoice", invoice_id, "payment", payment_id, "paid_with")`
+
+
+## Stripe Payments
+
+You have access to the Stripe payment system for invoicing and payment collection.
+
+```python
+import sys
+sys.path.insert(0, "/home/aielevate")
+from stripe_payments import (
+    create_checkout_session,    # Subscription or one-time payment page
+    create_payment_link,        # Quick payment link for any amount
+    create_invoice,             # Send a professional invoice
+    list_payments,              # View payment history
+    check_subscription,         # Check customer subscription status
+    get_revenue_summary,        # Available + pending balance
+)
+
+# Generate a payment link
+link = create_payment_link("gigforge", "RAG Pipeline Build", 2500.00)
+print(link["url"])  # Send this URL to the client
+
+# Send an invoice
+invoice = create_invoice("client@company.com", "gigforge", [
+    {"name": "Sprint 1 — Architecture", "amount_eur": 1500},
+    {"name": "Sprint 2 — Implementation", "amount_eur": 2000},
+])
+print(invoice["hosted_url"])  # Client pays here
+
+# TechUni subscription
+session = create_checkout_session("techuni", "pro", "student@email.com")
+print(session["url"])  # Redirects to Stripe checkout
+```
+
+### When to Use
+- Client agrees to a project → send invoice or payment link
+- New TechUni signup → create checkout session for Pro/Enterprise
+- Monthly reporting → get_revenue_summary()
+- Client asks about billing → check_subscription()
