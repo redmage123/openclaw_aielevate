@@ -243,3 +243,165 @@ Each agent auto-triggers the next step via sessions_send. No human orchestration
 - PM updates kanban and sprint tracking automatically
 
 Broken code never deploys. Failed deployments auto-rollback.
+
+
+## Plane Project Management — ALL AGENTS
+
+Plane is the internal project management and bug tracking system. **Internal only** — never exposed to the public internet.
+
+| Org | URL | Port | Workspace |
+|-----|-----|------|-----------|
+| AI Elevate | http://localhost:8800 | 8800 | ai-elevate |
+| GigForge | http://localhost:8801 | 8801 | gigforge |
+| TechUni | http://localhost:8802 | 8802 | techuni |
+
+### Projects Per Org
+
+**GigForge:** BUG (Infrastructure & Bugs), CRM (CRM Platform)
+**TechUni:** BUG (Infrastructure & Bugs), CC (Course Creator), WEB (Website)
+**AI Elevate:** BUG (Infrastructure & Bugs), PUB (Publishing)
+
+### How to Use
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+p = Plane("gigforge")  # or "techuni" or "ai-elevate"
+```
+
+### MANDATORY: Bug Reporting Rules
+
+1. **App name is REQUIRED** — every bug title must be prefixed with the app: `[Course Creator] crash-loop in ai-assistant`
+2. **Reporter is REQUIRED** — your agent ID must be recorded as the reporter
+3. **Description must include:** what happened, root cause (if known), impact, steps to reproduce, suggested fix
+
+Filing a bug:
+```python
+p.create_bug(
+    app="Course Creator",        # REQUIRED: app/component name
+    title="ai-assistant crash-loop on deploy",  # what happened
+    description="Full details: root cause, impact, steps to reproduce...",
+    priority="high",             # urgent, high, medium, low, none
+    labels=["crash-loop", "deployment"],
+    reporter="gigforge-devops",  # REQUIRED: your agent ID
+)
+```
+
+### MANDATORY: Bug Lifecycle
+
+```
+Backlog --> Todo --> In Progress --> In Review (QA testing) --> Done
+                   ^                |
+                   +-- Reopened <---+
+```
+
+| Transition | Who Can Do It | When |
+|------------|---------------|------|
+| Backlog -> Todo | PM (triage + assign) | PM reviews new bugs, sets priority, assigns engineer |
+| Todo -> In Progress | Assigned engineer | Engineer starts working on the fix |
+| In Progress -> In Review | Assigned engineer | Engineer submits fix for QA testing |
+| In Review: QA tests | QA agent | QA runs functional tests + regression suite |
+| In Review -> Reopened | QA agent | QA finds failures — back to engineer |
+| In Review -> Done | **REPORTER ONLY** | After QA passes, reporter gives final sign-off |
+| Reopened -> In Progress | Assigned engineer | Engineer reworks the fix |
+
+**CRITICAL: All bug fixes MUST pass through QA before the reporter can sign off.**
+**CRITICAL: Engineers CANNOT close bugs. Only the reporter can sign off after QA passes.**
+
+### Engineer Bug Workflow
+
+```python
+# 1. PM assigns you a bug
+p.assign_bug(project="BUG", issue_id="<id>", assignee="gigforge-dev-backend")
+
+# 2. Start working
+p.set_state(project="BUG", issue_id="<id>", state="In Progress")
+
+# 3. Comment with progress/findings
+p.add_comment(project="BUG", issue_id="<id>", author="gigforge-dev-backend",
+    body="Root cause identified: shared volume mount race. Implementing retry logic.")
+
+# 4. Fix ready -- submit to QA (NOT Done, NOT just In Review)
+p.submit_to_qa(project="BUG", issue_id="<id>", engineer="gigforge-dev-backend",
+    comment="Fix deployed. Added import retry wrapper in ai-assistant entrypoint.")
+```
+
+### QA Bug Workflow
+
+QA agents MUST test every bug fix before it can be closed. This includes:
+- **Functional testing** — verify the fix actually resolves the reported bug
+- **Regression testing** — verify the fix doesn't break anything else
+
+```python
+# QA picks up bug in "In Review" state and tests
+
+# If tests pass:
+p.qa_pass(project="BUG", issue_id="<id>", qa_agent="gigforge-qa",
+    comment="Functional: crash-loop no longer occurs. Regression: all 47 tests pass. Clean.")
+
+# If tests fail:
+p.qa_fail(project="BUG", issue_id="<id>", qa_agent="gigforge-qa",
+    comment="Fix resolves crash-loop but health endpoint now returns 503 under load. Regression failure.")
+```
+
+### Reporter Sign-Off / Reopen
+
+```python
+# After QA passes, reporter gives final sign-off
+p.sign_off(project="BUG", issue_id="<id>", reporter="gigforge-devops",
+    comment="QA passed. Verified in production. Closing.")
+
+# OR reporter finds issue persists despite QA pass -> reopen
+p.reopen(project="BUG", issue_id="<id>", reporter="gigforge-devops",
+    comment="QA passed but issue reappears under different conditions.")
+```
+
+### MANDATORY: Engineers Must Check Bugs
+
+All engineering agents (engineer, dev-backend, dev-frontend, dev-ai, devops, qa, security-engineer) MUST:
+1. Check their org's BUG project at the start of every task
+2. Read and acknowledge any bugs assigned to them
+3. Fix bugs before working on new features (bugs take priority)
+4. Comment on the bug with progress updates
+5. Submit to QA via `p.submit_to_qa()` when fix is ready — never directly to "Done"
+
+### MANDATORY: QA Must Test All Bug Fixes
+
+QA agents (gigforge-qa, techuni-qa) MUST:
+1. Check for bugs in "In Review" state at the start of every task
+2. Run functional tests to verify the fix resolves the reported issue
+3. Run regression tests to ensure no new breakage
+4. Use `p.qa_pass()` or `p.qa_fail()` — never skip testing
+5. Include specific test results in comments (what passed, what failed, test counts)
+
+### MANDATORY: PM Agents Own the Plane Board
+
+PM agents (gigforge-pm, techuni-pm) MUST use Plane as their single source of truth:
+1. Every piece of work gets a Plane issue — no exceptions
+2. Triage new bugs daily: set priority, assign to engineer, move Backlog -> Todo
+3. Sprint items are Plane issues with priorities, assignees, and labels
+4. Status tracking: update issue states as work progresses
+5. Sprint retrospectives pull actual metrics from Plane
+6. Status reports reference real Plane data, never guesses
+
+### ALL Agents Can File Bugs
+
+Every agent — not just engineers — MUST file a bug when they encounter:
+- Container crashes, restart loops, or failed deployments
+- Import errors, missing dependencies, or code breakage
+- Security vulnerabilities or failed security scans
+- Data loss, corruption, or unexpected state
+- Performance degradation or timeouts
+- Regressions (something that previously worked now fails)
+- Incorrect data, broken UI, failed API calls
+
+### Labels
+
+crash-loop, deployment, import-error, infrastructure, security, performance, data-loss, regression, bug, feature, task, improvement
+
+### CLI Shortcut
+
+```bash
+python3 /home/aielevate/plane_ops.py <org> "<app>" "<title>" "<description>" [priority] [labels] [reporter]
+```

@@ -387,3 +387,49 @@ Source: {path}. Changes: {file list}."
 
 The pipeline is: QA passes → security-engineer scans → DevOps deploys.
 Do NOT notify DevOps directly — security-engineer does that after approval.
+
+
+## MANDATORY: Plane Bug Testing
+
+You MUST test every bug fix before it can be closed. When a bug enters "In Review" state, it means an engineer has submitted a fix for your testing.
+
+### Your QA Workflow for Bugs
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+p = Plane("YOUR_ORG")  # gigforge or techuni
+
+# 1. Check for bugs awaiting QA
+bugs = p.list_issues(project="BUG")
+# Look for issues in "In Review" state
+
+# 2. For each bug in In Review:
+#    a. Read the bug description and engineer's fix comments
+#    b. Run functional tests — does the fix resolve the reported issue?
+#    c. Run regression tests — does the fix break anything else?
+
+# 3. If ALL tests pass:
+p.qa_pass(project="BUG", issue_id="<id>", qa_agent="YOUR_AGENT_ID",
+    comment="Functional: [describe what you tested]. Regression: [X tests pass, 0 failures]. Approved.")
+
+# 4. If ANY test fails:
+p.qa_fail(project="BUG", issue_id="<id>", qa_agent="YOUR_AGENT_ID",
+    comment="FAILED: [describe what failed]. Regression: [describe any new breakage]. Returning to engineer.")
+```
+
+### What to Test
+
+For every bug fix:
+1. **Functional test** — reproduce the original bug, verify it no longer occurs
+2. **Regression test** — run the existing test suite for the affected component
+3. **Edge cases** — test boundary conditions related to the fix
+4. **Integration** — verify the fix works with other services (if applicable)
+
+### Rules
+
+- NEVER skip testing. Every "In Review" bug must be tested.
+- NEVER approve without actually running tests. "Looks good" is not QA.
+- Always include specific test results in your comments (what you tested, pass/fail counts).
+- If you cannot test (missing environment, dependencies, etc.), comment explaining why and notify the PM.

@@ -472,3 +472,46 @@ Track walkthrough status in the kanban:
 - If concerns raised: story moves back to "In Progress"
 
 Flag any story in "Walkthrough" for more than 24 hours.
+
+
+
+## MANDATORY: Plane is Your Single Source of Truth
+
+You MUST use Plane for ALL project management activities. No tasks, bugs, features, or work items should exist only in chat messages or memory files — everything must be tracked in Plane.
+
+### Your Plane Responsibilities
+
+1. **Sprint Planning** — Create issues in Plane for every sprint item. Set priorities, assignees, labels, and due dates.
+2. **Task Breakdown** — When you receive a feature request or project, break it into Plane issues before assigning work to engineers.
+3. **Bug Triage** — Review the BUG project daily. Triage new bugs by priority. Assign to the right engineer. Track resolution.
+4. **Status Tracking** — Update issue states as work progresses: backlog → in-progress → in-review → done.
+5. **Sprint Retrospective** — At the end of each sprint, review completed/incomplete issues in Plane. Use actual data from Plane for retro metrics.
+6. **Reporting** — When asked for status, pull data from Plane. Never guess — list actual open issues, their priorities, and assignees.
+
+### Daily Routine
+
+
+Every time you start work:
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+p = Plane("YOUR_ORG")  # gigforge or techuni
+
+# 1. Check for new/unassigned bugs
+bugs = p.list_issues(project="BUG")
+# Triage: assign, set priority, add labels
+
+# 2. Review in-progress work
+# Check each project for stale issues
+
+# 3. Create issues for any new work requested
+```
+### Rules
+
+- **Every piece of work gets a Plane issue** — no exceptions
+- **Bugs before features** — unresolved high/urgent bugs block feature work
+- **Engineers must reference Plane issue IDs** in their commits and messages
+- **You own the board** — keep it clean, current, and accurate
+- **Never let issues go stale** — if something is blocked, mark it and escalate
+

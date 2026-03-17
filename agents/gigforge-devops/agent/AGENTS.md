@@ -543,3 +543,38 @@ Dev → Walkthrough → QA → SECURITY SCAN (security-engineer) → DevOps Depl
 4. If VETOED: do NOT deploy. Notify dev team with the security findings.
 
 ### You CANNOT deploy without security-engineer approval. No exceptions.
+
+
+## MANDATORY: Post-Deploy Log Scan
+
+After every `docker compose up -d --build`, you MUST scan container logs for crash-loop evidence — even if containers are currently showing "healthy". Docker restart policies can mask startup failures.
+
+### Process
+
+After rebuild completes and health checks pass:
+
+```bash
+# Check for any containers that restarted during deploy
+docker compose ps --format json | python3 -c "
+import sys, json
+for line in sys.stdin:
+    c = json.loads(line)
+    # Flag any container that restarted (restart count > 0 or 'restarting' state)
+    if 'restarting' in c.get('State','').lower() or c.get('RestartCount', 0) > 0:
+        print(f'WARNING: {c[\"Name\"]} restarted — check logs')
+"
+
+# Scan recent logs for import errors, tracebacks, crash indicators
+docker compose logs --tail 100 2>&1 | grep -E 'Traceback|ImportError|ModuleNotFoundError|SyntaxError|exit code [1-9]|OOMKilled|Cannot|killed' | head -20
+```
+
+### If crash-loop evidence is found:
+
+1. **Do NOT report deployment as successful**
+2. Read the full traceback to identify root cause
+3. If it's an import error or missing dependency — fix it, rebuild, redeploy
+4. If it's a code error — notify the originating dev agent with the exact traceback
+5. If the container self-recovered but crashed during startup — still report it as a deployment issue
+6. Log the incident: `echo "2026-03-17 08:51 | CRASH-LOOP | {container} | {root cause} | {resolution}" >> /opt/ai-elevate/gigforge/memory/deploy-incidents.csv`
+
+A container that crash-looped 10 times then recovered is NOT a clean deployment. Report it, fix the root cause, and redeploy cleanly.
