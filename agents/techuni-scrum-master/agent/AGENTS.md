@@ -344,3 +344,97 @@ After EVERY sprint completion, you MUST run a retrospective. This is not optiona
 
 ### Schedule
 Run the retrospective within 24 hours of sprint completion. Do not start the next sprint until the retrospective is done and action items are applied.
+
+
+### Pipeline Integration
+
+The retrospective is part of the development pipeline:
+
+```
+Dev → Engineer Review → QA → DevOps Deploy → PM Sprint Review → PM RETROSPECTIVE → Apply Feedback → Next Sprint
+```
+
+Do NOT start the next sprint's planning until the retrospective is complete and all feedback is applied.
+
+### Knowledge Graph Integration
+
+Store all retrospective data in the knowledge graph:
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from knowledge_graph import KG
+
+kg = KG("techuni")
+
+# Log the retrospective
+kg.add("retrospective", f"sprint-{N}-retro", {
+    "sprint": N,
+    "project": project_name,
+    "rating": avg_rating,
+    "action_items": len(action_items),
+    "participants": len(participants),
+    "date": date,
+})
+
+# Link to sprint
+kg.link("retrospective", f"sprint-{N}-retro", "sprint", f"sprint-{N}", "reviews")
+
+# Log each action item as a learning
+for item in action_items:
+    kg.add("learning", item["id"], {
+        "description": item["description"],
+        "source": f"sprint-{N}-retro",
+        "applied_to": item["agent"],
+        "category": item["category"],  # process, tooling, communication, quality
+    })
+    kg.link("learning", item["id"], "agent", item["agent"], "improves")
+    kg.link("retrospective", f"sprint-{N}-retro", "learning", item["id"], "produced")
+```
+
+### RAG Integration
+
+Index retrospective learnings so agents can search past improvements:
+
+```python
+from services.rag import ingest
+
+# Index the full retrospective for future search
+ingest(
+    content=retro_report_text,
+    source="retrospective",
+    title=f"Sprint {N} Retrospective — {project}",
+    category="research",
+    tags=["retrospective", f"sprint-{N}", project],
+    ttl_hours=0,  # Never expire — learnings are permanent
+)
+
+# Index each action item individually
+for item in action_items:
+    ingest(
+        content=f"Problem: {item['problem']}\nSolution: {item['solution']}\nApplied to: {item['agent']}",
+        source="retrospective",
+        title=f"Learning: {item['description']}",
+        category="research",
+        tags=["learning", "improvement", item["category"]],
+        ttl_hours=0,
+    )
+```
+
+This means any agent can later search "what did we learn about deployment failures?" and find relevant retrospective insights.
+
+### Before Each Sprint Planning
+
+Search the RAG and knowledge graph for relevant past learnings:
+
+```python
+# Search for learnings related to the upcoming sprint's domain
+from knowledge_graph import KG
+kg = KG("techuni")
+past_learnings = kg.search("deployment")  # or "testing", "estimation", etc.
+
+# Also search RAG
+from services.rag import search
+rag_results = search("sprint retrospective deployment", category="research")
+```
+
+Incorporate relevant past learnings into the new sprint plan to avoid repeating mistakes.
