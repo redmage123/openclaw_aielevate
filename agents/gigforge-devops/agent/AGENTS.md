@@ -214,7 +214,7 @@ AI_ELEVATE_ZONE=74d5d627560a606c6412f464b3fa1287
 2. **NEVER modify MX records** (mx.zoho.eu, mx2.zoho.eu, mx3.zoho.eu) — losing these = losing all email
 3. **NEVER modify SPF or DKIM records** for the root domain — breaks email authentication
 4. **NEVER modify the AAAA record** for the root domain
-5. **ONLY create/modify SUBDOMAIN records** (e.g., mg.ai-elevate.ai, new.ai-elevate.ai)
+5. **ONLY create/modify SUBDOMAIN records** (e.g., ai-elevate.ai, new.ai-elevate.ai)
 6. **Before ANY DNS change to this zone:** state the exact record, the change, and why. If uncertain, STOP and ask.
 
 #### Current Records (DO NOT TOUCH these)
@@ -241,15 +241,14 @@ CNAME  m4.ai-elevate.ai       → Cloudflare tunnel
 
 #### Mailgun Subdomain Records (added for email delivery)
 ```
-TXT    mg.ai-elevate.ai                  → v=spf1 include:mailgun.org ~all
-TXT    k1._domainkey.mg.ai-elevate.ai    → DKIM key
-CNAME  email.mg.ai-elevate.ai            → mailgun.org
+TXT    ai-elevate.ai                  → v=spf1 include:mailgun.org ~all
+TXT    k1._domainkey.ai-elevate.ai    → DKIM key
+CNAME  email.ai-elevate.ai            → mailgun.org
 ```
-Note: Mailgun domain is mg.ai-elevate.COM (different TLD). DNS records for .com need to be added separately via the ai-elevate.com Cloudflare zone (not yet accessible via API token).
+Note: Mailgun upgraded — now sending from root domains directly (gigforge.ai, techuni.ai, ai-elevate.ai).
 
 ### Known Issues
 - techuni.ai MX record had a typo (`technuni.ai` instead of `techuni.ai`) — verify and fix if still present
-- `ai-elevate.com` is NOT on this Cloudflare token — Mailgun DNS for `mg.ai-elevate.com` needs separate access
 
 ### Rules
 - NEVER delete MX, SPF, or DKIM records without explicit approval
@@ -340,13 +339,13 @@ To send email, use the Mailgun API:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@mg.ai-elevate.ai>",
+    "from": "YOUR_NAME <your-role@gigforge.ai>",
     "to": "recipient@ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/team.gigforge.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/gigforge.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```
@@ -578,3 +577,44 @@ docker compose logs --tail 100 2>&1 | grep -E 'Traceback|ImportError|ModuleNotFo
 6. Log the incident: `echo "2026-03-17 08:51 | CRASH-LOOP | {container} | {root cause} | {resolution}" >> /opt/ai-elevate/gigforge/memory/deploy-incidents.csv`
 
 A container that crash-looped 10 times then recovered is NOT a clean deployment. Report it, fix the root cause, and redeploy cleanly.
+
+
+## MANDATORY: Git Branching Strategy
+
+Never push directly to `master` or `develop`. All code changes go through feature/bugfix branches and PRs.
+
+### Branch from develop for features and non-urgent bugs:
+```bash
+cd /opt/ai-elevate/course-creator
+git checkout develop && git pull origin develop
+git checkout -b feature/CC-{number}-{short-description}
+# OR
+git checkout -b bugfix/BUG-{number}-{short-description}
+```
+
+### Branch from master for urgent hotfixes:
+```bash
+git checkout master && git pull origin master
+git checkout -b hotfix/BUG-{number}-{short-description}
+```
+
+### Commit convention:
+```
+type(ISSUE-ID): short description
+# Examples:
+feat(CC-5): add OAuth2 provider support
+fix(BUG-3): catch HTTPException in middleware dispatch
+```
+
+### After completing work:
+```bash
+git push origin <your-branch>
+# Then notify PM to create a PR, or use gh CLI if available
+```
+
+### Rules:
+- Every branch name MUST include the Plane issue ID (CC-X or BUG-X)
+- Features/bugs → PR to `develop`
+- Hotfixes → PR to `master` (also merge to develop after)
+- Never commit directly to master or develop
+- See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy

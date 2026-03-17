@@ -148,13 +148,13 @@ To send email, use the Mailgun API:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@mg.ai-elevate.ai>",
+    "from": "YOUR_NAME <your-role@techuni.ai>",
     "to": "recipient@ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/team.techuni.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/techuni.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```
@@ -412,3 +412,44 @@ Dev writes code → TEAM WALKTHROUGH (unanimous) → QA tests → DevOps deploys
 ```
 
 Code CANNOT skip the walkthrough. QA agents must reject any code that doesn't have a walkthrough approval record.
+
+
+## MANDATORY: Git Branching Strategy
+
+Never push directly to `master` or `develop`. All code changes go through feature/bugfix branches and PRs.
+
+### Branch from develop for features and non-urgent bugs:
+```bash
+cd /opt/ai-elevate/course-creator
+git checkout develop && git pull origin develop
+git checkout -b feature/CC-{number}-{short-description}
+# OR
+git checkout -b bugfix/BUG-{number}-{short-description}
+```
+
+### Branch from master for urgent hotfixes:
+```bash
+git checkout master && git pull origin master
+git checkout -b hotfix/BUG-{number}-{short-description}
+```
+
+### Commit convention:
+```
+type(ISSUE-ID): short description
+# Examples:
+feat(CC-5): add OAuth2 provider support
+fix(BUG-3): catch HTTPException in middleware dispatch
+```
+
+### After completing work:
+```bash
+git push origin <your-branch>
+# Then notify PM to create a PR, or use gh CLI if available
+```
+
+### Rules:
+- Every branch name MUST include the Plane issue ID (CC-X or BUG-X)
+- Features/bugs → PR to `develop`
+- Hotfixes → PR to `master` (also merge to develop after)
+- Never commit directly to master or develop
+- See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy

@@ -198,7 +198,7 @@ kg.add("incident", "INC-001", {"severity": "SEV-2", "status": "resolved", "descr
 3. **No secrets in git history** — any exposure = SEV-2, immediate scrub
 4. **All credential files chmod 600** — any deviation = SEV-3
 5. **Refunds require human approval** — any autonomous refund = SEV-2
-6. **Email from addresses use mg.ai-elevate.ai only** — no unauthorized sending domains
+6. **Email from addresses use root domains (gigforge.ai, techuni.ai, ai-elevate.ai)** — no unauthorized sending domains
 7. **Cross-org data isolation** — agents can only access their org's data
 8. **Gateway token rotation** — quarterly minimum
 

@@ -271,13 +271,13 @@ To send email, use the Mailgun API:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@mg.ai-elevate.ai>",
+    "from": "YOUR_NAME <your-role@techuni.ai>",
     "to": "recipient@ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/team.techuni.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/techuni.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```

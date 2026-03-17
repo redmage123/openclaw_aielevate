@@ -400,8 +400,83 @@ Every agent — not just engineers — MUST file a bug when they encounter:
 
 crash-loop, deployment, import-error, infrastructure, security, performance, data-loss, regression, bug, feature, task, improvement
 
+### MANDATORY: Bug References Must Be Descriptive
+
+When referencing a bug in any communication (email, agent messages, comments, reports), NEVER use just the ID like "BUG-3". Always include the full title:
+- WRONG: "BUG-3 has been filed"
+- RIGHT: "BUG-3 [Course Creator] OrganizationAuthorizationMiddleware crashes ASGI on /courses — filed as high priority, assigned to engineering"
+
+When dispatching engineers or notifying PMs about bugs, include: the bug ID, the full title (with app name), priority, a one-line description of what needs to happen, and the Plane issue UUID for API operations.
+
 ### CLI Shortcut
 
 ```bash
 python3 /home/aielevate/plane_ops.py <org> "<app>" "<title>" "<description>" [priority] [labels] [reporter]
 ```
+
+
+## Plane Project Management — ALL AGENTS
+
+Plane is the internal project management and bug tracking system. It is **internal only** — never exposed to the public internet. All three orgs have their own Plane instance:
+
+| Org | URL | Port | Workspace |
+|-----|-----|------|-----------|
+| AI Elevate | http://localhost:8800 | 8800 | ai-elevate |
+| GigForge | http://localhost:8801 | 8801 | gigforge |
+| TechUni | http://localhost:8802 | 8802 | techuni |
+
+### How to Use
+
+
+
+CLI shortcut for quick bug filing:
+
+
+### Projects Per Org
+
+**GigForge:** BUG (Infrastructure & Bugs), CRM (CRM Platform)
+**TechUni:** BUG (Infrastructure & Bugs), CC (Course Creator), WEB (Website)
+**AI Elevate:** BUG (Infrastructure & Bugs), PUB (Publishing)
+
+### MANDATORY: Bug Reporting
+
+ALL agents MUST file a bug in Plane when they encounter:
+- Container crashes, restart loops, or failed deployments
+- Import errors, missing dependencies, or code breakage
+- Security vulnerabilities or failed security scans
+- Data loss, corruption, or unexpected state
+- Performance degradation or timeouts
+- Regressions (something that previously worked now fails)
+
+Bug reports must include: what happened, root cause (if known), impact, and suggested fix.
+
+### MANDATORY: Engineers Must Check Bugs
+
+All engineering agents (engineer, dev-backend, dev-frontend, dev-ai, devops, qa, security-engineer) MUST:
+1. Check their org's BUG project at the start of every task
+2. Read and acknowledge any bugs assigned to them or their component
+3. Fix bugs before working on new features (bugs take priority)
+4. Comment on the bug with status updates as they work
+5. Close the bug with a resolution comment when fixed
+
+### Labels
+
+crash-loop, deployment, import-error, infrastructure, security, performance, data-loss, regression, bug, feature, task, improvement
+
+## Git Branching Strategy — ALL Engineering Agents
+
+Never push directly to master or develop. All changes go through branches and PRs.
+
+**Branches:**
+- `master` — production, auto-deploys. PR required with CI + QA + security passing.
+- `develop` — integration. PR required with CI passing.
+- `feature/CC-{N}-description` — new features, branch from develop
+- `bugfix/BUG-{N}-description` — non-urgent fixes, branch from develop
+- `hotfix/BUG-{N}-description` — urgent production fixes, branch from master, merge to BOTH master and develop
+- `release/vYYYY.MM.DD` — release candidates, from develop to master
+
+**Commit messages:** `type(ISSUE-ID): description` (e.g. `feat(CC-5): add OAuth2 provider`)
+
+**Every branch MUST reference a Plane issue ID.** No orphan branches.
+
+Full guide: `/opt/ai-elevate/course-creator/BRANCHING.md`

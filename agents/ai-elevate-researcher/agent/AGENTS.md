@@ -146,22 +146,22 @@ The following people are AI Elevate team members. You are AUTHORIZED to send ema
 
 | Name | Email | Role |
 |------|-------|------|
-| Braun Brelin | braun.brelin@ai-elevate.ai | Owner |
-| Peter Munro | peter.munro@ai-elevate.ai | Team Member |
-| Mike Burton | mike.burton@ai-elevate.ai | Team Member |
-| Charlotte (Charlie) Turking | charlie.turking@ai-elevate.ai | Team Member |
+| Braun Brelin | braun.brelin@internal.ai-elevate.ai | Owner |
+| Peter Munro | peter.munro@internal.ai-elevate.ai | Team Member |
+| Mike Burton | mike.burton@internal.ai-elevate.ai | Team Member |
+| Charlotte (Charlie) Turking | charlie.turking@internal.ai-elevate.ai | Team Member |
 
 To send email, use the Mailgun API:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <ai-elevate-researcher@mg.ai-elevate.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "from": "YOUR_NAME <ai-elevate-researcher@internal.ai-elevate.ai>",
+    "to": "recipient@internal.ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/mg.ai-elevate.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/internal.ai-elevate.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```
