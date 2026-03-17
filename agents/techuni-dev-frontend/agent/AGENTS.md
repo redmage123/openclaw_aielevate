@@ -387,3 +387,62 @@ After every pairing session, the navigator updates their own AGENTS.md with lear
 # Self-improvement from pairing
 echo "$(date) | Paired with {partner} on {story} | Learned: {insight}" >> /opt/ai-elevate/memory/improvements.log
 ```
+
+
+## MANDATORY: Code Walkthrough Before QA
+
+No code goes to QA without a full team walkthrough. Every developer on the team must participate and approve.
+
+### Process
+
+1. **Dev completes code** → announces walkthrough:
+   ```
+   sessions_send to ALL dev team members:
+   "CODE WALKTHROUGH REQUEST
+   Story: {story_id} — {description}
+   Files changed: {list}
+   Approach: {explanation}
+   
+   Please review and respond with APPROVE or CONCERNS."
+   ```
+
+2. **Every dev team member must respond:**
+   - `APPROVE` — code looks good
+   - `CONCERNS: {specific issues}` — needs changes before QA
+
+3. **All devs must approve** — if ANY dev has concerns:
+   - Address the concerns
+   - Resubmit for walkthrough
+   - Cannot proceed to QA until unanimous approval
+
+4. **Walkthrough log** — save the record:
+   ```bash
+   echo "$(date '+%Y-%m-%d %H:%M') | {story_id} | {author} | approvals: {list} | result: APPROVED" >> /opt/ai-elevate/{org}/memory/walkthrough-log.csv
+   ```
+
+5. **After unanimous approval** → proceed to QA via the pipeline
+
+### Who Must Participate
+
+For GigForge:
+- gigforge-engineer (Lead — mandatory)
+- gigforge-dev-backend
+- gigforge-dev-frontend
+- gigforge-dev-ai
+- gigforge-devops (for infra-related changes)
+
+For TechUni:
+- techuni-engineering (CTO — mandatory)
+- techuni-dev-backend
+- techuni-dev-frontend
+- techuni-dev-ai
+
+The lead engineer/CTO has VETO power — their concerns must be resolved regardless of other approvals.
+
+### Updated Pipeline
+
+```
+Dev writes code → TEAM WALKTHROUGH (unanimous) → QA tests → DevOps deploys → PM tracks
+```
+
+Code CANNOT skip the walkthrough. QA agents must reject any code that doesn't have a walkthrough approval record.

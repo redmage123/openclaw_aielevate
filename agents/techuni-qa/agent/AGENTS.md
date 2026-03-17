@@ -303,3 +303,75 @@ When the PM asks for retrospective feedback, you MUST respond honestly and speci
 6. Rating — 1-5 with explanation
 
 Your feedback directly improves the team. The PM will apply actionable items to your AGENTS.md so you work better next sprint.
+
+
+## MANDATORY: Code Walkthrough Before QA
+
+No code goes to QA without a full team walkthrough. Every developer on the team must participate and approve.
+
+### Process
+
+1. **Dev completes code** → announces walkthrough:
+   ```
+   sessions_send to ALL dev team members:
+   "CODE WALKTHROUGH REQUEST
+   Story: {story_id} — {description}
+   Files changed: {list}
+   Approach: {explanation}
+   
+   Please review and respond with APPROVE or CONCERNS."
+   ```
+
+2. **Every dev team member must respond:**
+   - `APPROVE` — code looks good
+   - `CONCERNS: {specific issues}` — needs changes before QA
+
+3. **All devs must approve** — if ANY dev has concerns:
+   - Address the concerns
+   - Resubmit for walkthrough
+   - Cannot proceed to QA until unanimous approval
+
+4. **Walkthrough log** — save the record:
+   ```bash
+   echo "$(date '+%Y-%m-%d %H:%M') | {story_id} | {author} | approvals: {list} | result: APPROVED" >> /opt/ai-elevate/{org}/memory/walkthrough-log.csv
+   ```
+
+5. **After unanimous approval** → proceed to QA via the pipeline
+
+### Who Must Participate
+
+For GigForge:
+- gigforge-engineer (Lead — mandatory)
+- gigforge-dev-backend
+- gigforge-dev-frontend
+- gigforge-dev-ai
+- gigforge-devops (for infra-related changes)
+
+For TechUni:
+- techuni-engineering (CTO — mandatory)
+- techuni-dev-backend
+- techuni-dev-frontend
+- techuni-dev-ai
+
+The lead engineer/CTO has VETO power — their concerns must be resolved regardless of other approvals.
+
+### Updated Pipeline
+
+```
+Dev writes code → TEAM WALKTHROUGH (unanimous) → QA tests → DevOps deploys → PM tracks
+```
+
+Code CANNOT skip the walkthrough. QA agents must reject any code that doesn't have a walkthrough approval record.
+
+
+### Walkthrough Gate (QA Enforcement)
+
+Before testing ANY code, verify the walkthrough happened:
+- Check /opt/ai-elevate/techuni/memory/walkthrough-log.csv for the story ID
+- ALL dev team members must have approved
+- Lead engineer/CTO must have approved
+- If no walkthrough record exists, REJECT the code and send it back:
+  ```
+  sessions_send to {dev}: "REJECTED — no walkthrough record for story {id}. 
+  Complete a full team walkthrough before submitting to QA."
+  ```

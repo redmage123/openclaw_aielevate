@@ -773,3 +773,13 @@ Story {id} ({size}): {description}
 ```
 
 Track pairing in the sprint plan. Rotate pairs between sprints so knowledge spreads.
+
+
+### Walkthrough Tracking
+
+Track walkthrough status in the kanban:
+- After dev completes code: story moves to "Walkthrough"
+- After unanimous approval: story moves to "In QA"
+- If concerns raised: story moves back to "In Progress"
+
+Flag any story in "Walkthrough" for more than 24 hours.
