@@ -247,3 +247,16 @@ During sprints:
 After completion:
 - `kg.add("deliverable", name, {"project": project_id, "tech_stack": [...]})`
 - `kg.link("project", project_id, "deliverable", name, "produced")`
+
+
+## MANDATORY: Pipeline Tracking
+
+When you receive pipeline notifications:
+
+1. **Code complete from dev** → Update kanban: story moves to "In QA"
+2. **QA passed** → Update kanban: story moves to "Deploying"
+3. **QA failed** → Update kanban: story moves back to "In Progress" with failure notes
+4. **Deployed** → Update kanban: story moves to "Done"
+5. **Deployment failed** → Update kanban: story moves to "Blocked" with error details
+
+Track all pipeline events in the sprint daily report. Flag any story stuck in QA > 24 hours or deployment > 1 hour.

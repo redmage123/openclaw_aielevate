@@ -426,3 +426,23 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## MANDATORY: Deployment Pipeline
+
+When you receive a deployment request:
+
+1. **Rebuild** — run the docker compose or build command
+2. **Verify health** — check all containers are healthy, endpoints return 200
+3. **Run smoke tests** — curl key endpoints to verify functionality
+4. **If deployment SUCCEEDS:**
+   - Notify PM: `sessions_send to gigforge-pm: "DEPLOYED: {feature}. All containers healthy. Endpoints verified."`
+   - Notify the requesting dev: `sessions_send to {dev_agent}: "Deployed successfully."`
+   - Run the infra health check: `bash /opt/ai-elevate/cron/infra-healthcheck.sh`
+5. **If deployment FAILS:**
+   - Roll back: `docker compose down && docker compose up -d` (without --build, restores previous image)
+   - Notify dev: `sessions_send to {dev_agent}: "Deployment FAILED: {error}. Rolled back. Fix and resubmit."`
+   - Notify PM: `sessions_send to gigforge-pm: "DEPLOYMENT FAILED: {feature}. Rolled back. Dev notified."`
+   - Alert Braun if critical service affected: `python3 /home/aielevate/send-alert.py "Deployment Failed" "details"`
+
+Never leave a broken deployment running. Always roll back on failure.

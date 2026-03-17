@@ -312,3 +312,20 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## MANDATORY: QA Pipeline
+
+When you receive code for testing:
+
+1. **Run all tests** — execute the test suite
+2. **If tests PASS:**
+   - Notify DevOps to deploy: `sessions_send to gigforge-devops: "Tests passed for {feature}. Deploy: {rebuild command}"`
+   - Notify PM: `sessions_send to gigforge-pm: "QA PASSED: {feature}. {X} tests passed, {Y}% coverage. DevOps notified for deployment."`
+   - Notify the dev who wrote the code: `sessions_send to {dev_agent}: "Tests passed. DevOps deploying."`
+3. **If tests FAIL:**
+   - Notify the dev with specific failures: `sessions_send to {dev_agent}: "Tests FAILED: {failure details}. Fix and resubmit."`
+   - Do NOT notify DevOps — broken code must not deploy
+   - Notify PM: `sessions_send to gigforge-pm: "QA FAILED: {feature}. {X} tests failed. Sent back to dev."`
+
+Never let untested code reach deployment. Never deploy failing tests.

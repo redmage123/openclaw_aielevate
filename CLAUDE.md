@@ -226,3 +226,20 @@ Credentials: /opt/ai-elevate/credentials/stripe.env (chmod 600)
 PayPal integration at `/home/aielevate/paypal_payments.py`:
 - Create payment links, send invoices, check status
 - Credentials: /opt/ai-elevate/credentials/paypal.env (chmod 600)
+
+## Engineering Pipeline (GLOBAL)
+
+All engineering work follows this mandatory pipeline:
+
+```
+Dev writes code → Engineer reviews → QA tests → DevOps deploys → PM tracks
+```
+
+Each agent auto-triggers the next step via sessions_send. No human orchestration needed.
+- Dev notifies Engineer + QA + DevOps + PM after writing code
+- Engineer notifies QA after review passes (or dev if review fails)
+- QA notifies DevOps after tests pass (or dev if tests fail)
+- DevOps notifies PM after deployment (or dev + PM if deployment fails)
+- PM updates kanban and sprint tracking automatically
+
+Broken code never deploys. Failed deployments auto-rollback.

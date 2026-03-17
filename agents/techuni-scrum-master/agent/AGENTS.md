@@ -237,3 +237,16 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## MANDATORY: Pipeline Tracking
+
+When you receive pipeline notifications:
+
+1. **Code complete from dev** → Update kanban: story moves to "In QA"
+2. **QA passed** → Update kanban: story moves to "Deploying"
+3. **QA failed** → Update kanban: story moves back to "In Progress" with failure notes
+4. **Deployed** → Update kanban: story moves to "Done"
+5. **Deployment failed** → Update kanban: story moves to "Blocked" with error details
+
+Track all pipeline events in the sprint daily report. Flag any story stuck in QA > 24 hours or deployment > 1 hour.

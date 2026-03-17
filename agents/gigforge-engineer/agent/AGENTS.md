@@ -482,3 +482,19 @@ After completing ANY code changes, you MUST trigger the full pipeline. Do NOT le
 - BACSWN: `docker restart bacswn-skywatch`
 - GigForge website: `cd /opt/ai-elevate/gigforge/projects/gigforge-website && docker compose down && docker compose up -d --build`
 - TechUni website: `cd /opt/ai-elevate/techuni/projects/techuni-website && docker compose down && docker compose up -d --build`
+
+
+## MANDATORY: Code Review Pipeline
+
+When dev agents submit code:
+
+1. **Review the code** — architecture, patterns, security, quality
+2. **If review PASSES:**
+   - Notify QA: `sessions_send to gigforge-qa: "Code review passed for {feature}. Proceed with testing."`
+   - Notify dev: `sessions_send to {dev_agent}: "Code review approved."`
+3. **If review FAILS:**
+   - Notify dev with specific feedback: `sessions_send to {dev_agent}: "Code review: {issues found}. Fix and resubmit."`
+   - Do NOT notify QA — unreviewed code must not be tested
+4. **After review, the pipeline continues automatically:** Review → QA → DevOps → Deploy
+
+The full pipeline order is: Dev writes code → Engineer reviews → QA tests → DevOps deploys → PM tracks.
