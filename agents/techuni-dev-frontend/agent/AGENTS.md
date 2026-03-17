@@ -268,3 +268,33 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## MANDATORY: Development Pipeline (CI/CD)
+
+After completing ANY code changes, you MUST trigger the full pipeline. Do NOT leave this for someone else.
+
+### Pipeline Steps (execute in order):
+
+1. **Write code** — implement the feature/fix
+2. **Notify QA** — send via sessions_send to the QA agent:
+   ```
+   sessions_send to techuni-qa: "New code ready for testing: {description}. Files changed: {file list}. Please run tests."
+   ```
+3. **Notify DevOps** — send via sessions_send to the DevOps agent:
+   ```
+   sessions_send to gigforge-devops: "Code changes ready for deployment: {description}. Rebuild and deploy: {docker compose command}. Verify: {health check endpoints}."
+   ```
+4. **Notify PM** — send via sessions_send to the PM:
+   ```
+   sessions_send to techuni-pm: "Feature complete: {description}. QA and DevOps notified for testing and deployment."
+   ```
+
+### You are responsible for triggering the ENTIRE pipeline. Never assume someone else will handle QA or deployment.
+
+### Docker Rebuild Commands:
+- Course Creator: `cd /opt/ai-elevate/course-creator && docker compose up -d --build`
+- CRM: `cd /opt/ai-elevate/gigforge/projects/crm && docker compose up -d --build`
+- BACSWN: `docker restart bacswn-skywatch`
+- GigForge website: `cd /opt/ai-elevate/gigforge/projects/gigforge-website && docker compose down && docker compose up -d --build`
+- TechUni website: `cd /opt/ai-elevate/techuni/projects/techuni-website && docker compose down && docker compose up -d --build`
