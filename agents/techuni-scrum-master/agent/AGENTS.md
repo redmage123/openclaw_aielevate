@@ -250,3 +250,97 @@ When you receive pipeline notifications:
 5. **Deployment failed** → Update kanban: story moves to "Blocked" with error details
 
 Track all pipeline events in the sprint daily report. Flag any story stuck in QA > 24 hours or deployment > 1 hour.
+
+
+## MANDATORY: Sprint Retrospective
+
+After EVERY sprint completion, you MUST run a retrospective. This is not optional.
+
+### Retrospective Process
+
+1. **Collect feedback from every team member** — send via sessions_send to each agent who worked on the sprint:
+   ```
+   sessions_send to {agent}: "Sprint {N} is complete. Retrospective time. Answer these questions:
+   1. What went well this sprint?
+   2. What didn't go well?
+   3. What should we change for next sprint?
+   4. Were there any blockers that could have been avoided?
+   5. Did you have the tools/information you needed?
+   6. Rate the sprint 1-5 and explain why."
+   ```
+
+2. **Wait for all responses** — collect from every agent who participated
+
+3. **Compile the retrospective report** — save to the project docs:
+   ```
+   /opt/ai-elevate/{project}/docs/sprints/sprint-{N}-retrospective.md
+   ```
+
+   Include:
+   - What went well (grouped themes)
+   - What didn't go well (grouped themes)
+   - Action items (specific changes to make)
+   - Sprint rating (average across team)
+   - Individual feedback summaries
+
+4. **Implement action items as agent feedback** — for each actionable improvement:
+   - Update the relevant agent's AGENTS.md with the lesson learned
+   - Use the Self-Improvement Protocol to persist the change
+   - Example: if QA says "I didn't get enough context on what was changed", update the dev agents' pipeline to include more detail in their QA notification
+
+   ```python
+   # Append feedback to the agent's AGENTS.md
+   with open(f"/home/aielevate/.openclaw/agents/{agent_id}/agent/AGENTS.md", "a") as f:
+       f.write(f"\n\n## Sprint {N} Retrospective Feedback\n\n{feedback}\n")
+   ```
+
+5. **Log the improvement** — track what changed:
+   ```bash
+   echo "$(date '+%Y-%m-%d %H:%M') | sprint-{N}-retro | {agent_id} | {what changed} | {why}" >> /opt/ai-elevate/memory/improvements.log
+   ```
+
+6. **Notify Braun** with the retrospective summary:
+   ```python
+   from notify import send
+   send("Sprint {N} Retrospective Complete", retro_summary, priority="medium", to=["braun"])
+   ```
+
+7. **Apply to next sprint planning** — when planning the next sprint, review the retrospective action items and ensure they're addressed in the new sprint plan.
+
+### Retrospective Template
+
+```markdown
+# Sprint {N} Retrospective — {Project Name}
+
+**Date:** YYYY-MM-DD
+**PM:** {pm_agent_id}
+**Team:** {list of participating agents}
+**Sprint Rating:** {average}/5
+
+## What Went Well
+- {theme 1}: {details}
+- {theme 2}: {details}
+
+## What Didn't Go Well
+- {theme 1}: {details}
+- {theme 2}: {details}
+
+## Action Items
+| # | Action | Owner | Applied To | Status |
+|---|--------|-------|-----------|--------|
+| 1 | {change} | {agent} | {agent's AGENTS.md} | Done |
+| 2 | {change} | {agent} | {agent's AGENTS.md} | Done |
+
+## Agent Feedback Applied
+- {agent_id}: Added "{feedback summary}" to their AGENTS.md
+- {agent_id}: Updated their workflow to {change}
+
+## Individual Responses
+### {agent_id} (Rating: X/5)
+- Well: {response}
+- Improve: {response}
+- Change: {response}
+```
+
+### Schedule
+Run the retrospective within 24 hours of sprint completion. Do not start the next sprint until the retrospective is done and action items are applied.

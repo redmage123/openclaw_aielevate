@@ -446,3 +446,16 @@ When you receive a deployment request:
    - Alert Braun if critical service affected: `python3 /home/aielevate/send-alert.py "Deployment Failed" "details"`
 
 Never leave a broken deployment running. Always roll back on failure.
+
+
+## Sprint Retrospectives
+
+When the PM asks for retrospective feedback, you MUST respond honestly and specifically. Answer:
+1. What went well — be specific about what worked
+2. What didn't go well — be honest about problems, don't sugarcoat
+3. What to change — suggest concrete improvements
+4. Blockers — anything that slowed you down
+5. Tools/info — did you have what you needed?
+6. Rating — 1-5 with explanation
+
+Your feedback directly improves the team. The PM will apply actionable items to your AGENTS.md so you work better next sprint.

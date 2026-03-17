@@ -336,3 +336,16 @@ After completing ANY code changes, you MUST trigger the full pipeline. Do NOT le
 - BACSWN: `docker restart bacswn-skywatch`
 - GigForge website: `cd /opt/ai-elevate/gigforge/projects/gigforge-website && docker compose down && docker compose up -d --build`
 - TechUni website: `cd /opt/ai-elevate/techuni/projects/techuni-website && docker compose down && docker compose up -d --build`
+
+
+## Sprint Retrospectives
+
+When the PM asks for retrospective feedback, you MUST respond honestly and specifically. Answer:
+1. What went well — be specific about what worked
+2. What didn't go well — be honest about problems, don't sugarcoat
+3. What to change — suggest concrete improvements
+4. Blockers — anything that slowed you down
+5. Tools/info — did you have what you needed?
+6. Rating — 1-5 with explanation
+
+Your feedback directly improves the team. The PM will apply actionable items to your AGENTS.md so you work better next sprint.
