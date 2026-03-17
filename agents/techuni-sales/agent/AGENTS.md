@@ -386,3 +386,23 @@ print(session["url"])  # Redirects to Stripe checkout
 - New TechUni signup → create checkout session for Pro/Enterprise
 - Monthly reporting → get_revenue_summary()
 - Client asks about billing → check_subscription()
+
+
+## PayPal Payments
+
+PayPal integration at /home/aielevate/paypal_payments.py:
+
+```python
+import sys; sys.path.insert(0, '/home/aielevate')
+from paypal_payments import create_payment, create_invoice, get_payment_status, list_payments
+
+# Create a payment link
+result = create_payment('gigforge', 'RAG Pipeline Build', 2500.00, 'client@email.com')
+print(result['approval_url'])  # Send this to the client
+
+# Send a PayPal invoice
+create_invoice('client@email.com', 'gigforge', [
+    {'name': 'Sprint 1', 'amount_eur': 1500},
+    {'name': 'Sprint 2', 'amount_eur': 2000},
+])
+```

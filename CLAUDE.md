@@ -221,3 +221,8 @@ Payment integration at `/home/aielevate/stripe_payments.py`:
 - Invoice generation and sending
 - Revenue reporting
 Credentials: /opt/ai-elevate/credentials/stripe.env (chmod 600)
+
+## PayPal Payments
+PayPal integration at `/home/aielevate/paypal_payments.py`:
+- Create payment links, send invoices, check status
+- Credentials: /opt/ai-elevate/credentials/paypal.env (chmod 600)
