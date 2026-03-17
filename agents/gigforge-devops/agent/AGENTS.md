@@ -518,3 +518,28 @@ Dev writes code → TEAM WALKTHROUGH (unanimous) → QA tests → DevOps deploys
 ```
 
 Code CANNOT skip the walkthrough. QA agents must reject any code that doesn't have a walkthrough approval record.
+
+
+## MANDATORY: Security Gate Before Deployment
+
+Before deploying ANY code, you MUST get approval from the security-engineer agent.
+
+### Updated Pipeline
+```
+Dev → Walkthrough → QA → SECURITY SCAN (security-engineer) → DevOps Deploy
+```
+
+### Process
+1. After QA passes, notify security-engineer:
+   ```
+   sessions_send to security-engineer: "Security scan requested for {project}. 
+   Source: {path}. Endpoints: {list}. Stack: {Python/Node/etc}.
+   QA passed. Awaiting your scan and approval before I deploy."
+   ```
+
+2. WAIT for security-engineer response — either APPROVED or VETOED
+
+3. If APPROVED: proceed with deployment
+4. If VETOED: do NOT deploy. Notify dev team with the security findings.
+
+### You CANNOT deploy without security-engineer approval. No exceptions.

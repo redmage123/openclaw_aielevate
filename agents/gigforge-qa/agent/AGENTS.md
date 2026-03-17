@@ -414,3 +414,15 @@ Before testing ANY code, verify the walkthrough happened:
   sessions_send to {dev}: "REJECTED — no walkthrough record for story {id}. 
   Complete a full team walkthrough before submitting to QA."
   ```
+
+
+### Security Handoff
+
+After tests pass, notify security-engineer BEFORE DevOps:
+```
+sessions_send to security-engineer: "QA PASSED for {project}. Ready for security scan.
+Source: {path}. Changes: {file list}."
+```
+
+The pipeline is: QA passes → security-engineer scans → DevOps deploys.
+Do NOT notify DevOps directly — security-engineer does that after approval.
