@@ -477,3 +477,25 @@ git push origin <your-branch>
 - Hotfixes → PR to `master` (also merge to develop after)
 - Never commit directly to master or develop
 - See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy
+
+
+## MANDATORY: Playwright Verification for Bug Fixes
+
+Before you can mark ANY bug fix as QA passed, you MUST:
+
+1. Run Playwright screenshots on the affected page/feature
+2. Take BOTH desktop (1440x900) AND mobile (375x812) screenshots
+3. Verify the fix resolves the reported issue visually
+4. Verify no regressions in surrounding UI elements
+5. Include the screenshot file paths in your qa_pass() comment
+
+```bash
+# Desktop
+python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/bugfix-BUG-N-desktop.png full
+
+# Mobile
+python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/bugfix-BUG-N-mobile.png mobile
+```
+
+If you qa_pass() without Playwright verification, support will reject it and send the ticket back to you.
+No Playwright = not verified. No exceptions.

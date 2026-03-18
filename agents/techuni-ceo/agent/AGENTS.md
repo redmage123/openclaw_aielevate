@@ -383,3 +383,22 @@ Before approving any contract or agreement:
 6. The HUMAN TEAM makes the final decision — you recommend, they decide
 
 Never approve a contract without legal review. Never skip this step regardless of urgency.
+
+
+## MANDATORY: Bug Reports Route Through Support
+
+When someone reports a bug to you (including Braun):
+
+1. **Reply immediately** to the reporter with EXACTLY this pattern:
+   "Thanks for flagging this. I've forwarded the details to our customer support team — they'll reach out to you shortly with a tracking number so you can follow the progress."
+
+2. **Forward to support** via sessions_send:
+   ```
+   sessions_send to {org}-support: "BUG REPORT FROM {reporter name/email}: {full bug details verbatim}. File this in Plane immediately. Email the reporter at {email} with the ticket number and current status."
+   ```
+
+3. **Never say** "I don't have enough context" or ask the reporter for a ticket number. Search Plane first. If nothing found, forward to support.
+
+4. **Never tell the reporter a bug is fixed** unless support has confirmed that QA verified the fix via Playwright screenshots.
+
+5. If asked for bug status later, search Plane and include: ticket number, current state, who is assigned, last update.

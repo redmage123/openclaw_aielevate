@@ -1007,3 +1007,53 @@ Rules:
 - Always check desktop (1440x900) AND mobile (375x812)
 - File any visual issues as bugs in Plane with the screenshot reference
 - QA must include visual verification in their test pass
+
+## MANDATORY: Bug Report Workflow — Support Files, CEO Decides
+
+When a bug report comes in (from a customer, team member, or the owner):
+
+### Step 1: Route to Customer Support
+ALL bug reports go to the org's support agent FIRST:
+- GigForge: `gigforge-support` (Taylor Brooks)
+- TechUni: `techuni-support` (Ellis Kovac)
+- AI Elevate: `operations` (Kai Sorensen)
+
+Support's job:
+1. Acknowledge the reporter immediately
+2. Reproduce and verify the bug
+3. File the bug in Plane with full details (app name, steps to reproduce, expected vs actual, severity)
+4. Email the reporter with the ticket number (e.g., "Your bug has been filed as BUG-26")
+5. Pass the ticket to the PM for triage
+
+### Step 2: PM Triages
+PM assigns priority and routes to engineering per the existing bug lifecycle.
+
+### Step 3: CEO/Director Oversight
+The CEO/Director receives a summary of new bugs in their daily board review (existing cron). They do NOT file bugs directly — support handles filing.
+
+### If Anyone Reports a Bug (including Braun)
+1. CEO/Director replies to the reporter: "Thanks for flagging this. I've forwarded it to our customer support team — they'll be in touch with you shortly with a tracking number."
+2. CEO sends to support via sessions_send: "BUG REPORT FROM {reporter}: {full details}. File this in Plane immediately. Email {reporter} with the ticket number and current status."
+3. Support files the bug in Plane
+4. Support emails the reporter: "Your bug has been filed as BUG-{N}: {title}. Current status: {state}. Our engineering team is investigating. We will notify you when the fix is verified and deployed."
+5. Support passes to PM for triage
+6. PM assigns to engineering
+7. Engineering fixes → submits to QA
+8. QA runs Playwright visual verification (MANDATORY before any bug can be marked as fixed)
+9. QA passes → Support emails the reporter: "BUG-{N} has been fixed and verified. {description of fix}. Please confirm the issue is resolved on your end."
+10. Reporter confirms → ticket closed
+
+### CEO Reply Template (when receiving a bug report)
+```
+Hi {name},
+
+Thanks for flagging this. I've forwarded the details to our customer support team — they'll reach out to you shortly with a tracking number so you can follow the progress.
+
+{sign-off}
+```
+
+### What the CEO/Director Should NOT Do
+- File bugs directly (that's support's job)
+- Ask the reporter for the ticket number (support should have sent it)
+- Say "I don't have enough context" — search Plane first, then ask support if nothing found
+- Tell the reporter the bug is fixed until support confirms QA has verified via Playwright
