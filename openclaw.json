@@ -1721,7 +1721,15 @@
             "ai-elevate-csm",
             "ai-elevate-billing",
             "ai-elevate-renewals",
-            "ai-elevate-feedback"
+            "ai-elevate-feedback",
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social"
           ]
         }
       },
@@ -5135,6 +5143,169 @@
             "security-engineer"
           ]
         }
+      },
+      {
+        "id": "alphadesk-ceo",
+        "name": "CEO \u2014 Chief Executive Officer",
+        "workspace": "/opt/ai-elevate/alphadesk",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-ceo/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social",
+            "gigforge-engineer",
+            "gigforge-dev-backend",
+            "gigforge-dev-frontend",
+            "gigforge-dev-ai",
+            "gigforge-devops",
+            "gigforge-qa"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-sales",
+        "name": "VP Sales",
+        "workspace": "/opt/ai-elevate/alphadesk/sales",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-sales/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social",
+            "gigforge-engineer"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-marketing",
+        "name": "CMO \u2014 Chief Marketing Officer",
+        "workspace": "/opt/ai-elevate/alphadesk/marketing",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-marketing/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social",
+            "gigforge-dev-frontend",
+            "gigforge-dev-ai"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-support",
+        "name": "Customer Support Lead",
+        "workspace": "/opt/ai-elevate/alphadesk/support",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-support/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social",
+            "gigforge-engineer",
+            "gigforge-qa"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-legal",
+        "name": "Legal Counsel",
+        "workspace": "/opt/ai-elevate/alphadesk/legal",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-legal/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-finance",
+        "name": "Finance Manager",
+        "workspace": "/opt/ai-elevate/alphadesk/finance",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-finance/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-csm",
+        "name": "Customer Success Manager",
+        "workspace": "/opt/ai-elevate/alphadesk/support",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-csm/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social"
+          ]
+        }
+      },
+      {
+        "id": "alphadesk-social",
+        "name": "Social Media Manager",
+        "workspace": "/opt/ai-elevate/alphadesk/marketing",
+        "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-social/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
+        "subagents": {
+          "allowAgents": [
+            "alphadesk-ceo",
+            "alphadesk-sales",
+            "alphadesk-marketing",
+            "alphadesk-support",
+            "alphadesk-legal",
+            "alphadesk-finance",
+            "alphadesk-csm",
+            "alphadesk-social"
+          ]
+        }
       }
     ]
   },
@@ -5256,5 +5427,17 @@
       }
     }
   },
-  "channels": {}
+  "channels": {},
+  "mcpServers": {
+    "social-media": {
+      "command": "npx",
+      "args": [
+        "tsx",
+        "/opt/ai-elevate/social-cli-mcp/src/mcp-server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
 }

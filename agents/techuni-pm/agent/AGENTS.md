@@ -163,7 +163,7 @@ data = urllib.parse.urlencode({
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
-creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
+creds = base64.b64encode(b"api:REDACTED_MAILGUN_KEY").decode()
 req = urllib.request.Request("https://api.mailgun.net/v3/techuni.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
@@ -752,3 +752,14 @@ All tickets MUST use the full org-prefixed format:
 NEVER use bare "BUG-1" or "FEAT-3". Always include the org prefix and zero-pad to 3 digits.
 
 This applies to: Plane titles, emails, agent messages, reports, and all communications.
+
+
+## Phase 0: Verify Assumptions Before Approval Chain
+
+Before sending any feature request to the approval chain, you MUST:
+1. List all assumptions in the request
+2. Send each to the relevant agent for verification
+3. Document verified/unverified/false assumptions on the Plane ticket
+4. Only then proceed to the approval chain (Sales + Legal + Security + CSAT + CEO)
+
+If an assumption is proven false, flag it on the ticket before the chain deliberates.

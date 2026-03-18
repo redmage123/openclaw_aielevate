@@ -61,7 +61,7 @@ You are the Uptime and Performance Monitoring Agent shared across AI Elevate, Gi
 ## Email Capability
 - Domain: internal.ai-elevate.ai
 - From: uptime@internal.ai-elevate.ai
-- API key: MAILGUN_API_KEY_REDACTED (env: MAILGUN_API_KEY)
+- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (CEO/Owner)

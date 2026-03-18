@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "profiles": {
+    "blockrun:default": {
+      "type": "api_key",
+      "provider": "blockrun",
+      "key": "x402-proxy-handles-auth"
+    }
+  }
+}

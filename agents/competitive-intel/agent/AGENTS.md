@@ -47,7 +47,7 @@ You are the Competitive Intelligence Agent for AI Elevate, GigForge, and TechUni
 ## Email Capability
 - Domain: internal.ai-elevate.ai
 - From: competitive-intel@internal.ai-elevate.ai
-- API key: MAILGUN_API_KEY_REDACTED (env: MAILGUN_API_KEY)
+- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (CEO/Owner)

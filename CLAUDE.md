@@ -1312,3 +1312,102 @@ ALL agents communicating with customers or team members MUST follow this rule:
 - If you cannot find the answer after searching all available systems, say "Let me look into this and get back to you shortly" — then escalate internally to the right agent
 - If the question is outside your domain, say "Let me connect you with the right person" and forward via sessions_send
 - You are a professional employee. Research before responding. Never tell anyone "I don't know."
+
+## KG → RAG Sync Architecture
+
+The Knowledge Graph (SQLite + FTS5) is the fast primary store — always query it FIRST for low latency.
+The RAG DB (ChromaDB via the RAG service on port 8020) is the persistent semantic search layer — synced from KG every 30 minutes.
+
+### Search Order (MANDATORY)
+1. **KG first** — `kg.search()`, `kg.get()`, `kg.context()` — fast, in-memory-like
+2. **RAG second** — `rag_search()` — semantic search for conceptual matches the KG keyword search might miss
+3. **Plane third** — `p.list_issues()` — for bug/feature/ticket status
+
+### Sync
+- Cron runs every 30 minutes: `/opt/ai-elevate/cron/kg-rag-sync.sh`
+- Only syncs entities changed since last run (incremental)
+- Full re-sync: `python3 /home/aielevate/kg_rag_sync.py --sync --full`
+- Status: `python3 /home/aielevate/kg_rag_sync.py --status`
+
+### When to Write
+- Write to KG first (it's the source of truth): `kg.add()`, `kg.link()`
+- The sync cron will persist to RAG automatically
+- Never write directly to the RAG "knowledge-graph" collection — always go through KG
+
+## Phase 0: Assumption Verification (Before Feature Approval)
+
+Before the PM sends a feature request to departments for approval, they MUST run Phase 0:
+
+### Process
+1. PM identifies ALL assumptions embedded in the feature request:
+   - Technical: "our stack can handle this"
+   - Market: "customers actually want this"
+   - Resource: "we have capacity to build this"
+   - Legal: "this doesn't violate regulations"
+   - Financial: "the ROI justifies the effort"
+
+2. PM sends each assumption to the relevant agent for VERIFICATION:
+   - Technical assumptions → engineering lead
+   - Market assumptions → sales/marketing
+   - Legal assumptions → legal counsel
+   - Financial assumptions → finance
+
+3. PM documents on the Plane ticket: which assumptions are verified, which are unverified, which are false
+
+4. ONLY after assumptions are documented does the feature proceed to Step 3 (approval chain)
+
+Wrong assumptions at the start poison everything downstream. Verify first, deliberate second.
+
+## Procedural Memory — ALL Agents
+
+After completing any significant task, record the outcome:
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from procedural_memory import record, query, best_approach
+
+# Before starting — check what worked before
+prev = best_approach("bug-fix")
+# prev = {"approach": "Check KG first, reproduce, fix, Playwright verify", "effectiveness": 0.9}
+
+# After completing — record the result
+record(org="gigforge", agent_id="your-agent-id", task_type="bug-fix",
+       approach="what you did", outcome="success",  # or "failure" or "partial"
+       effectiveness=0.8, context={"bug": "TU-BUG-001"},
+       lessons="what you learned", tags=["docker", "imports"])
+```
+
+## Memory Decay System
+
+KG entities decay over time based on access frequency and importance:
+- **Full** (0-7 days) → **Summary** (7-30 days) → **Essence** (30-90 days) → **Archived** (90+ days)
+- High-importance entities (customers, deals, contracts) resist decay
+- Frequently accessed entities stay at full resolution
+- Decayed memories can be promoted back to full when needed
+- Cron runs daily at 02:00 UTC
+
+## External Evaluator
+
+An independent watchdog monitors the entire system from OUTSIDE — no agent dependencies.
+Runs every 10 minutes. Checks: gateway, email, Strapi, voice platform, Plane, RAG, CRM, websites, token status, config integrity, cron health.
+Alerts directly via Mailgun if anything is down — bypasses ALL agent infrastructure.
+
+## Social Media MCP Server
+
+The social-cli-mcp server provides direct posting to Twitter/X, Reddit, LinkedIn, and Instagram via MCP tools.
+
+### MCP Tools Available
+- `post_twitter` — Tweet, thread, with media
+- `post_reddit` — Text/link posts to subreddits
+- `post_linkedin` — Updates with links/images
+- `post_instagram` — Photos, videos, carousels
+- `post_all` — Cross-platform post
+- `test_connections` — Verify connections
+
+### Credentials
+API keys stored at: `/opt/ai-elevate/credentials/social-media.env`
+MCP server config: `/opt/ai-elevate/social-cli-mcp/mcp-config.json`
+
+### Who Can Post
+Only social/marketing agents with content approval: gigforge-social, techuni-social, gigforge-creative, techuni-marketing, ai-elevate-content.
+
+All posts MUST go through Strapi CMS approval workflow before being posted to any platform.

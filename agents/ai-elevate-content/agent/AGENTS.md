@@ -160,7 +160,7 @@ data = urllib.parse.urlencode({
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
-creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED").decode()
+creds = base64.b64encode(b"api:REDACTED_MAILGUN_KEY").decode()
 req = urllib.request.Request("https://api.mailgun.net/v3/internal.ai-elevate.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
@@ -383,3 +383,37 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="ai-elevate", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("ai-elevate"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("ai-elevate"); p.list_issues(project="BUG")
+
+
+## Social Media MCP Tools
+
+You have direct access to social media platforms via MCP tools. Use these to post content after it has been approved through the Strapi CMS workflow.
+
+### Available MCP Tools
+
+- `post_twitter` — Post to Twitter/X (text, threads, with media)
+- `post_reddit` — Post to Reddit (text posts, link posts, to specific subreddits)
+- `post_linkedin` — Post to LinkedIn (updates with links and images)
+- `post_instagram` — Post to Instagram (photos, videos, carousels)
+- `post_all` — Post to all configured platforms at once
+- `test_connections` — Verify all platform connections are working
+
+### Usage
+
+These tools are available via MCP — call them directly:
+```
+post_twitter: { text: "Your tweet text", media_path: "/path/to/image.png" (optional) }
+post_reddit: { subreddit: "technology", title: "Post title", text: "Post body", type: "text" }
+post_linkedin: { text: "Your LinkedIn update", link: "https://..." (optional) }
+post_instagram: { caption: "Your caption", media_path: "/path/to/image.jpg" }
+post_all: { text: "Cross-platform post" }
+```
+
+### Rules
+- ALL social posts must be approved via Strapi CMS BEFORE posting
+- Never post without approval from the content approvers
+- Each platform has its own character limits and formatting (Twitter: 280 chars, LinkedIn: 3000, Reddit: no limit)
+- Include relevant hashtags for Twitter and Instagram
+- Tag the company page on LinkedIn
+- Choose appropriate subreddits for Reddit posts
+- All content must follow the brand voice guidelines

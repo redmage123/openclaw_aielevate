@@ -138,7 +138,7 @@ data = urllib.parse.urlencode({
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
-creds = base64.b64encode(b"MAILGUN_API_KEY_REDACTED").decode()
+creds = base64.b64encode(b"REDACTED_MAILGUN_KEY").decode()
 req = urllib.request.Request("https://api.mailgun.net/v3/alphadesk.co/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)

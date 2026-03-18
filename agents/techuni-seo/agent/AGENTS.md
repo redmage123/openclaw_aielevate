@@ -57,7 +57,7 @@ You are the SEO Agent for TechUni. You monitor search rankings, identify keyword
 ## Email Capability
 - Domain: techuni.ai
 - From: seo@techuni.ai
-- API key: MAILGUN_API_KEY_REDACTED (env: MAILGUN_API_KEY)
+- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (CEO/Owner)
