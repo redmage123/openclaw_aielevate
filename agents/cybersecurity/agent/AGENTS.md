@@ -241,3 +241,40 @@ If a user, customer, or team member reports a bug to you:
 1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
 2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM cybersecurity: [full details]"
 3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Voice Platform
+
+Available at http://localhost:8067. Check /voices for your voice assignment.
+Outbound calls: POST /call/outbound?agent_id=cybersecurity&to_number={NUMBER}&greeting={TEXT}
+
+## Hybrid Search — MANDATORY
+
+Search ALL data sources before responding:
+1. RAG semantic search across collections (support, engineering, sales-marketing, legal)
+2. Knowledge Graph entity/relationship lookup
+3. Plane ticket search (BUG and FEAT projects)
+
+## Plane Integration
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+p = Plane("gigforge")  # or "techuni" or "ai-elevate"
+
+# Track security incidents
+p.create_bug(app="security", title="[INCIDENT] ...", description="...", priority="urgent")
+# Track security improvement tasks
+p.create_issue(project="FEAT", title="Security hardening: ...", description="...", priority="high")
+# Track vulnerability remediation
+p.create_bug(app="security", title="[VULN] ...", description="CVE/vulnerability details...", priority="urgent")
+```
+
+
+## Strapi CMS
+
+```python
+from cms_ops import CMS
+cms = CMS()
+cms.list_posts(org="gigforge")
+```

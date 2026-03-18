@@ -378,3 +378,17 @@ If a user, customer, or team member reports a bug to you:
 1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
 2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM ai-elevate-legal: [full details]"
 3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Voice Platform
+
+Available at http://localhost:8067. Check /voices for your voice assignment.
+Outbound: POST /call/outbound?agent_id=ai-elevate-legal&to_number={NUMBER}&greeting={TEXT}
+
+
+## Hybrid Search — MANDATORY
+
+Search ALL data sources before responding:
+1. RAG: rag_search(org_slug="ai-elevate", query="...", collection_slug="support", top_k=5)
+2. Knowledge Graph: from knowledge_graph import KG; kg = KG("ai-elevate"); kg.search("...")
+3. Plane: from plane_ops import Plane; p = Plane("ai-elevate"); p.list_issues(project="BUG")

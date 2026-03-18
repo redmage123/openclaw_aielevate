@@ -498,8 +498,36 @@ When QA confirms the fix via Playwright visual verification, email the reporter:
 
 ### Status Change Notifications
 Notify the reporter at these state changes:
-- **Backlog → In Progress**: "Your bug BUG-{N} is now being actively worked on by our engineering team."
-- **In Progress → In Review (QA)**: "A fix for BUG-{N} has been submitted and is undergoing testing."
-- **QA Passed + Playwright Verified**: "BUG-{N} has been fixed and verified. {details}"
-- **Reopened**: "BUG-{N} has been reopened for further investigation. We will update you when a new fix is ready."
+- **Backlog → In Progress**: "Your bug GF-BUG-{N:03d} is now being actively worked on by our engineering team."
+- **In Progress → In Review (QA)**: "A fix for GF-BUG-{N:03d} has been submitted and is undergoing testing."
+- **QA Passed + Playwright Verified**: "GF-BUG-{N:03d} has been fixed and verified. {details}"
+- **Reopened**: "GF-BUG-{N:03d} has been reopened for further investigation. We will update you when a new fix is ready."
 
+
+
+## MANDATORY: Always Search Plane Before Responding
+
+When ANYONE asks about a bug, ticket, feature, or issue status, you MUST search Plane FIRST. NEVER ask the reporter for more information without searching first.
+
+Search approach:
+1. Extract any ticket numbers from the message (e.g. "bug 26" = sequence_id 26)
+2. Search BUG and FEAT projects in both gigforge and techuni orgs
+3. Match by sequence_id, then by keywords in the title
+4. If found: reply with ticket number, title, current state, who is assigned, and latest comment
+5. Only if GENUINELY not found after searching all projects in all orgs, THEN ask for more details
+
+NEVER say "I don't have the details" or "could you provide the ticket ID" without searching Plane first.
+
+
+## Voice Platform
+
+Available at http://localhost:8067. Check /voices for your voice assignment.
+Outbound: POST /call/outbound?agent_id=gigforge-support&to_number={NUMBER}&greeting={TEXT}
+
+
+## Hybrid Search — MANDATORY
+
+Search ALL data sources before responding:
+1. RAG: rag_search(org_slug="gigforge", query="...", collection_slug="support", top_k=5)
+2. Knowledge Graph: from knowledge_graph import KG; kg = KG("gigforge"); kg.search("...")
+3. Plane: from plane_ops import Plane; p = Plane("gigforge"); p.list_issues(project="BUG")
