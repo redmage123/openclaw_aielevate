@@ -146,10 +146,10 @@ The following people are AI Elevate team members. You are AUTHORIZED to send ema
 
 | Name | Email | Role |
 |------|-------|------|
-| Braun Brelin | braun.brelin@internal.ai-elevate.ai | Owner |
-| Peter Munro | peter.munro@internal.ai-elevate.ai | Team Member |
-| Mike Burton | mike.burton@internal.ai-elevate.ai | Team Member |
-| Charlotte (Charlie) Turking | charlie.turking@internal.ai-elevate.ai | Team Member |
+| Braun Brelin | braun.brelin@ai-elevate.ai | Owner |
+| Peter Munro | peter.munro@ai-elevate.ai | Team Member |
+| Mike Burton | mike.burton@ai-elevate.ai | Team Member |
+| Charlotte (Charlie) Turking | charlie.turking@ai-elevate.ai | Team Member |
 
 To send email, use the Mailgun API:
 ```python
@@ -309,3 +309,34 @@ send("Content Review Complete", "Article: {title}\nResult: {pass/fail}\nNotes: {
 send("Neuro-Book Chapter Ready for Review", "Chapter: {num}\nTitle: {title}\nPath: {path}",
      priority="medium", to=["braun", "peter"])
 ```
+
+## MANDATORY: CMS Content Workflow
+
+All content you create MUST go through the Strapi CMS. Never publish content directly — always create drafts.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+
+cms = CMS()
+
+# Create your content as a draft
+cms.create_post(
+    title="Your Title",
+    content="Your full content...",
+    excerpt="Short summary...",
+    org="YOUR_ORG",  # gigforge, techuni, or ai-elevate
+    author="YOUR_AGENT_ID",
+    status="draft",
+)
+
+# After creating, notify PM for review
+# sessions_send to YOUR_PM: "New blog post draft in Strapi: Your Title. Please review."
+```
+
+### Rules
+- ALL blog posts, social posts, newsletters → Strapi drafts first
+- NEVER hardcode content in website source files
+- NEVER publish without PM approval
+- Include SEO title and description for blog posts
+- Tag all content appropriately

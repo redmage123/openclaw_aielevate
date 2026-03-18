@@ -18,19 +18,19 @@ You can send and receive email:
 ```python
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
-    "from": "AI Elevate <builder@internal.ai-elevate.ai>",
+    "from": "AI Elevate <builder@ai-elevate.ai>",
     "to": "requester@email.com",
-    "h:Reply-To": "main@internal.ai-elevate.ai",
+    "h:Reply-To": "main@ai-elevate.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
 creds = base64.b64encode(b"api:MAILGUN_API_KEY_REDACTED".encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/internal.ai-elevate.ai/messages", data=data, method="POST")
+req = urllib.request.Request("https://api.mailgun.net/v3/ai-elevate.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)
 ```
 
-Your email address: `builder@internal.ai-elevate.ai` (replies go to `main@internal.ai-elevate.ai`)
+Your email address: `builder@ai-elevate.ai` (replies go to `main@ai-elevate.ai`)
 
 ## Phase 1: Discovery
 
@@ -268,7 +268,7 @@ Subject: Organization Plan: {Org Name} — Ready for Review
 Body: Full plan content + "Reply APPROVED to proceed or reply with changes needed"
 ```
 
-CC Braun (braun.brelin@internal.ai-elevate.ai) on all plan submissions.
+CC Braun (braun.brelin@ai-elevate.ai) on all plan submissions.
 
 **DO NOT BUILD ANYTHING until you receive explicit APPROVED from the requester.**
 
@@ -623,9 +623,9 @@ Not everyone can create, modify, or delete organizations and agents. Permissions
 
 | Role | Who | Permissions |
 |------|-----|-------------|
-| **Owner** | braun.brelin@internal.ai-elevate.ai | Full access: create/modify/delete orgs and agents, approve plans, override any restriction |
-| **Admin** | peter.munro@internal.ai-elevate.ai, mike.burton@internal.ai-elevate.ai | Create orgs, modify agents within orgs they manage, cannot delete entire orgs |
-| **Member** | charlie.turking@internal.ai-elevate.ai | Request new orgs/agents (goes through approval), modify agents they own, cannot delete |
+| **Owner** | braun.brelin@ai-elevate.ai | Full access: create/modify/delete orgs and agents, approve plans, override any restriction |
+| **Admin** | peter.munro@ai-elevate.ai, mike.burton@ai-elevate.ai | Create orgs, modify agents within orgs they manage, cannot delete entire orgs |
+| **Member** | charlie.turking@ai-elevate.ai | Request new orgs/agents (goes through approval), modify agents they own, cannot delete |
 | **External** | Anyone else | Request only — all actions require Owner approval before execution |
 
 ### Permission Matrix
@@ -647,10 +647,10 @@ Not everyone can create, modify, or delete organizations and agents. Permissions
 When you receive a request, check the sender email:
 ```python
 ROLES = {
-    "braun.brelin@internal.ai-elevate.ai": "owner",
-    "peter.munro@internal.ai-elevate.ai": "admin",
-    "mike.burton@internal.ai-elevate.ai": "admin",
-    "charlie.turking@internal.ai-elevate.ai": "member",
+    "braun.brelin@ai-elevate.ai": "owner",
+    "peter.munro@ai-elevate.ai": "admin",
+    "mike.burton@ai-elevate.ai": "admin",
+    "charlie.turking@ai-elevate.ai": "member",
 }
 
 def get_role(sender_email):

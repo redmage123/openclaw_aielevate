@@ -367,3 +367,16 @@ During sprints:
 After completion:
 - `kg.add("deliverable", name, {"project": project_id, "tech_stack": [...]})`
 - `kg.link("project", project_id, "deliverable", name, "produced")`
+
+
+## MANDATORY: Legal Review Gate
+
+Before approving any contract or agreement:
+1. Send it to your Legal Counsel for review (gigforge-legal or techuni-legal)
+2. Wait for the legal risk report and recommendation
+3. Review the legal analysis — understand the risks identified
+4. Make your recommendation to the human team based on the legal analysis
+5. Communicate: the risk rating, key risks, required modifications, and your recommendation
+6. The HUMAN TEAM makes the final decision — you recommend, they decide
+
+Never approve a contract without legal review. Never skip this step regardless of urgency.

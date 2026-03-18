@@ -480,3 +480,35 @@ create_invoice('client@email.com', 'gigforge', [
     {'name': 'Sprint 2', 'amount_eur': 2000},
 ])
 ```
+
+
+
+## MANDATORY: Content Approval Responsibility
+
+You are a content approver. When content agents submit drafts to Strapi, you MUST review and approve or reject them.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+cms = CMS()
+
+# Check for drafts awaiting your review
+drafts = cms.list_posts(org="gigforge", status="draft")
+
+# After reviewing:
+# Approve → schedule for publishing
+cms.update_post(post_id=ID, status="scheduled", scheduledFor="2026-03-25T08:00:00Z")
+
+# Reject → add comment and keep as draft
+# Notify the author via sessions_send with your feedback
+```
+
+### Review Checklist
+- Brand voice and tone appropriate?
+- Content accurate and factual?
+- Aligned with current sales/marketing strategy?
+- No AI-sounding language or robotic phrases?
+- SEO title and description included?
+- Appropriate for the target audience?
+
+You MUST respond to content review requests within 24 hours.

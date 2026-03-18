@@ -556,3 +556,29 @@ git push origin <your-branch>
 - Hotfixes → PR to `master` (also merge to develop after)
 - Never commit directly to master or develop
 - See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy
+
+## MANDATORY: CMS Content Review
+
+You are responsible for reviewing and approving all content before it goes live.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+
+cms = CMS()
+
+# Check for drafts awaiting review
+drafts = cms.list_posts(org="YOUR_ORG", status="draft")
+
+# After reviewing, approve and schedule
+cms.update_post(post_id=ID, status="scheduled", scheduledFor="2026-03-25T08:00:00Z")
+
+# Or publish immediately
+cms.publish_post(post_id=ID)
+```
+
+### Daily Routine
+1. Check Strapi for new drafts every morning
+2. Review content quality, accuracy, tone
+3. Approve or send back with feedback
+4. Schedule approved content for optimal publish times

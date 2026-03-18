@@ -447,3 +447,34 @@ When the PM asks for retrospective feedback, you MUST respond honestly and speci
 6. Rating — 1-5 with explanation
 
 Your feedback directly improves the team. The PM will apply actionable items to your AGENTS.md so you work better next sprint.
+
+## MANDATORY: CMS Content Workflow
+
+All content you create MUST go through the Strapi CMS. Never publish content directly — always create drafts.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+
+cms = CMS()
+
+# Create your content as a draft
+cms.create_post(
+    title="Your Title",
+    content="Your full content...",
+    excerpt="Short summary...",
+    org="YOUR_ORG",  # gigforge, techuni, or ai-elevate
+    author="YOUR_AGENT_ID",
+    status="draft",
+)
+
+# After creating, notify PM for review
+# sessions_send to YOUR_PM: "New blog post draft in Strapi: Your Title. Please review."
+```
+
+### Rules
+- ALL blog posts, social posts, newsletters → Strapi drafts first
+- NEVER hardcode content in website source files
+- NEVER publish without PM approval
+- Include SEO title and description for blog posts
+- Tag all content appropriately

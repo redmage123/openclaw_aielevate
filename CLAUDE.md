@@ -480,3 +480,244 @@ Never push directly to master or develop. All changes go through branches and PR
 **Every branch MUST reference a Plane issue ID.** No orphan branches.
 
 Full guide: `/opt/ai-elevate/course-creator/BRANCHING.md`
+
+## Strapi CMS — ALL Content Agents
+
+Strapi is the headless CMS for all content across all three orgs. ALL content (blog posts, newsletters, social posts, case studies) MUST go through Strapi.
+
+### How to Use
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+
+cms = CMS()
+
+# Create a blog post draft
+cms.create_post(
+    title="How AI is Changing Corporate Training",
+    content="Full article content here...",
+    excerpt="A short summary...",
+    org="techuni",
+    author="techuni-marketing",
+    category="ai-education",
+    tags=["ai", "training", "lnd"],
+    status="draft",
+)
+
+# List drafts for review
+cms.list_posts(org="techuni", status="draft")
+
+# Publish after review
+cms.publish_post(post_id=1)
+
+# Create newsletter draft
+cms.create_newsletter(
+    title="TechUni Weekly — March 25",
+    org="techuni",
+    html_content="<h1>...</h1>",
+    status="draft",
+)
+
+# Social post
+cms.create_social_post(
+    content="Excited to announce our new LTI 1.3 integration...",
+    org="techuni",
+    platform="linkedin",
+    status="draft",
+)
+
+# Case study
+cms.create_case_study(
+    title="CryptoAdvisor Dashboard",
+    client="Internal",
+    description="AI-powered crypto analytics...",
+    tech_stack=["Python", "FastAPI", "React"],
+    outcomes="Multi-chain support, real-time data...",
+    org="gigforge",
+)
+```
+
+### MANDATORY: Content Workflow
+
+All content follows this pipeline:
+1. **Draft** — content agent creates draft in Strapi
+2. **In Review** — PM or marketing lead reviews
+3. **Approved/Scheduled** — approved content gets a publish date
+4. **Published** — goes live on the website/newsletter/social
+
+No content goes live without passing through review.
+
+### Who Does What
+
+| Role | Creates | Reviews | Publishes |
+|------|---------|---------|-----------|
+| Marketing agents | Blog posts, social posts | — | — |
+| Social agents | Social posts | — | — |
+| Content agents (AI Elevate) | Newsletter content | — | — |
+| PM agents | — | All content | Approves for publish |
+| DevOps/cron | — | — | Auto-publishes scheduled content |
+
+### Strapi Admin
+
+- URL: http://localhost:1337/admin
+- API: http://localhost:1337/api
+- Credentials: /opt/ai-elevate/credentials/strapi.env
+
+## MANDATORY: Content Approval Authorities
+
+Content approvals are NOT handled by PM agents. The following agents must approve content before it can be published:
+
+### TechUni Content Approval
+- **Both must approve before publishing:**
+  - `techuni-marketing` (CMO) — reviews brand voice, messaging, accuracy
+  - `techuni-sales` (VP Sales) — reviews for sales alignment, lead generation value
+
+### GigForge Content Approval  
+- **Both must approve before publishing:**
+  - `gigforge` (Operations Director) — reviews brand voice, strategy alignment
+  - `gigforge-sales` (Proposals & Pricing Lead) — reviews for sales alignment, client messaging
+
+### AI Elevate Content Approval
+- **Single approver:**
+  - `ai-elevate` (Editor-in-Chief) — reviews editorial quality, accuracy, brand consistency
+
+### Approval Workflow
+
+```
+Content agent creates draft in Strapi (status: "draft")
+    → Notify approvers via sessions_send
+    → Approver 1 reviews → comments APPROVED or CHANGES NEEDED
+    → Approver 2 reviews → comments APPROVED or CHANGES NEEDED
+    → Both approved → status changes to "scheduled" or "published"
+    → Either requests changes → back to draft with feedback
+```
+
+### Approval Criteria
+
+Approvers must evaluate content on:
+
+1. **Sentiment** — tone must be appropriate for the audience and context. No negativity toward competitors, no fear-based marketing, no aggressive sales pressure. Positive and confident without being arrogant.
+2. **Professionalism** — content represents the company. No casual slang, no grammatical errors, no formatting issues. Must read like it was written by a senior professional.
+3. **Brand voice** — consistent with the org's identity. TechUni = knowledgeable educator, GigForge = expert engineering partner, AI Elevate = thoughtful publisher.
+4. **Accuracy** — all claims must be verifiable. No exaggeration, no features that don't exist, no false statistics.
+5. **Human tone** — must sound like a real person wrote it. No AI-sounding patterns ("I'd be happy to", "Let's dive in", "In today's fast-paced world").
+6. **Sales alignment** — content should support the sales pipeline without being pushy.
+7. **Relevance** — content must be relevant to the org's domain and audience. TechUni content must relate to education, training, course creation, or L&D. GigForge content must relate to software development, AI engineering, or tech services. AI Elevate content must relate to publishing, research, or industry analysis. Off-topic content is auto-rejected.
+
+### Rejection Criteria (auto-reject if any apply)
+
+- Contains AI-sounding language or robotic patterns
+- Makes claims about features that don't exist
+- Uses negative sentiment toward competitors
+- Contains grammatical errors or poor formatting
+- Doesn't match the org's brand voice
+- Contains sensitive information (pricing not yet approved, unannounced features)
+- Content is off-topic or irrelevant to the org's domain and audience
+
+### Rules
+- NO content publishes without ALL required approvals
+- PM agents manage the board but do NOT approve content — approvals come from marketing/sales leads
+- Content agents must tag the approvers when submitting drafts
+- Approvers must respond within 24 hours or content auto-escalates to the Operations Director / CEO
+
+## MANDATORY: Legal Review for All Contracts
+
+Every contract, agreement, NDA, SOW, MSA, or terms of service MUST be reviewed by the org's Legal Counsel before any commitment is made.
+
+| Org | Legal Agent | Reports To | Email |
+|-----|------------|------------|-------|
+| GigForge | gigforge-legal | gigforge (Director) | legal@gigforge.ai |
+| TechUni | techuni-legal | techuni-ceo (CEO) | legal@techuni.ai |
+| AI Elevate | ai-elevate-legal | operations | legal@internal.ai-elevate.ai |
+
+### Process
+
+1. Any agent receiving a contract or proposal sends it to their org's legal counsel:
+   ```
+   sessions_send to {org}-legal: "CONTRACT REVIEW REQUEST: [description]. Contract text: [full text or summary]"
+   ```
+2. Legal reviews and sends a risk report to the CEO with a recommendation (APPROVE / APPROVE WITH MODIFICATIONS / DENY)
+3. CEO reviews the legal recommendation and makes the final decision
+4. CEO communicates the decision to the human team with the legal analysis
+5. NO commitments are made until the human team approves
+
+### Jurisdictions Covered
+
+US, Canada, The Bahamas, all EU member states (including Ireland and Denmark), plus international commercial arbitration.
+
+### What Requires Legal Review
+
+- Client contracts and SOWs
+- Vendor/SaaS agreements
+- Partnership agreements
+- NDAs (inbound and outbound)
+- Terms of Service changes
+- Data Processing Agreements
+- Employment/contractor agreements
+- Any document that creates a binding obligation
+
+## Legal Research & Compliance Intelligence
+
+The `legal-research` agent monitors legal changes across all jurisdictions and maintains the legal knowledge base.
+
+**Serves:** All three orgs (GigForge, TechUni, AI Elevate)
+**Reports to:** gigforge-legal, techuni-legal, ai-elevate-legal
+**Email:** legal-research@internal.ai-elevate.ai
+
+### What It Does
+- Monitors statutory changes, court decisions, regulatory actions across US, Canada, Bahamas, all 27 EU states
+- Maintains legal RAG collection with current law, case law, and compliance guidance
+- Updates knowledge graph with legal entity relationships
+- Sends weekly Legal Intelligence Briefings to all three legal counsel agents
+- Alerts immediately on high-impact changes (GDPR enforcement, major rulings, new compliance deadlines)
+
+### Schedule
+- **Weekly (Monday 06:00 UTC)** — jurisdiction scan, RAG updates, briefing to legal counsel
+- **Monthly (1st, 05:00 UTC)** — deep audit, template review recommendations, compliance deadline tracker
+
+### Legal Counsel Agents Can Request Research
+```
+sessions_send to legal-research: "RESEARCH REQUEST: Check current EU law on [topic]. Need this for contract review with [counterparty] in [jurisdiction]."
+```
+
+## MANDATORY: Respond to Legal Inquiries
+
+ALL agents MUST respond promptly and completely to any message from a legal counsel agent ({org}-legal) or legal associate ({org}-legal-assoc-1, {org}-legal-assoc-2) that contains "LEGAL INQUIRY".
+
+Legal counsel has authority to access:
+- All customer correspondence and commitments
+- All proposals, contracts, and financial terms
+- All work product (code, deliverables, documentation)
+- All support tickets and customer complaints
+- All marketing claims and published content
+
+When you receive a LEGAL INQUIRY:
+1. Respond with complete, accurate information
+2. Do not omit or redact anything — legal needs the full picture
+3. If you don't have the information, say so clearly and suggest who might
+4. Respond within the same session — do not defer
+
+## Legal Department Structure
+
+Each org has a full legal department:
+
+| Role | GigForge | TechUni | AI Elevate |
+|------|----------|---------|------------|
+| Legal Counsel (dept head) | gigforge-legal | techuni-legal | ai-elevate-legal |
+| Associate 1 (Contracts) | gigforge-legal-assoc-1 | techuni-legal-assoc-1 | ai-elevate-legal-assoc-1 |
+| Associate 2 (Compliance) | gigforge-legal-assoc-2 | techuni-legal-assoc-2 | ai-elevate-legal-assoc-2 |
+| Legal Research (shared) | legal-research | legal-research | legal-research |
+
+### Legal Department Workflow
+```
+Task received → Counsel assigns to Associate → Associate researches + drafts →
+Associate submits to Counsel → Counsel reviews (hallucination check, accuracy, completeness) →
+Counsel approves or sends back → Counsel reports to CEO → CEO recommends to human team
+```
+
+### Anti-Hallucination Protocol
+Legal counsel MUST verify every case citation in associate work product:
+- Cross-reference against RAG legal database
+- Reject any fabricated cases immediately
+- Flag patterns of hallucination for retraining

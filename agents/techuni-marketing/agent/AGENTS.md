@@ -326,3 +326,66 @@ Before any campaign:
 After campaign:
 - `kg.add("campaign", campaign_id, {"type": ..., "target": ..., "results": ...})`
 - `kg.link("campaign", campaign_id, "customer", email, "targeted")` for each recipient
+
+## MANDATORY: CMS Content Workflow
+
+All content you create MUST go through the Strapi CMS. Never publish content directly — always create drafts.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+
+cms = CMS()
+
+# Create your content as a draft
+cms.create_post(
+    title="Your Title",
+    content="Your full content...",
+    excerpt="Short summary...",
+    org="YOUR_ORG",  # gigforge, techuni, or ai-elevate
+    author="YOUR_AGENT_ID",
+    status="draft",
+)
+
+# After creating, notify PM for review
+# sessions_send to YOUR_PM: "New blog post draft in Strapi: Your Title. Please review."
+```
+
+### Rules
+- ALL blog posts, social posts, newsletters → Strapi drafts first
+- NEVER hardcode content in website source files
+- NEVER publish without PM approval
+- Include SEO title and description for blog posts
+- Tag all content appropriately
+
+
+
+## MANDATORY: Content Approval Responsibility
+
+You are a content approver. When content agents submit drafts to Strapi, you MUST review and approve or reject them.
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from cms_ops import CMS
+cms = CMS()
+
+# Check for drafts awaiting your review
+drafts = cms.list_posts(org="techuni", status="draft")
+
+# After reviewing:
+# Approve → schedule for publishing
+cms.update_post(post_id=ID, status="scheduled", scheduledFor="2026-03-25T08:00:00Z")
+
+# Reject → add comment and keep as draft
+# Notify the author via sessions_send with your feedback
+```
+
+### Review Checklist
+- Brand voice and tone appropriate?
+- Content accurate and factual?
+- Aligned with current sales/marketing strategy?
+- No AI-sounding language or robotic phrases?
+- SEO title and description included?
+- Appropriate for the target audience?
+
+You MUST respond to content review requests within 24 hours.
