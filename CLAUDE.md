@@ -721,3 +721,206 @@ Legal counsel MUST verify every case citation in associate work product:
 - Cross-reference against RAG legal database
 - Reject any fabricated cases immediately
 - Flag patterns of hallucination for retraining
+
+## MANDATORY: Feature Enhancement Request Workflow
+
+When the owner (Braun) requests a feature enhancement, the following process MUST be followed:
+
+### Step 1: Ticket Creation (immediate)
+Create a Plane issue immediately and return the ticket number to Braun:
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+# Determine which org the feature belongs to
+p = Plane("gigforge")  # or "techuni" or use both if cross-org
+
+result = p.create_issue(
+    project="FEAT",  # Use BUG project for tracking
+    title="[Feature] Short description of the enhancement",
+    description="Full details from Braun's request...",
+    priority="high",
+    labels=["feature"],
+    state="Backlog",
+)
+ticket_id = f"BUG-{result.get('sequence_id')}"
+issue_uuid = result['id']
+```
+
+**Response format to Braun:**
+```
+Feature request logged as {ORG}/FEAT-{N}: [Feature] {title}
+Issue ID: {uuid}
+Status: Backlog — PM will be notified immediately for planning and implementation.
+```
+
+### Step 2: PM Notification (immediate)
+Notify the PM immediately after creating the ticket:
+
+```python
+# Notify PM via sessions_send
+sessions_send({
+    toAgentId: "{org}-pm",
+    message: "FEATURE REQUEST FROM OWNER: {org}/FEAT-{N} — {title}\n\nDetails: {description}\n\nIssue ID: {uuid}\n\nACTION REQUIRED:\n1. Review the request\n2. Break down into tasks\n3. Assign to engineering\n4. Update the ticket at every step\n5. Report back to the owner when complete"
+})
+```
+
+### Step 3: Approval Gate — Sales/Marketing + Legal
+
+Before ANY engineering work begins, the feature must be approved by BOTH:
+
+**Sales/Marketing Approval:**
+- GigForge: `gigforge` (Director) + `gigforge-sales`
+- TechUni: `techuni-marketing` (CMO) + `techuni-sales` (VP Sales)
+- AI Elevate: `ai-elevate` (Editor-in-Chief)
+
+They evaluate: market demand, revenue impact, competitive positioning, customer alignment.
+
+**Legal Approval:**
+- GigForge: `gigforge-legal`
+- TechUni: `techuni-legal`
+- AI Elevate: `ai-elevate-legal`
+
+They evaluate: regulatory compliance, IP implications, contractual obligations, liability exposure.
+
+**Security Review:**
+- `security-engineer` (shared across all orgs)
+
+They evaluate: security implications, attack surface changes, OWASP compliance, data exposure risks.
+
+**Customer Satisfaction Review:**
+- GigForge: `gigforge-csat`
+- TechUni: `techuni-csat`
+- AI Elevate: `ai-elevate-csm`
+
+They evaluate: customer demand for this feature, impact on existing customer satisfaction, support implications, whether customers have requested this.
+
+```python
+# PM sends for approval (all three departments)
+sessions_send to {org}-sales: "FEATURE APPROVAL REQUEST: FEAT-{N} — {title}. Details: {description}. Please review for sales/market alignment and respond APPROVED or DENIED with reasoning."
+
+sessions_send to {org}-legal: "FEATURE APPROVAL REQUEST: FEAT-{N} — {title}. Details: {description}. Please review for legal/compliance implications and respond APPROVED or DENIED with reasoning."
+
+sessions_send to security-engineer: "FEATURE APPROVAL REQUEST: FEAT-{N} — {title}. Details: {description}. Please review for security implications — attack surface, data exposure, OWASP compliance. Respond APPROVED or DENIED with reasoning."
+
+sessions_send to {org}-csat: "FEATURE APPROVAL REQUEST: FEAT-{N} — {title}. Details: {description}. Please review from a customer satisfaction perspective — is there customer demand? Will this improve or disrupt the customer experience? Respond APPROVED or DENIED with reasoning."
+```
+
+### Step 3b: CEO Decision
+
+After collecting ALL four opinions (sales/marketing, legal, security, CSAT), the PM compiles a summary and sends to the CEO/Director for the FINAL decision:
+
+```
+sessions_send to {org}-ceo: "FEATURE REQUEST DECISION NEEDED: FEAT-{N} — {title}
+
+Department Opinions:
+- Sales/Marketing: {APPROVED/DENIED} — {reasoning}
+- Legal: {APPROVED/DENIED} — {reasoning}
+- Security: {APPROVED/DENIED} — {reasoning}
+- Customer Satisfaction: {APPROVED/DENIED} — {reasoning}
+
+Please weigh these opinions and give a YES or NO to implementation."
+```
+
+The CEO weighs all three opinions and makes the final call:
+
+**If CEO says YES:**
+- PM comments on ticket: "CEO APPROVED. Sales: {status}. Legal: {status}. CSAT: {status}. Proceeding to implementation."
+- PM moves ticket: Backlog → Todo
+- Continue to Step 4
+
+**If CEO says NO:**
+- PM comments on ticket: "CEO DENIED: {reasoning}. Department opinions: Sales: {status}. Legal: {status}. CSAT: {status}."
+- PM moves ticket to Cancelled
+- PM notifies Braun (owner) with the full decision chain:
+
+```
+Feature request FEAT-{N} — CEO Decision: DENIED
+
+Ticket: {org}/FEAT-{N}: {title}
+Status: Cancelled
+
+Department Opinions:
+- Sales/Marketing: {APPROVED/DENIED — reasoning}
+- Legal: {APPROVED/DENIED — reasoning}  
+- Customer Satisfaction: {APPROVED/DENIED — reasoning}
+
+CEO Decision: DENIED — {CEO's reasoning}
+
+If you wish to override the CEO's decision, please advise.
+```
+
+**IMPORTANT:** The CEO makes the go/no-go decision. Even if all three departments approve, the CEO can still deny. Even if one department denies, the CEO can still approve if they believe the business case is strong enough. The CEO weighs the opinions — they don't just rubber-stamp.
+
+### Step 4: PM Plans and Assigns (after approval)
+The PM must:
+1. Move ticket: Backlog → Todo
+2. Add a comment with the implementation plan (tasks, assignments, timeline)
+3. Create sub-tasks in Plane if needed
+4. Assign to the right engineers
+5. Comment: "Plan created. Assigned to {engineer}. Estimated completion: {date}"
+
+### Step 5: Engineering Implements
+Engineers must:
+1. Move ticket: Todo → In Progress
+2. Comment at each milestone: "Started work on {component}"
+3. Use branching strategy: `feature/FEAT-{N}-short-description`
+4. Submit to QA via `submit_to_qa()` when ready
+5. Comment: "Implementation complete. Submitted for QA."
+
+### Step 6: QA Tests
+QA must:
+1. Run functional + regression tests
+2. `qa_pass()` or `qa_fail()` on the ticket
+3. Comment with test results
+
+### Step 7: Deployment
+DevOps:
+1. Deploy after QA passes
+2. Comment: "Deployed to production"
+
+### Step 8: Closure
+PM:
+1. Move ticket to In Review
+2. Comment: "Feature deployed and verified. Awaiting owner sign-off."
+3. Notify Braun: "Feature FEAT-{N} is complete and deployed."
+4. Owner (Braun) signs off → Done
+
+### Ticket Update Requirements
+The ticket MUST be updated at EVERY step:
+- Backlog → Todo (PM plans)
+- Todo → In Progress (engineer starts)
+- In Progress → In Review (QA testing)
+- In Review → Done (owner sign-off)
+
+Each state change MUST include a comment explaining what happened.
+
+### Ticket Lookup — MANDATORY for Status Updates
+
+When Braun asks about a feature, enhancement, or bug — ALWAYS look up the ticket in Plane first and include the current status in your response:
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+p = Plane("gigforge")  # or "techuni"
+issues = p.list_issues(project="BUG")
+# Search for the relevant ticket
+for issue in issues.get("results", []):
+    if "keyword" in issue.get("name", "").lower():
+        details = p.get_issue(project="BUG", issue_id=issue["id"])
+        comments = p.list_comments(project="BUG", issue_id=issue["id"])
+        # Include in response
+```
+
+**Response format when asked about a feature:**
+```
+{ORG}/BUG-{N}: {title}
+Status: {current state}
+Assigned to: {agent}
+Last update: {latest comment summary}
+Next step: {what happens next}
+```
+
+Never guess the status — always query Plane for the current state.

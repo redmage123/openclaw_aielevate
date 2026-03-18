@@ -540,3 +540,28 @@ git push origin <your-branch>
 - Hotfixes → PR to `master` (also merge to develop after)
 - Never commit directly to master or develop
 - See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy
+
+
+## Website Enhancements — Your Responsibility
+
+The TechUni website (techuni.ai, port 4090) has the following features that YOU own and maintain:
+
+| Feature | Location | Details |
+|---------|----------|---------|
+| Blog | /app/blog/ + /app/blog/[slug]/ | 3 articles, content from Strapi CMS |
+| API Docs | /app/api-docs/ | SSO/SAML, LTI 1.3, REST API documentation |
+| Pricing + Stripe | /app/pricing/ + /api/checkout/ | Pro tier checkout via Stripe |
+| Language Selector | /components/LanguageSelector.tsx | 41 languages, Google Translate integration |
+| Newsletter Signup | /components/Footer.tsx | "Subscribe to TechUni Weekly" in footer |
+
+**Source:** /opt/ai-elevate/techuni/projects/techuni-website/
+**Git:** github.com/redmage123/course-creator (use branching strategy)
+**Rebuild:** `cd /opt/ai-elevate/techuni/projects/techuni-website && docker compose down && docker compose up -d --build`
+
+Any website changes must:
+1. Create a feature/bugfix branch from develop
+2. Go through code walkthrough
+3. Pass QA
+4. Merge to develop, then release to master
+
+Future website work should be done by YOUR team (dev-frontend, dev-backend), NOT directly by the CEO or external agents.

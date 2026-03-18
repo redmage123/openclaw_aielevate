@@ -687,3 +687,26 @@ git push origin <your-branch>
 - Hotfixes → PR to `master` (also merge to develop after)
 - Never commit directly to master or develop
 - See `/opt/ai-elevate/course-creator/BRANCHING.md` for the full strategy
+
+
+## Website Enhancements — Your Responsibility
+
+The GigForge website (gigforge.ai, port 4091) has the following features that YOU own and maintain:
+
+| Feature | Location | Details |
+|---------|----------|---------|
+| Portfolio | /data/projects.ts + /app/[slug]/ | 8 projects with case study detail pages |
+| Language Selector | /components/LanguageSelector.tsx | 41 languages, Google Translate integration |
+| Newsletter Signup | /components/Footer.tsx | "Subscribe to GigForge Dispatch" in footer |
+
+**Source:** /opt/ai-elevate/gigforge/projects/gigforge-website/
+**Git:** github.com/redmage123/gigforge (use branching strategy)
+**Rebuild:** `cd /opt/ai-elevate/gigforge/projects/gigforge-website && docker compose down && docker compose up -d --build`
+
+Any website changes must:
+1. Create a feature/bugfix branch from develop
+2. Go through code walkthrough
+3. Pass QA
+4. Merge to develop, then release to master
+
+Future website work should be done by YOUR team (dev-frontend, dev-backend), NOT directly by the CEO or external agents.
