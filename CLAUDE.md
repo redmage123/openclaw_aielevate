@@ -924,3 +924,86 @@ Next step: {what happens next}
 ```
 
 Never guess the status — always query Plane for the current state.
+
+## MANDATORY: Hybrid Search — ALL Agents
+
+ALL agents MUST use BOTH semantic search (RAG) AND keyword search when looking up information. Never rely on just one method.
+
+### Why Both
+- **Keyword search** finds exact matches (ticket numbers, names, specific terms) but misses synonyms and related concepts
+- **Semantic search** finds conceptually related content but may miss exact IDs or specific strings
+- Using both gives the most complete and accurate context
+
+### How to Search
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+
+# 1. RAG Semantic Search — finds conceptually related content
+# Always search FIRST for broad context
+rag_search(
+    org_slug="gigforge",  # or "techuni" or "ai-elevate"
+    query="natural language description of what you're looking for",
+    collection_slug="support",  # or "engineering", "sales-marketing", "legal"
+    top_k=5,
+)
+
+# 2. Knowledge Graph — entity and relationship lookup
+from knowledge_graph import KG
+kg = KG("gigforge")
+# Semantic: search by concept
+results = kg.search("customer complaint about billing")
+# Keyword: search by exact entity
+entity = kg.get("customer", "john@example.com")
+context = kg.context("customer", "john@example.com")
+neighbors = kg.neighbors("customer", "john@example.com", depth=2)
+
+# 3. Plane — project management tickets
+from plane_ops import Plane
+p = Plane("gigforge")
+# Keyword: list and filter
+issues = p.list_issues(project="BUG")
+issues = p.list_issues(project="FEAT")
+# Then search results by content
+for issue in issues.get("results", []):
+    # Match against your search terms
+    if "keyword" in issue.get("name", "").lower():
+        details = p.get_issue(project="BUG", issue_id=issue["id"])
+        comments = p.list_comments(project="BUG", issue_id=issue["id"])
+```
+
+### When to Search
+
+| Situation | Search Method |
+|-----------|--------------|
+| Customer emails in | RAG (all collections) + KG (customer context) + Plane (related tickets) |
+| Bug investigation | RAG (engineering) + Plane (BUG project) + KG (system context) |
+| Feature planning | RAG (sales-marketing + engineering) + Plane (FEAT project) + KG (customer requests) |
+| Legal review | RAG (legal collection) + KG (contract/customer entities) + Plane (legal tasks) |
+| Content creation | RAG (sales-marketing) + KG (customer/competitor entities) + CMS (existing content) |
+| Sales inquiry | RAG (sales-marketing + support) + KG (full customer context) + Plane (active deals) |
+| Support ticket | RAG (support + engineering) + KG (customer history) + Plane (known bugs) |
+
+### Rules
+1. **Always search before answering** — never compose a response without checking available data
+2. **Search multiple collections** — don't stop at one; the answer may span support + engineering
+3. **Include search results in your reasoning** — cite what you found
+4. **If searches return nothing** — say so explicitly rather than guessing
+5. **Log new information** — if you learn something from an interaction, ingest it into RAG and/or update the KG
+
+## MANDATORY: Playwright Visual Verification
+
+ALL agents working on web UI changes (UX designers, brand designers, frontend devs, QA) MUST use Playwright to take screenshots before and after changes.
+
+Screenshot helper: `python3 /opt/ai-elevate/screenshot.py <url> <output_path> [full|mobile|viewport]`
+
+Websites:
+- GigForge: http://127.0.0.1:4091
+- TechUni: http://127.0.0.1:4090
+- Course Creator: https://127.0.0.1:3000
+
+Rules:
+- Never approve a UI change without a screenshot
+- Always check desktop (1440x900) AND mobile (375x812)
+- File any visual issues as bugs in Plane with the screenshot reference
+- QA must include visual verification in their test pass

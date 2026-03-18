@@ -357,3 +357,148 @@ Before any task involving a customer, deal, or project:
 After completing work:
 - Update relevant entities with new information
 - Create relationships to connect your work to the broader context
+
+
+## MANDATORY: Playwright Visual Assessment
+
+You MUST use Playwright for ALL website assessments. Never evaluate a website based on code alone — you must take screenshots and visually verify.
+
+### Screenshot Helper
+
+```bash
+# Full page screenshot (desktop 1440x900)
+python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/screenshot-desktop.png full
+
+# Mobile screenshot (375x812)
+python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/screenshot-mobile.png mobile
+
+# Viewport only (above the fold)
+python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/screenshot-viewport.png viewport
+```
+
+### Visual Assessment Checklist
+
+After every screenshot, evaluate:
+
+1. **Layout** — Is the layout clean and balanced? No overlapping elements? Proper spacing?
+2. **Typography** — Readable font sizes? Proper hierarchy (h1 > h2 > body)? Consistent fonts?
+3. **Color** — Sufficient contrast? Accessible for colorblind users? Consistent with brand palette?
+4. **Responsive** — Take BOTH desktop AND mobile screenshots. Does it work on both?
+5. **Navigation** — Header visible? Links clear? Current page highlighted?
+6. **CTA (Call to Action)** — Are buttons visible and compelling? Do they stand out?
+7. **Images/Media** — All images loading? Proper sizing? Alt text present?
+8. **Language Selector** — Is it visible and functional? Test with a non-English language.
+9. **Footer** — Newsletter signup visible? Contact info present? Links working?
+10. **Loading** — Does the page feel fast? Any layout shift?
+
+### Advanced Playwright Testing
+
+```python
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    
+    # Desktop assessment
+    page = browser.new_page(viewport={"width": 1440, "height": 900})
+    page.goto("http://127.0.0.1:PORT", wait_until="networkidle")
+    page.screenshot(path="/tmp/ux-desktop.png", full_page=True)
+    
+    # Check accessibility
+    # Verify all images have alt text
+    images = page.query_selector_all("img")
+    for img in images:
+        alt = img.get_attribute("alt")
+        if not alt:
+            print(f"ACCESSIBILITY: Missing alt text on {img.get_attribute('src')}")
+    
+    # Check color contrast on key elements
+    # Verify links are distinguishable
+    links = page.query_selector_all("a")
+    
+    # Check for broken links
+    for link in links[:20]:
+        href = link.get_attribute("href")
+        if href and href.startswith("http"):
+            try:
+                response = page.request.get(href)
+                if response.status >= 400:
+                    print(f"BROKEN LINK: {href} returned {response.status}")
+            except:
+                print(f"BROKEN LINK: {href} failed to load")
+    
+    # Mobile assessment
+    mobile = browser.new_page(viewport={"width": 375, "height": 812})
+    mobile.goto("http://127.0.0.1:PORT", wait_until="networkidle")
+    mobile.screenshot(path="/tmp/ux-mobile.png", full_page=True)
+    
+    # Check hamburger menu works on mobile
+    hamburger = mobile.query_selector("[aria-label='Toggle menu']")
+    if hamburger:
+        hamburger.click()
+        mobile.wait_for_timeout(500)
+        mobile.screenshot(path="/tmp/ux-mobile-menu.png")
+    
+    # Test language selector
+    page.goto("http://127.0.0.1:PORT", wait_until="networkidle")
+    lang_btn = page.query_selector("[aria-label='Select language']")
+    if lang_btn:
+        lang_btn.click()
+        page.wait_for_timeout(500)
+        page.screenshot(path="/tmp/ux-language-dropdown.png")
+    
+    # Performance check
+    metrics = page.evaluate("() => JSON.stringify(performance.timing)")
+    
+    browser.close()
+```
+
+### When to Run Visual Assessments
+
+- **Before any PR review** — screenshot the changes, compare with before
+- **After any deployment** — verify the deployed version looks correct
+- **Weekly visual audit** — full site assessment every Monday
+- **After content changes** — blog posts, case studies, pricing updates
+- **Cross-browser** — periodically test in Firefox too: `p.firefox.launch()`
+
+### Reporting
+
+After visual assessment, create a UX report:
+
+```
+UX VISUAL ASSESSMENT — {date}
+Site: {url}
+Device: Desktop (1440x900) + Mobile (375x812)
+
+PASS/FAIL:
+- [ ] Layout clean and balanced
+- [ ] Typography hierarchy correct
+- [ ] Color contrast accessible
+- [ ] Responsive on mobile
+- [ ] Navigation clear
+- [ ] CTAs visible
+- [ ] All images loading
+- [ ] Language selector working
+- [ ] No broken links
+- [ ] Performance acceptable
+
+ISSUES FOUND:
+1. {issue} — {screenshot reference} — {severity}
+
+RECOMMENDATIONS:
+1. {recommendation}
+```
+
+File any issues found as bugs in Plane:
+```python
+from plane_ops import Plane
+p = Plane("techuni")
+p.create_bug(app="TechUni Website", title="UX: {issue}", description="...", priority="medium", labels=["bug"], reporter="techuni-ux-designer")
+```
+
+### Rules
+- NEVER approve a website change without taking a screenshot first
+- ALWAYS check both desktop AND mobile
+- ALWAYS verify the language selector works
+- File bugs in Plane for anything that looks wrong
+- Include screenshots in your reports (reference the file paths)
