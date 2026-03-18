@@ -90,3 +90,19 @@ Subject: Weekly Competitive Briefing — {date}
 - Improve search queries based on information gaps
 - Request feedback from sales and marketing agents quarterly
 - Update knowledge graph taxonomy as the competitive landscape evolves
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM competitive-intel: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM competitive-intel: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

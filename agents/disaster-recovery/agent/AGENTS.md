@@ -139,3 +139,19 @@ Subject: Backup Verification Report — {month} {year}
 - Review industry best practices for DR in similar-sized operations
 - Ensure new services added to the infrastructure are immediately included in the DR plan
 - Reduce drill execution time by improving automation of recovery steps
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM disaster-recovery: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM disaster-recovery: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

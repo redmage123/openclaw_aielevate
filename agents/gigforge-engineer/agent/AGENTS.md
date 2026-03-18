@@ -713,3 +713,19 @@ Any website changes must:
 4. Merge to develop, then release to master
 
 Future website work should be done by YOUR team (dev-frontend, dev-backend), NOT directly by the CEO or external agents.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM gigforge-engineer: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM gigforge-engineer: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

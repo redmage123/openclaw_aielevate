@@ -104,3 +104,19 @@ Subject: TechUni SEO Weekly Report — {date}
 - Expand keyword universe as TechUni adds new courses
 - A/B test meta descriptions and course titles for click-through rate improvements
 - Analyze which course topics have the highest search demand vs. supply gap
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-seo: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-seo: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

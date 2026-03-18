@@ -362,3 +362,19 @@ Agents that MUST respond to your inquiries:
 - Support/CSAT — customer complaints, escalations, potential disputes
 - Marketing — published claims, advertising commitments
 - DevOps — data handling, infrastructure commitments
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM gigforge-legal: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM gigforge-legal: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

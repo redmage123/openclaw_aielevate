@@ -511,3 +511,19 @@ For all sprint work:
 2. Link to GigForge dev team: `kg.link("sprint", id, "agent", dev_agent, "worked_by")`
 3. After milestone: notify Braun via `send("Video Creator Milestone", ..., priority="high")`
 4. Track all ADRs: `kg.add("adr", adr_num, {"title": ..., "decision": ...})`
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM video-creator: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to gigforge-support: "BUG REPORT FORWARDED FROM video-creator: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

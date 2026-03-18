@@ -499,3 +499,19 @@ python3 /opt/ai-elevate/screenshot.py http://127.0.0.1:PORT /tmp/bugfix-BUG-N-mo
 
 If you qa_pass() without Playwright verification, support will reject it and send the ticket back to you.
 No Playwright = not verified. No exceptions.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-qa: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-qa: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

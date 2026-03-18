@@ -441,3 +441,19 @@ cms.update_post(post_id=ID, status="scheduled", scheduledFor="2026-03-25T08:00:0
 - Appropriate for the target audience?
 
 You MUST respond to content review requests within 24 hours.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-sales: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-sales: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.

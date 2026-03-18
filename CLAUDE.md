@@ -1057,3 +1057,22 @@ Thanks for flagging this. I've forwarded the details to our customer support tea
 - Ask the reporter for the ticket number (support should have sent it)
 - Say "I don't have enough context" — search Plane first, then ask support if nothing found
 - Tell the reporter the bug is fixed until support confirms QA has verified via Playwright
+
+## MANDATORY: ALL Agents Route Bug Reports to Support
+
+If ANY agent (not just the CEO) receives a bug report from a user, customer, or team member, they MUST:
+
+1. **Reply immediately**: "Thanks for reporting this. I'm forwarding it to our support team — they'll reach out shortly with a tracking number."
+2. **Forward to support** via sessions_send:
+   ```
+   sessions_send({
+       toAgentId: "{org}-support",
+       asAgentId: "{your-agent-id}",
+       message: "BUG REPORT FORWARDED FROM {your-agent-id}: Reporter: {name/email}. Details: {full bug details verbatim}. Please file in Plane and email the reporter with the ticket number."
+   })
+   ```
+3. **Never file bugs yourself** — only support files bugs
+4. **Never tell the reporter the bug is fixed** — only support sends fix notifications (after Playwright verification)
+5. **If asked for bug status**, search Plane first, then forward to support if you can't find it
+
+This applies to EVERY agent: sales, engineering, PM, legal, marketing, finance — anyone who might receive a bug report from an external user or team member. Only customer support agents (gigforge-support, techuni-support) file and track bugs.

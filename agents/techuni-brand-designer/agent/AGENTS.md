@@ -502,3 +502,19 @@ p.create_bug(app="TechUni Website", title="UX: {issue}", description="...", prio
 - ALWAYS verify the language selector works
 - File bugs in Plane for anything that looks wrong
 - Include screenshots in your reports (reference the file paths)
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately: `sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-brand-designer: {details}"`
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
+
+
+## Bug Reports — Route to Support
+
+If a user, customer, or team member reports a bug to you:
+1. Reply: "Thanks for reporting this. I'm forwarding it to our support team — they'll contact you shortly with a tracking number."
+2. Forward immediately via sessions_send to techuni-support: "BUG REPORT FORWARDED FROM techuni-brand-designer: [full details]"
+3. Never file bugs yourself. Never say a bug is fixed. Only support handles bug lifecycle.
