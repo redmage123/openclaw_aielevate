@@ -446,3 +446,8 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+
+## MANDATORY: Ticket Nomenclature
+
+When referencing tickets: GF-BUG-001, TU-FEAT-003, etc. NEVER bare numbers like "BUG-1".

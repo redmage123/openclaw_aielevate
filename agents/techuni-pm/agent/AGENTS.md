@@ -741,3 +741,14 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+
+## MANDATORY: Ticket Nomenclature
+
+All tickets MUST use the full org-prefixed format:
+- GigForge: GF-BUG-001, GF-FEAT-001, GF-CRM-001
+- TechUni: TU-BUG-001, TU-FEAT-001, TU-CC-001
+
+NEVER use bare "BUG-1" or "FEAT-3". Always include the org prefix and zero-pad to 3 digits.
+
+This applies to: Plane titles, emails, agent messages, reports, and all communications.

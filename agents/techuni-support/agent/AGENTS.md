@@ -519,3 +519,60 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+
+## Two-ID System: Ticket + Bug
+
+When a customer reports an issue, create TWO Plane issues:
+
+### Step 1: Create Support Ticket (customer-facing)
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from plane_ops import Plane
+
+p = Plane("techuni")
+
+# Create ticket in TKT project — this is what the customer sees
+ticket = p.create_issue(
+    project="TKT",
+    title="[Ticket] Customer reported: language selector not working",
+    description="Reporter: name@example.com. Details: ...",
+    priority="high",
+    labels=["bug-report"],
+)
+ticket_id = ticket.get("ticket_id")  # e.g., TU-TKT-001
+```
+
+### Step 2: Email customer the TICKET ID (not the bug ID)
+Email the customer with their ticket ID:
+"Your request is being tracked as {ticket_id}. We will keep you updated."
+
+The customer NEVER sees the internal bug ID.
+
+### Step 3: File internal bug (if it's a bug)
+```python
+# Create bug in BUG project — internal engineering
+bug = p.create_bug(
+    app="App Name",
+    title="Language selector cannot switch back from Danish",
+    description="Reported via ticket {ticket_id}. Details: ...",
+    priority="high",
+    labels=["bug"],
+    reporter="techuni-support",
+)
+bug_id = bug.get("ticket_id")  # e.g., TU-BUG-001
+
+# Link them — comment on both
+p.add_comment(project="TKT", issue_id=ticket["id"], author="techuni-support",
+    body="Bug filed as {bug_id} — assigned to engineering.")
+p.add_comment(project="BUG", issue_id=bug["id"], author="techuni-support",
+    body="Reported via customer ticket {ticket_id}.")
+```
+
+### Step 4: Notify customer at each stage (using TICKET ID)
+- Ticket created: "Your request is tracked as {ticket_id}"
+- Bug assigned: "Our engineering team is investigating {ticket_id}"
+- Fix in QA: "A fix for {ticket_id} is being tested"
+- Resolved: "{ticket_id} has been resolved — [description of fix]"
+
+NEVER use the bug ID in customer communications. Always use the ticket ID.

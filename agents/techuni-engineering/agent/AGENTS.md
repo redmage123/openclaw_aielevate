@@ -598,3 +598,23 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+
+## MANDATORY: Deployment Guard
+
+Before deploying ANY code change (docker compose up --build):
+1. Check the Plane ticket has a "QA PASSED" comment
+2. If no QA pass → REFUSE to deploy, notify the dev to submit to QA first
+3. If QA failed → REFUSE to deploy, notify the dev of the failure
+4. Only deploy after QA has explicitly passed
+
+```python
+from plane_ops import Plane
+p = Plane("YOUR_ORG")
+# Check ticket before deploying
+issue = p.get_issue(project="BUG", issue_id="...")
+comments = p.list_comments(project="BUG", issue_id="...")
+# Look for "QA PASSED" in comments before proceeding
+```
+
+Developers doing `docker compose up --build` directly on production is a process violation. Code must go through: Dev → QA → DevOps deploy.

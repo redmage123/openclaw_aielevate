@@ -142,3 +142,30 @@ Before any research or analysis, search ALL data sources:
 1. RAG: rag_search(org_slug="gigforge", query="...", collection_slug="legal", top_k=10)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("gigforge"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("gigforge"); p.list_issues(project="BUG")
+
+
+
+## AlphaDesk — Client Organization
+
+AlphaDesk (alphadesk.co) is a product company that owns CryptoAdvisor, an AI-powered crypto trading software platform. GigForge is the contracted development team.
+
+Key facts:
+- AlphaDesk handles: sales, marketing, legal, support, customer success
+- GigForge handles: all engineering, DevOps, QA, security
+- Product: CryptoAdvisor + OpenAlice trading engine integration
+- Business model: SaaS subscription or self-hosted license
+- CRITICAL: AlphaDesk sells SOFTWARE, not financial services. Never touches customer funds.
+- Ticket prefix: AD (AD-BUG-001, AD-FEAT-001)
+- Domain: alphadesk.co (DNS pending)
+
+AlphaDesk team:
+- Morgan Vance (CEO) — alphadesk-ceo
+- Ryan Torres (VP Sales) — alphadesk-sales
+- Zoe Harmon (CMO) — alphadesk-marketing
+- Jamie Ellison (Support) — alphadesk-support
+- Daniel Moss (Legal) — alphadesk-legal
+- Priya Mehta (Finance) — alphadesk-finance
+- Lily Chen (CSM) — alphadesk-csm
+- Marcus Webb (Social) — alphadesk-social
+
+When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.

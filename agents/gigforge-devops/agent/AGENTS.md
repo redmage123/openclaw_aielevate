@@ -659,3 +659,50 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="gigforge", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("gigforge"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("gigforge"); p.list_issues(project="BUG")
+
+
+## MANDATORY: Deployment Guard
+
+Before deploying ANY code change (docker compose up --build):
+1. Check the Plane ticket has a "QA PASSED" comment
+2. If no QA pass → REFUSE to deploy, notify the dev to submit to QA first
+3. If QA failed → REFUSE to deploy, notify the dev of the failure
+4. Only deploy after QA has explicitly passed
+
+```python
+from plane_ops import Plane
+p = Plane("YOUR_ORG")
+# Check ticket before deploying
+issue = p.get_issue(project="BUG", issue_id="...")
+comments = p.list_comments(project="BUG", issue_id="...")
+# Look for "QA PASSED" in comments before proceeding
+```
+
+Developers doing `docker compose up --build` directly on production is a process violation. Code must go through: Dev → QA → DevOps deploy.
+
+
+
+## AlphaDesk — Client Organization
+
+AlphaDesk (alphadesk.co) is a product company that owns CryptoAdvisor, an AI-powered crypto trading software platform. GigForge is the contracted development team.
+
+Key facts:
+- AlphaDesk handles: sales, marketing, legal, support, customer success
+- GigForge handles: all engineering, DevOps, QA, security
+- Product: CryptoAdvisor + OpenAlice trading engine integration
+- Business model: SaaS subscription or self-hosted license
+- CRITICAL: AlphaDesk sells SOFTWARE, not financial services. Never touches customer funds.
+- Ticket prefix: AD (AD-BUG-001, AD-FEAT-001)
+- Domain: alphadesk.co (DNS pending)
+
+AlphaDesk team:
+- Morgan Vance (CEO) — alphadesk-ceo
+- Ryan Torres (VP Sales) — alphadesk-sales
+- Zoe Harmon (CMO) — alphadesk-marketing
+- Jamie Ellison (Support) — alphadesk-support
+- Daniel Moss (Legal) — alphadesk-legal
+- Priya Mehta (Finance) — alphadesk-finance
+- Lily Chen (CSM) — alphadesk-csm
+- Marcus Webb (Social) — alphadesk-social
+
+When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.

@@ -667,3 +667,15 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+
+## CRITICAL: You Cannot Deploy Directly
+
+You are NOT allowed to run docker compose up --build on production. Your workflow:
+1. Fix code on your bugfix/feature branch
+2. Test locally with Playwright screenshots
+3. Submit to QA via p.submit_to_qa()
+4. WAIT for QA to pass
+5. DevOps deploys — not you
+
+If you rebuild the website or any service directly, it is a process violation.

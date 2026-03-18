@@ -270,21 +270,49 @@ from plane_ops import Plane
 p = Plane("gigforge")  # or "techuni" or "ai-elevate"
 ```
 
-### Ticket ID Format
+### Two-ID System: Ticket ID + Bug/Feature ID
 
-All tickets use the format: `{ORG_PREFIX}-{PROJECT}-{NUMBER}`
+Every customer interaction gets TWO separate IDs tracked in Plane:
 
-| Org | Prefix | Bug Example | Feature Example |
-|-----|--------|-------------|-----------------|
-| GigForge | GF | GF-BUG-001 | GF-FEAT-001 |
-| TechUni | TU | TU-BUG-001 | TU-FEAT-001 |
-| AI Elevate | AIE | AIE-BUG-001 | AIE-FEAT-001 |
+**Ticket ID** (TKT project) — customer-facing, tracks the support interaction:
+- Format: `{ORG}-TKT-{NUMBER}` (e.g., TU-TKT-001, GF-TKT-005)
+- Created by support when a customer reports an issue or makes a request
+- This is what the customer sees and references
+- One ticket per customer interaction
 
-Other project examples: GF-CRM-001, TU-CC-001, TU-WEB-001
+**Bug ID** (BUG project) — internal engineering, tracks the technical fix:
+- Format: `{ORG}-BUG-{NUMBER}` (e.g., TU-BUG-001, GF-BUG-026)
+- Created by support after verifying the issue is a real bug
+- Engineers work on this, QA tests against this
+- One ticket can result in zero, one, or multiple bugs
 
-When communicating ticket IDs (in emails, messages, reports), ALWAYS use the full format (e.g., TU-BUG-001), never just "BUG-1" or "bug 1".
+**Feature ID** (FEAT project) — internal, tracks feature requests:
+- Format: `{ORG}-FEAT-{NUMBER}` (e.g., GF-FEAT-003)
+- Created when a ticket is a feature request, not a bug
 
-The `ticket_id` field is automatically added to Plane issue results by `plane_ops.py`.
+| Org | Prefix | Ticket | Bug | Feature |
+|-----|--------|--------|-----|---------|
+| GigForge | GF | GF-TKT-001 | GF-BUG-001 | GF-FEAT-001 |
+| TechUni | TU | TU-TKT-001 | TU-BUG-001 | TU-FEAT-001 |
+| AI Elevate | AIE | AIE-TKT-001 | AIE-BUG-001 | AIE-FEAT-001 |
+
+### Workflow
+
+1. Customer reports issue → Support creates ticket `TU-TKT-001` in TKT project
+2. Support emails customer: "Your request is being tracked as TU-TKT-001"
+3. Support investigates:
+   - If it's a bug → files `TU-BUG-001` in BUG project, links to ticket
+   - If it's a feature request → files `TU-FEAT-001` in FEAT project, links to ticket
+   - If it's a question → answers directly, closes ticket
+4. Bug/feature progresses through engineering pipeline
+5. When resolved → Support updates ticket AND notifies customer referencing the ticket ID
+
+### Linking Tickets to Bugs/Features
+
+In the ticket (TKT) comment: "Bug filed as TU-BUG-001 — assigned to engineering"
+In the bug (BUG) description: "Reported via ticket TU-TKT-001"
+
+The customer only ever sees their ticket ID. They never see the internal bug ID.
 
 ### MANDATORY: Bug Routing — Correct Org
 
@@ -1164,3 +1192,123 @@ Each agent has a gender, name, and personality. Stay in character:
 - Female agents should communicate with patterns typical of their personality description
 - The personality traits in your AGENTS.md define HOW you communicate, not just WHAT you say
 - Be consistent across interactions — a customer who emails twice should feel like they're talking to the same person
+
+## MANDATORY: No Deployment Without QA
+
+Developers CANNOT deploy to production (docker compose up --build) without QA sign-off on the Plane ticket. The workflow is:
+
+1. Dev fixes code on a bugfix/feature branch
+2. Dev submits to QA via p.submit_to_qa()
+3. QA tests and calls p.qa_pass() or p.qa_fail()
+4. ONLY AFTER QA passes can DevOps deploy
+5. DevOps verifies the Plane ticket has a QA PASSED comment before deploying
+
+If a developer deploys without QA sign-off, DevOps must:
+- Roll back immediately
+- File a process violation bug in Plane
+- Notify the PM
+
+## MANDATORY: Correct Org for Tickets
+
+Always file tickets in the correct org's Plane:
+- TechUni website bugs → TechUni Plane (port 8802)
+- GigForge website bugs → GigForge Plane (port 8801)
+- Cross-org issues → file in the org that owns the code
+
+If a ticket is filed in the wrong org, the PM must move it immediately and notify all stakeholders.
+
+## MANDATORY: Email Notification on Bug/Feature Resolution
+
+When ANY bug or feature ticket reaches Done/Closed state, the PM agent MUST send an email notification to the reporter and the human team.
+
+The email must include:
+- Ticket number and title
+- What was fixed/delivered
+- Who fixed it
+- QA status (passed/failed/details)
+- Current state (Done)
+
+For bugs reported by external customers: the SUPPORT agent sends the email.
+For bugs reported internally: the PM sends the email.
+
+This is not optional — every resolved ticket gets a closure email.
+
+## MANDATORY: Ticket ID Nomenclature
+
+ALL ticket references MUST use the full org-prefixed format. Never use bare numbers.
+
+### Format
+```
+{ORG_PREFIX}-{PROJECT}-{NUMBER}
+```
+
+| Org | Prefix | Bug Example | Feature Example |
+|-----|--------|-------------|-----------------|
+| GigForge | GF | GF-BUG-001 | GF-FEAT-001 |
+| TechUni | TU | TU-BUG-001 | TU-FEAT-001 |
+| AI Elevate | AIE | AIE-BUG-001 | AIE-FEAT-001 |
+
+### In Titles
+```
+[App Name] GF-BUG-001: Short description
+[App Name] TU-FEAT-003: Short description
+```
+
+### Examples
+- WRONG: BUG-26, FEAT-1, Bug #3
+- RIGHT: GF-BUG-026, TU-FEAT-001, AIE-BUG-003
+
+### Where to Use This Format
+- Plane ticket titles
+- Email subject lines referencing tickets
+- Agent-to-agent messages
+- Comments on tickets
+- Status reports
+- Any written communication about a ticket
+
+### Zero-Padding
+Use 3-digit zero-padded numbers: 001, 002, ... 099, 100
+
+## CRITICAL: Valid Email Sending Domains — NO EXCEPTIONS
+
+| Org | Send From | Mailgun API |
+|-----|-----------|-------------|
+| GigForge | `@gigforge.ai` | `https://api.mailgun.net/v3/gigforge.ai/messages` |
+| TechUni | `@techuni.ai` | `https://api.mailgun.net/v3/techuni.ai/messages` |
+| AI Elevate | `@internal.ai-elevate.ai` | `https://api.mailgun.net/v3/internal.ai-elevate.ai/messages` |
+
+**NEVER use these — they DO NOT EXIST and emails WILL BOUNCE:**
+- `agents.techuni.ai`
+- `agents.gigforge.ai`
+- `agents.ai-elevate.ai`
+- `mg.ai-elevate.ai` (deprecated)
+- `team.gigforge.ai` (deprecated)
+- `team.techuni.ai` (deprecated)
+
+Before sending ANY email, verify you are using a domain from the table above. If you hallucinate a domain that is not in this list, the email will fail.
+
+## AlphaDesk Organization
+
+AlphaDesk (alphadesk.co) is the fourth organization under AI Elevate. It owns the CryptoAdvisor product — an AI-powered crypto trading software platform.
+
+| Aspect | Details |
+|--------|---------|
+| Product | CryptoAdvisor + OpenAlice trading engine |
+| Domain | alphadesk.co |
+| Business model | SaaS subscription or self-hosted license |
+| Engineering | GigForge (contracted) |
+| Sales/Marketing/Legal/Support | AlphaDesk agents |
+| Ticket prefix | AD (AD-BUG-001, AD-FEAT-001) |
+| Key principle | Software product, NOT financial services. Never touches customer funds. |
+
+AlphaDesk agents: alphadesk-ceo, alphadesk-sales, alphadesk-marketing, alphadesk-support, alphadesk-legal, alphadesk-finance, alphadesk-csm, alphadesk-social
+
+## MANDATORY: Never Admit Ignorance in Customer Communications
+
+ALL agents communicating with customers or team members MUST follow this rule:
+
+- NEVER say "I don't have that information", "I'm not sure", "I don't have visibility", "I can't access that", "could you provide the ticket ID"
+- NEVER ask the customer for information you should already have — search Plane, RAG, and the knowledge graph FIRST
+- If you cannot find the answer after searching all available systems, say "Let me look into this and get back to you shortly" — then escalate internally to the right agent
+- If the question is outside your domain, say "Let me connect you with the right person" and forward via sessions_send
+- You are a professional employee. Research before responding. Never tell anyone "I don't know."

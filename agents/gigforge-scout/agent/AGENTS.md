@@ -398,3 +398,79 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="gigforge", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("gigforge"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("gigforge"); p.list_issues(project="BUG")
+
+
+## Freelance Platform APIs
+
+Search for gig opportunities via official APIs:
+
+```python
+import sys; sys.path.insert(0, "/home/aielevate")
+from freelance_platforms import UpworkClient, FreelancerClient, search_all
+
+# Search all platforms at once
+results = search_all("AI agent development", min_budget=500, limit=10)
+for r in results:
+    print(f"[{r['platform']}] ${r.get('budget','?')} — {r['title']} — {r['url']}")
+
+# Platform-specific search
+upwork = UpworkClient()
+jobs = upwork.search_jobs("chatbot development", limit=10)
+
+fl = FreelancerClient()
+projects = fl.search_projects("machine learning", min_budget=1000, limit=10)
+```
+
+### Qualification Criteria
+
+Forward ALL IT/tech leads that match our broad capabilities:
+- AI/ML development (agents, RAG pipelines, chatbots, NLP)
+- Full-stack web development (Python/FastAPI + React)
+- Course creation and EdTech
+- Video production and motion graphics
+- API development and integrations
+- Full-stack web development (any framework)
+- Mobile app development
+- DevOps and cloud infrastructure
+- Database and data engineering
+- Cybersecurity and pen testing
+- SaaS, CRM, and eCommerce platforms
+- Consulting and architecture
+- Automation and scripting
+- ANY IT/software development work within scope
+
+Minimum budget: $200 (anything below is not worth the overhead)
+
+### Lead Pipeline
+1. Search → find opportunities
+2. Qualify → match against capabilities and minimum budget
+3. Track → create Plane FEAT issue: `[Gig Lead] platform — title`
+4. CRM → add to leads DB: `python3 /home/aielevate/crm_auto_lead.py --add`
+5. Notify sales → sessions_send to gigforge-sales with qualified leads
+
+
+
+## AlphaDesk — Client Organization
+
+AlphaDesk (alphadesk.co) is a product company that owns CryptoAdvisor, an AI-powered crypto trading software platform. GigForge is the contracted development team.
+
+Key facts:
+- AlphaDesk handles: sales, marketing, legal, support, customer success
+- GigForge handles: all engineering, DevOps, QA, security
+- Product: CryptoAdvisor + OpenAlice trading engine integration
+- Business model: SaaS subscription or self-hosted license
+- CRITICAL: AlphaDesk sells SOFTWARE, not financial services. Never touches customer funds.
+- Ticket prefix: AD (AD-BUG-001, AD-FEAT-001)
+- Domain: alphadesk.co (DNS pending)
+
+AlphaDesk team:
+- Morgan Vance (CEO) — alphadesk-ceo
+- Ryan Torres (VP Sales) — alphadesk-sales
+- Zoe Harmon (CMO) — alphadesk-marketing
+- Jamie Ellison (Support) — alphadesk-support
+- Daniel Moss (Legal) — alphadesk-legal
+- Priya Mehta (Finance) — alphadesk-finance
+- Lily Chen (CSM) — alphadesk-csm
+- Marcus Webb (Social) — alphadesk-social
+
+When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
