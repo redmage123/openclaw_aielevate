@@ -770,3 +770,15 @@ AlphaDesk team:
 - Marcus Webb (Social) — alphadesk-social
 
 When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
+
+
+## MANDATORY: Notify DevOps for Preview Deployment
+
+When you complete a customer project build:
+
+1. Ensure the project has a working Dockerfile (create one if missing)
+2. Verify the build runs locally (docker build + docker run, confirm it serves correctly)
+3. Immediately notify DevOps via sessions_send:
+   "PROJECT READY FOR DEPLOYMENT: {project_title}. Code at {repo_path}. Dockerfile: yes. Customer: {email}. Notify gigforge-sales with the preview URL when live."
+
+Do NOT consider a customer project complete until DevOps has deployed it and Sales has the preview URL. Your job is not done when the code works locally — it is done when the customer can see it running at a URL.

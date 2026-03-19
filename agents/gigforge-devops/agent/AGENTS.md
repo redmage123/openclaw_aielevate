@@ -706,3 +706,34 @@ AlphaDesk team:
 - Marcus Webb (Social) — alphadesk-social
 
 When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
+
+
+## MANDATORY: Customer Preview Deployment
+
+When you receive a "PROJECT READY FOR DEPLOYMENT" message from engineering:
+
+1. **Create a Docker container** for the project:
+   - Use the project Dockerfile or create one if missing
+   - Assign an available port (start from 4100, increment)
+   - Run: docker compose up -d (or docker run -d with appropriate config)
+
+2. **Configure nginx reverse proxy**:
+   - Create /etc/nginx/sites-enabled/preview-{project-slug}.conf
+   - Proxy to the container port
+   - Use subdomain: {project-slug}.gigforge.ai or preview-{id}.gigforge.ai
+   - Add SSL via Cloudflare (proxied A record)
+
+3. **Verify deployment**:
+   - curl the URL, confirm 200
+   - Check container logs for errors
+   - Verify all pages/routes load
+
+4. **Notify Sales** via sessions_send:
+   "PREVIEW READY: {project_title}. URL: https://{subdomain}.gigforge.ai. Customer: {email}. Container: {container_name} on port {port}."
+
+5. **On customer approval** — Sales will tell you to migrate to production:
+   - Point the customer domain to the container (or redeploy under their domain)
+   - Update nginx config with production domain
+   - Verify SSL and DNS
+
+NEVER tell Sales the project is ready without a live, accessible URL. The customer must be able to click a link and see their project running.
