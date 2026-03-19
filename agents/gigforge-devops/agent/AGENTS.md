@@ -734,8 +734,18 @@ After deploy_preview() succeeds, notify Sales via sessions_send:
   "PREVIEW READY: {project_title}. URL: {result['url']}. Direct: {result['direct_url']}. Customer: {email}"
 
 Other commands:
-  from preview_deploy import list_previews, teardown_preview
+  from preview_deploy import list_previews, teardown_preview, promote_to_production
   list_previews()  # Show all active previews
   teardown_preview("slug")  # Remove a preview
+  promote_to_production("slug", "customerdomain.com")  # Go live on production domain
+
+When Sales says the customer approved and requests production migration:
+1. Get the production domain from the preview record or from Sales
+2. Call promote_to_production(slug, domain) — this updates nginx to serve both the preview subdomain and the production domain
+3. Tell Sales (or the customer) to point their domain DNS to {server_ip} (A record) or use Cloudflare proxy
+4. Verify the domain resolves and serves the site
+5. Notify Sales: "PRODUCTION LIVE: {domain} is serving the project. DNS must point to 78.47.104.139."
+
+The production domain is captured during the proposal stage and stored in /opt/ai-elevate/devops/previews.json.
 
 NEVER tell Sales the project is ready without a live, accessible URL.
