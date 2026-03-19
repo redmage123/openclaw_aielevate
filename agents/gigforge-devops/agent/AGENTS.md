@@ -712,28 +712,30 @@ When AlphaDesk agents request engineering work, treat it like a client project â
 
 When you receive a "PROJECT READY FOR DEPLOYMENT" message from engineering:
 
-1. **Create a Docker container** for the project:
-   - Use the project Dockerfile or create one if missing
-   - Assign an available port (start from 4100, increment)
-   - Run: docker compose up -d (or docker run -d with appropriate config)
+Use the preview_deploy.py script:
 
-2. **Configure nginx reverse proxy**:
-   - Create /etc/nginx/sites-enabled/preview-{project-slug}.conf
-   - Proxy to the container port
-   - Use subdomain: {project-slug}.gigforge.ai or preview-{id}.gigforge.ai
-   - Add SSL via Cloudflare (proxied A record)
+  from preview_deploy import deploy_preview
+  result = deploy_preview(
+      project_dir="/opt/ai-elevate/gigforge/projects/{project-slug}",
+      slug="{short-name}",
+      org="gigforge",
+      customer_email="customer@example.com",
+  )
+  # result contains: url, direct_url, port, container, status
 
-3. **Verify deployment**:
-   - curl the URL, confirm 200
-   - Check container logs for errors
-   - Verify all pages/routes load
+This script automatically:
+- Builds the Docker container from the project Dockerfile or docker-compose.yml
+- Assigns an available port (4100-4199 range)
+- Configures nginx reverse proxy at {slug}.gigforge.ai
+- Reloads nginx
+- Records the preview in /opt/ai-elevate/devops/previews.json
 
-4. **Notify Sales** via sessions_send:
-   "PREVIEW READY: {project_title}. URL: https://{subdomain}.gigforge.ai. Customer: {email}. Container: {container_name} on port {port}."
+After deploy_preview() succeeds, notify Sales via sessions_send:
+  "PREVIEW READY: {project_title}. URL: {result['url']}. Direct: {result['direct_url']}. Customer: {email}"
 
-5. **On customer approval** â€” Sales will tell you to migrate to production:
-   - Point the customer domain to the container (or redeploy under their domain)
-   - Update nginx config with production domain
-   - Verify SSL and DNS
+Other commands:
+  from preview_deploy import list_previews, teardown_preview
+  list_previews()  # Show all active previews
+  teardown_preview("slug")  # Remove a preview
 
-NEVER tell Sales the project is ready without a live, accessible URL. The customer must be able to click a link and see their project running.
+NEVER tell Sales the project is ready without a live, accessible URL.
