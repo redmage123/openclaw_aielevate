@@ -668,3 +668,11 @@ Before responding to ANY customer, pull their full context:
   update_asset(customer@email.com, Logo, received=True, notes=SVG format)  # Track asset delivery
 
 Sentiment ratings: positive, neutral, frustrated, at_risk
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete

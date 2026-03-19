@@ -781,3 +781,11 @@ For shopify: packages files + deployment instructions (client must provide platf
 For devops/infra: packages IaC code + documentation + credential handoff instructions
 For ml_model: packages model files + optionally deploys inference API
 For saas/data_pipeline: docker compose full stack deployment
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete

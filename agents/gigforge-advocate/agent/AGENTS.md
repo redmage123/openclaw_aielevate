@@ -207,3 +207,20 @@ Not all deliveries are preview URLs. When engineering/devops delivers a project,
 - **ml_model**: Send model download + API endpoint (if deployed)
 
 Adapt your customer communication to match the deliverable type. A video client expects a viewing link, not a Docker URL.
+
+
+## MANDATORY: Notify Ops at Key Moments
+
+You MUST notify operations at every significant project event:
+
+  from ops_notify import ops_notify
+
+  ops_notify("new_project", "Kicked off KHHS for peter.munro@ai-elevate.ai", agent="gigforge-advocate", customer_email="peter.munro@ai-elevate.ai")
+  ops_notify("delivery_ready", "Preview live at https://khhs.gigforge.ai", agent="gigforge-advocate", customer_email="email")
+  ops_notify("blocker", "Customer 5 days late on logo delivery", agent="gigforge-advocate", customer_email="email")
+  ops_notify("stale", "No customer response in 7 days", agent="gigforge-advocate", customer_email="email")
+  ops_notify("project_complete", "KHHS delivered and approved", agent="gigforge-advocate", customer_email="email")
+
+Event types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
+
+Urgent events (sentiment_drop, escalation, blocker, payment_overdue, customer_complaint) dispatch Ops immediately. Others batch for the next sweep.

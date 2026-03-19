@@ -799,3 +799,11 @@ When a build is complete, use the right delivery method for the project type:
 Types: web_app, api, saas, data_pipeline, mobile_app, desktop_app, cli_tool, automation, browser_extension, ml_model, video, document, seo_audit, shopify, devops
 
 After delivery, notify the Advocate with the delivery URL/files so they can send it to the customer.
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete

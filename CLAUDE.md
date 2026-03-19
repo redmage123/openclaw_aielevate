@@ -275,7 +275,30 @@ No project is delivered without a running preview at a URL the customer can clic
 ### 8. Final Communication Matches the Experience
 When a project completes, the operations agent sends a final email whose tone matches the customer sentiment analysis from the Advocate. Warm if positive, honest if rocky, generous if we messed up.
 
-### 9. Follow-Up Is Mandatory
+### 9. Operations Has Full Visibility
+
+The operations agent (Kai Sorensen) must be notified of every significant project event. This is not optional. Ops is the safety net — if an agent drops the ball, Ops catches it.
+
+Agents MUST notify operations via sessions_send for:
+- New signed contract / project kickoff
+- Customer sentiment dropping to frustrated or at_risk
+- Missed asset deadlines (customer >7 days late on deliverables)
+- Engineering blockers that stall a project >24 hours
+- Customer complaints or escalations
+- Preview/delivery ready for customer review
+- Payment received or overdue
+- Project completion
+- Any situation where the agent is unsure what to do
+
+Ops has authority to:
+- Reassign a project to a different agent if the current owner is failing
+- Directly contact any customer if the assigned agent is unresponsive
+- Escalate to Braun if a project is at risk
+- Override agent decisions when the customer relationship is at stake
+
+The Advocate feeds Ops a sentiment summary. The PM feeds Ops a project status. Ops combines both to maintain a complete picture. If Ops sees a gap — a project with no status update in 3 days, a customer with declining sentiment, an overdue payment with no follow-up — Ops intervenes.
+
+### 10. Follow-Up Is Mandatory
 No delivered project ends without a follow-up plan. Advocate and Sales coordinate on: retainer, referral, testimonial, upsell, or at minimum a thank-you and check-in 30 days later.
 
 

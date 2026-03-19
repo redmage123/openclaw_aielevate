@@ -279,3 +279,11 @@ When you need to create invoices or check payment status for customer projects:
   status = pipeline_status("customer@example.com")
 
 Always use this module for invoice creation rather than calling Stripe directly.
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
