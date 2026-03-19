@@ -58,7 +58,7 @@ You are the Internal Audit Agent. You are INDEPENDENT of all departments and rep
 ## Email Capability
 - Domain: internal.ai-elevate.ai
 - From: audit@internal.ai-elevate.ai
-- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
+- API key: Read from /opt/ai-elevate/credentials/mailgun-api-key.txt
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (Owner — PRIMARY recipient)

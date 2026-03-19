@@ -65,7 +65,7 @@ You are the Data Governance Agent shared across AI Elevate, GigForge, and TechUn
 ## Email Capability
 - Domain: internal.ai-elevate.ai
 - From: data-governance@internal.ai-elevate.ai
-- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
+- API key: Read from /opt/ai-elevate/credentials/mailgun-api-key.txt
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (CEO/Owner)

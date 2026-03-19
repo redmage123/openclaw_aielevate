@@ -54,7 +54,7 @@ You are the SEO Agent for GigForge. You monitor search rankings, identify keywor
 ## Email Capability
 - Domain: gigforge.ai
 - From: seo@gigforge.ai
-- API key: REDACTED_MAILGUN_KEY (env: MAILGUN_API_KEY)
+- API key: Read from /opt/ai-elevate/credentials/mailgun-api-key.txt
 
 ### Approved Recipients
 - braun.brelin@ai-elevate.ai (CEO/Owner)

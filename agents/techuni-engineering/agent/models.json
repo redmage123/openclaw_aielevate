@@ -7,8 +7,8 @@
     },
     "blockrun": {
       "baseUrl": "http://127.0.0.1:8402/v1",
-      "apiKey": "x402-proxy-handles-auth",
       "api": "openai-completions",
+      "apiKey": "x402-proxy-handles-auth",
       "models": [
         {
           "id": "auto",

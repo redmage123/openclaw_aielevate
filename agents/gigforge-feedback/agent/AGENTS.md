@@ -138,7 +138,7 @@ data = urllib.parse.urlencode({
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
-creds = base64.b64encode(b"api:REDACTED_MAILGUN_KEY").decode()
+creds = base64.b64encode(b"api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip() + "").decode()
 req = urllib.request.Request("https://api.mailgun.net/v3/gigforge.ai/messages", data=data, method="POST")
 req.add_header("Authorization", f"Basic {creds}")
 urllib.request.urlopen(req, timeout=15)

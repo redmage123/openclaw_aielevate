@@ -1,5 +1,28 @@
 {
   "providers": {
+    "ollama": {
+      "baseUrl": "http://127.0.0.1:11434",
+      "api": "ollama",
+      "models": [
+        {
+          "id": "llama3.1:8b-instruct-q4_K_M",
+          "name": "llama3.1:8b-instruct-q4_K_M",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 131072,
+          "maxTokens": 8192
+        }
+      ],
+      "apiKey": "ollama-local"
+    },
     "anthropic": {
       "baseUrl": "https://api.anthropic.com",
       "apiKey": "b8f1afb652fe20adae78b3e2c2a31917f16d9738470733ea",
@@ -7,8 +30,8 @@
     },
     "blockrun": {
       "baseUrl": "http://127.0.0.1:8402/v1",
-      "api": "openai-completions",
       "apiKey": "x402-proxy-handles-auth",
+      "api": "openai-completions",
       "models": [
         {
           "id": "auto",
@@ -1582,29 +1605,6 @@
           "maxTokens": 8192
         }
       ]
-    },
-    "ollama": {
-      "baseUrl": "http://127.0.0.1:11434",
-      "api": "ollama",
-      "models": [
-        {
-          "id": "llama3.1:8b-instruct-q4_K_M",
-          "name": "llama3.1:8b-instruct-q4_K_M",
-          "reasoning": false,
-          "input": [
-            "text"
-          ],
-          "cost": {
-            "input": 0,
-            "output": 0,
-            "cacheRead": 0,
-            "cacheWrite": 0
-          },
-          "contextWindow": 131072,
-          "maxTokens": 8192
-        }
-      ],
-      "apiKey": "ollama-local"
     }
   }
 }
