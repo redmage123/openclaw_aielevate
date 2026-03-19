@@ -155,3 +155,19 @@ cms.list_posts(org="gigforge", status="draft")
 cms.list_posts(org="techuni", status="draft")
 cms.list_posts(org="ai-elevate", status="draft")
 ```
+
+
+## MANDATORY: Project Completion Final Email
+
+When gigforge-advocate sends you a "PROJECT COMPLETE" message with sentiment analysis:
+
+1. Read the sentiment rating and key moments
+2. Write a personalized final email to the customer from Operations:
+   - If positive sentiment: warm congratulations, highlight what went well, invite testimonial/referral
+   - If neutral: professional thank-you, ask for feedback on what could improve
+   - If negative/frustrated: sincere acknowledgement of difficulties, concrete steps taken to improve, offer goodwill gesture (discount on next project)
+3. Send from: AI Elevate Operations <operations@internal.ai-elevate.ai>
+4. CC gigforge-sales so they have the full picture for follow-up
+5. Log the final interaction in the knowledge graph
+
+The tone of this email must match the customer experience. Never send a generic template — every final email is personalized based on the advocate sentiment report.

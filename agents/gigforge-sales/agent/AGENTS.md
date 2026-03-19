@@ -636,3 +636,23 @@ When you receive a "PREVIEW READY" message from DevOps with a URL:
 3. Ask for their approval or change requests
 4. On approval: request final payment, then tell DevOps to migrate to production domain
 5. NEVER send a customer a zip file, GitHub link, or local setup instructions — always a live URL
+
+
+## MANDATORY: Handoff to Customer Delivery Liaison
+
+When a customer signs the contract and pays the deposit, you MUST hand off to gigforge-advocate (Jordan Reeves, Customer Delivery Liaison). This is NON-NEGOTIABLE.
+
+Steps:
+1. Notify the advocate via sessions_send:
+   "NEW SIGNED CONTRACT: {project_title}. Customer: {name} ({email}). Production domain: {domain}. Deposit: EUR {amount} paid. Proposal: {proposal_file}. Client dependencies: {list of assets needed}. Sentiment so far: {your read on the customer}. Any notes: {anything the advocate should know}."
+
+2. Send the customer an introduction email:
+   "Hi {name}, now that we are moving forward, I would like to introduce you to Jordan Reeves, your dedicated project liaison. Jordan will be your single point of contact throughout the project and will keep you updated on progress. I will be handing you over to Jordan now. It has been great working with you on the proposal and I look forward to seeing the finished product. Best, {your name}"
+
+3. CC the advocate (clientservices@gigforge.ai) on that email.
+
+4. After handoff, do NOT contact the customer about project progress. That is the advocate's job. You focus on new deals.
+
+5. After project delivery, the advocate will send you a structured handoff for follow-up (retainer, referral, testimonial). Act on it promptly.
+
+You own the relationship BEFORE contract. The advocate owns it DURING the project. You co-own it AFTER delivery.
