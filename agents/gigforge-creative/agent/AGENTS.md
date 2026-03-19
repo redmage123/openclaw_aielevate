@@ -305,6 +305,7 @@ import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@gigforge.ai>",
     "to": "recipient@ai-elevate.ai",
+    "h:Reply-To": "gigforge-creative@gigforge.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
