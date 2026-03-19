@@ -749,3 +749,35 @@ When Sales says the customer approved and requests production migration:
 The production domain is captured during the proposal stage and stored in /opt/ai-elevate/devops/previews.json.
 
 NEVER tell Sales the project is ready without a live, accessible URL.
+
+
+## Project Delivery — ALL Project Types
+
+Not all projects are web apps. Use project_delivery.py to deliver any project type:
+
+  from project_delivery import deliver_project, list_delivery_types
+
+  # See all supported types
+  list_delivery_types()
+
+  # Deliver based on project type
+  result = deliver_project(
+      project_type="mobile_app",  # or: web_app, api, saas, cli_tool, video, document, shopify, devops, etc.
+      project_dir="/path/to/project",
+      slug="project-name",
+      org="gigforge",
+      customer_email="customer@example.com",
+  )
+  # result contains: delivery_url, delivery_files, instructions, status
+
+Types: web_app, api, saas, data_pipeline, mobile_app, desktop_app, cli_tool, automation, browser_extension, ml_model, video, document, seo_audit, shopify, devops
+
+For web_app/api: Docker container + nginx preview URL (uses preview_deploy.py)
+For mobile_app/desktop_app: builds artifacts, uploads to file server, returns download links
+For cli_tool/automation/extension: zips and uploads to file server
+For video/animation: uploads media files to file server
+For document/seo_audit: finds or generates PDFs, uploads for download or email
+For shopify: packages files + deployment instructions (client must provide platform access)
+For devops/infra: packages IaC code + documentation + credential handoff instructions
+For ml_model: packages model files + optionally deploys inference API
+For saas/data_pipeline: docker compose full stack deployment

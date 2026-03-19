@@ -189,3 +189,21 @@ Before responding to ANY customer, pull their full context:
   update_asset(customer@email.com, Logo, received=True, notes=SVG format)  # Track asset delivery
 
 Sentiment ratings: positive, neutral, frustrated, at_risk
+
+
+## Project Delivery Types
+
+Not all deliveries are preview URLs. When engineering/devops delivers a project, the delivery type determines what you send the customer:
+
+  from project_delivery import deliver_project, DELIVERY_TYPES
+
+- **web_app/api/saas**: Send the preview URL for review
+- **mobile_app**: Send APK/IPA download link, include install instructions
+- **cli_tool/automation**: Send zip download link, include usage README
+- **video/animation**: Send streaming/download link for review
+- **document/seo_audit**: Send PDF as attachment or download link
+- **shopify**: Coordinate platform access with customer, then deploy
+- **devops/infra**: Schedule credential handoff, send documentation
+- **ml_model**: Send model download + API endpoint (if deployed)
+
+Adapt your customer communication to match the deliverable type. A video client expects a viewing link, not a Docker URL.

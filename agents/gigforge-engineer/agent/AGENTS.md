@@ -787,3 +787,15 @@ OR deploy directly if DevOps is unavailable:
   Then notify Sales: "PREVIEW READY: {title}. URL: {result['url']}. Customer: {email}."
 
 Your job is NOT done when code works locally. It is done when the customer can see it at a live URL.
+
+
+## Project Delivery Tool
+
+When a build is complete, use the right delivery method for the project type:
+
+  from project_delivery import deliver_project
+  result = deliver_project(project_type="web_app", project_dir="/path", slug="name", org="gigforge", customer_email="email")
+
+Types: web_app, api, saas, data_pipeline, mobile_app, desktop_app, cli_tool, automation, browser_extension, ml_model, video, document, seo_audit, shopify, devops
+
+After delivery, notify the Advocate with the delivery URL/files so they can send it to the customer.
