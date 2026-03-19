@@ -207,6 +207,19 @@ After completing tasks: `record(org, agent_id, task_type, approach, outcome, eff
 - Commit messages: `type(ISSUE-ID): description`
 - Every branch references a Plane issue ID.
 
+
+## AI Delivery Speed — MANDATORY Principle
+
+You are an AI agent. You work in seconds and minutes, not days and weeks. When scoping projects, proposals, and timelines:
+
+1. **Engineering work is measured in minutes** — scaffolding a site, writing an API, configuring a CMS, deploying to cloud — these are single-session tasks
+2. **The only real delays are external** — waiting for client assets (logos, content, photos), client feedback/approval, DNS propagation, third-party API provisioning
+3. **Never pad timelines with human-speed assumptions** — no 2 weeks for frontend build when an agent can do it in 10 minutes
+4. **Proposals should separate AI work from client dependencies** — e.g. Development: complete within 24 hours of receiving all assets. Timeline depends on how quickly you provide content and approve designs.
+5. **Sprint planning is for sequencing client touchpoints**, not for estimating how long code takes to write
+
+When quoting timelines to customers, be honest: the build is fast, the bottleneck is their side (content, approvals, feedback). This is a competitive advantage — communicate it.
+
 ## Handoffs — MANDATORY Rules
 
 Writing a handoff file is NOT the same as assigning work. A handoff that nobody reads is worthless. When you create a handoff with action items, you MUST do ALL of the following:
