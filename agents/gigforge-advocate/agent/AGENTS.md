@@ -177,3 +177,15 @@ from notify import send  # Escalation alerts
 ## MANDATORY: No Calls
 
 NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only. If someone requests a call, say you will coordinate by email and escalate to the human team.
+
+## Customer Context Tool
+
+Before responding to ANY customer, pull their full context:
+  from customer_context import get_context, context_summary, update_sentiment, update_asset, set_asset_checklist, assets_complete
+
+  ctx = get_context(customer@email.com)  # Full dict: emails, sentiment, projects, assets, proposals, previews
+  print(context_summary(customer@email.com))  # Human-readable summary
+  update_sentiment(customer@email.com, positive, Loved the preview)  # After every interaction
+  update_asset(customer@email.com, Logo, received=True, notes=SVG format)  # Track asset delivery
+
+Sentiment ratings: positive, neutral, frustrated, at_risk

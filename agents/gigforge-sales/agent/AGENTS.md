@@ -656,3 +656,15 @@ Steps:
 5. After project delivery, the advocate will send you a structured handoff for follow-up (retainer, referral, testimonial). Act on it promptly.
 
 You own the relationship BEFORE contract. The advocate owns it DURING the project. You co-own it AFTER delivery.
+
+## Customer Context Tool
+
+Before responding to ANY customer, pull their full context:
+  from customer_context import get_context, context_summary, update_sentiment, update_asset, set_asset_checklist, assets_complete
+
+  ctx = get_context(customer@email.com)  # Full dict: emails, sentiment, projects, assets, proposals, previews
+  print(context_summary(customer@email.com))  # Human-readable summary
+  update_sentiment(customer@email.com, positive, Loved the preview)  # After every interaction
+  update_asset(customer@email.com, Logo, received=True, notes=SVG format)  # Track asset delivery
+
+Sentiment ratings: positive, neutral, frustrated, at_risk
