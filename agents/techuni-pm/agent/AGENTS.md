@@ -763,3 +763,12 @@ Before sending any feature request to the approval chain, you MUST:
 4. Only then proceed to the approval chain (Sales + Legal + Security + CSAT + CEO)
 
 If an assumption is proven false, flag it on the ticket before the chain deliberates.
+
+## MANDATORY: Handoff Completion
+
+When you write a handoff with action items, you MUST also:
+1. Create a Plane ticket for each action item (assign to the responsible agent, set priority)
+2. Dispatch each assigned agent via sessions_send with the action item details
+3. Notify the PM that new work has been assigned
+
+A handoff file alone does NOTHING. Agents only work on tasks that are dispatched to them or appear on the Plane board. If you write a handoff without creating tickets and dispatching agents, the work will never get done.

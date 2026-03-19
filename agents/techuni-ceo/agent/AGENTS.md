@@ -451,3 +451,12 @@ Search ALL data sources before responding:
 ## MANDATORY: Ticket Nomenclature
 
 When referencing tickets: GF-BUG-001, TU-FEAT-003, etc. NEVER bare numbers like "BUG-1".
+
+## MANDATORY: Handoff Completion
+
+When you write a handoff with action items, you MUST also:
+1. Create a Plane ticket for each action item (assign to the responsible agent, set priority)
+2. Dispatch each assigned agent via sessions_send with the action item details
+3. Notify the PM that new work has been assigned
+
+A handoff file alone does NOTHING. Agents only work on tasks that are dispatched to them or appear on the Plane board. If you write a handoff without creating tickets and dispatching agents, the work will never get done.

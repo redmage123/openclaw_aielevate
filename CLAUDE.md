@@ -206,3 +206,25 @@ After completing tasks: `record(org, agent_id, task_type, approach, outcome, eff
 - `hotfix/{ORG}-BUG-{N}-description` → urgent fixes, from master → merge to both
 - Commit messages: `type(ISSUE-ID): description`
 - Every branch references a Plane issue ID.
+
+## Handoffs — MANDATORY Rules
+
+Writing a handoff file is NOT the same as assigning work. A handoff that nobody reads is worthless. When you create a handoff with action items, you MUST do ALL of the following:
+
+1. **Write the handoff file** to the org's memory/handoffs/ directory as usual
+2. **Create a Plane ticket** for each action item — assign it to the responsible agent, set priority, add the handoff file path in the description
+3. **Dispatch each assigned agent** via sessions_send with a direct message containing: the action item, the expected deliverable, and the deadline (if any)
+4. **Notify the PM** (gigforge-pm or techuni-pm) that new work has been assigned so it appears in the next board review
+
+If you cannot dispatch agents (e.g. sessions_send fails), send the assignment by email to the agent internal address (e.g. gigforge-engineer@internal.ai-elevate.ai).
+
+A handoff without Plane tickets and agent dispatch is an INCOMPLETE handoff. The enforcer cron will catch and escalate any handoff that was filed without corresponding action.
+
+### When You Receive a Handoff
+
+If you are dispatched with a handoff action item:
+1. Acknowledge receipt
+2. Create a Plane ticket if one does not already exist for your task
+3. Begin work immediately — do NOT wait for the next standup or sprint planning
+4. Post a status update within 4 hours (write to memory/handoffs/ and notify the PM)
+5. If you are blocked, escalate immediately — do not sit on it silently
