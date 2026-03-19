@@ -1,7 +1,13 @@
 {
   "meta": {
-    "lastTouchedVersion": "2026.2.25",
-    "lastTouchedAt": "2026-03-09T14:47:58.665Z"
+    "lastTouchedVersion": "2026.3.8",
+    "lastTouchedAt": "2026-03-19T08:19:34.029Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-19T08:19:33.987Z",
+    "lastRunVersion": "2026.3.8",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
   },
   "models": {
     "providers": {
@@ -757,7 +763,7 @@
           },
           {
             "id": "claude",
-            "name": "claude \u2192 Claude Sonnet 4.6",
+            "name": "claude → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -774,7 +780,7 @@
           },
           {
             "id": "sonnet",
-            "name": "sonnet \u2192 Claude Sonnet 4.6",
+            "name": "sonnet → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -791,7 +797,7 @@
           },
           {
             "id": "sonnet-4",
-            "name": "sonnet-4 \u2192 Claude Sonnet 4.6",
+            "name": "sonnet-4 → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -808,7 +814,7 @@
           },
           {
             "id": "sonnet-4.6",
-            "name": "sonnet-4.6 \u2192 Claude Sonnet 4.6",
+            "name": "sonnet-4.6 → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -825,7 +831,7 @@
           },
           {
             "id": "sonnet-4-6",
-            "name": "sonnet-4-6 \u2192 Claude Sonnet 4.6",
+            "name": "sonnet-4-6 → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -842,7 +848,7 @@
           },
           {
             "id": "opus",
-            "name": "opus \u2192 Claude Opus 4.6",
+            "name": "opus → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -859,7 +865,7 @@
           },
           {
             "id": "opus-4",
-            "name": "opus-4 \u2192 Claude Opus 4.6",
+            "name": "opus-4 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -876,7 +882,7 @@
           },
           {
             "id": "opus-4.6",
-            "name": "opus-4.6 \u2192 Claude Opus 4.6",
+            "name": "opus-4.6 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -893,7 +899,7 @@
           },
           {
             "id": "opus-4-6",
-            "name": "opus-4-6 \u2192 Claude Opus 4.6",
+            "name": "opus-4-6 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -910,7 +916,7 @@
           },
           {
             "id": "haiku",
-            "name": "haiku \u2192 Claude Haiku 4.5",
+            "name": "haiku → Claude Haiku 4.5",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -927,7 +933,7 @@
           },
           {
             "id": "anthropic/sonnet",
-            "name": "anthropic/sonnet \u2192 Claude Sonnet 4.6",
+            "name": "anthropic/sonnet → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -944,7 +950,7 @@
           },
           {
             "id": "anthropic/opus",
-            "name": "anthropic/opus \u2192 Claude Opus 4.6",
+            "name": "anthropic/opus → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -961,7 +967,7 @@
           },
           {
             "id": "anthropic/haiku",
-            "name": "anthropic/haiku \u2192 Claude Haiku 4.5",
+            "name": "anthropic/haiku → Claude Haiku 4.5",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -978,7 +984,7 @@
           },
           {
             "id": "anthropic/claude",
-            "name": "anthropic/claude \u2192 Claude Sonnet 4.6",
+            "name": "anthropic/claude → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -995,7 +1001,7 @@
           },
           {
             "id": "anthropic/claude-sonnet-4",
-            "name": "anthropic/claude-sonnet-4 \u2192 Claude Sonnet 4.6",
+            "name": "anthropic/claude-sonnet-4 → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1012,7 +1018,7 @@
           },
           {
             "id": "anthropic/claude-sonnet-4-6",
-            "name": "anthropic/claude-sonnet-4-6 \u2192 Claude Sonnet 4.6",
+            "name": "anthropic/claude-sonnet-4-6 → Claude Sonnet 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1029,7 +1035,7 @@
           },
           {
             "id": "anthropic/claude-opus-4",
-            "name": "anthropic/claude-opus-4 \u2192 Claude Opus 4.6",
+            "name": "anthropic/claude-opus-4 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1046,7 +1052,7 @@
           },
           {
             "id": "anthropic/claude-opus-4-6",
-            "name": "anthropic/claude-opus-4-6 \u2192 Claude Opus 4.6",
+            "name": "anthropic/claude-opus-4-6 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1063,7 +1069,7 @@
           },
           {
             "id": "anthropic/claude-opus-4.5",
-            "name": "anthropic/claude-opus-4.5 \u2192 Claude Opus 4.6",
+            "name": "anthropic/claude-opus-4.5 → Claude Opus 4.6",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1080,7 +1086,7 @@
           },
           {
             "id": "anthropic/claude-haiku-4",
-            "name": "anthropic/claude-haiku-4 \u2192 Claude Haiku 4.5",
+            "name": "anthropic/claude-haiku-4 → Claude Haiku 4.5",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1097,7 +1103,7 @@
           },
           {
             "id": "anthropic/claude-haiku-4-5",
-            "name": "anthropic/claude-haiku-4-5 \u2192 Claude Haiku 4.5",
+            "name": "anthropic/claude-haiku-4-5 → Claude Haiku 4.5",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1114,7 +1120,7 @@
           },
           {
             "id": "gpt",
-            "name": "gpt \u2192 GPT-4o",
+            "name": "gpt → GPT-4o",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1132,7 +1138,7 @@
           },
           {
             "id": "gpt4",
-            "name": "gpt4 \u2192 GPT-4o",
+            "name": "gpt4 → GPT-4o",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1150,7 +1156,7 @@
           },
           {
             "id": "gpt5",
-            "name": "gpt5 \u2192 GPT-5.2",
+            "name": "gpt5 → GPT-5.2",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1168,7 +1174,7 @@
           },
           {
             "id": "codex",
-            "name": "codex \u2192 GPT-5.2 Codex",
+            "name": "codex → GPT-5.2 Codex",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1185,7 +1191,7 @@
           },
           {
             "id": "mini",
-            "name": "mini \u2192 GPT-4o Mini",
+            "name": "mini → GPT-4o Mini",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1202,7 +1208,7 @@
           },
           {
             "id": "o1",
-            "name": "o1 \u2192 o1",
+            "name": "o1 → o1",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1219,7 +1225,7 @@
           },
           {
             "id": "o3",
-            "name": "o3 \u2192 o3",
+            "name": "o3 → o3",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1236,7 +1242,7 @@
           },
           {
             "id": "deepseek",
-            "name": "deepseek \u2192 DeepSeek V3.2 Chat",
+            "name": "deepseek → DeepSeek V3.2 Chat",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1253,7 +1259,7 @@
           },
           {
             "id": "reasoner",
-            "name": "reasoner \u2192 DeepSeek V3.2 Reasoner",
+            "name": "reasoner → DeepSeek V3.2 Reasoner",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1270,7 +1276,7 @@
           },
           {
             "id": "kimi",
-            "name": "kimi \u2192 Kimi K2.5",
+            "name": "kimi → Kimi K2.5",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1288,7 +1294,7 @@
           },
           {
             "id": "moonshot",
-            "name": "moonshot \u2192 Kimi K2.5",
+            "name": "moonshot → Kimi K2.5",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1306,7 +1312,7 @@
           },
           {
             "id": "kimi-k2.5",
-            "name": "kimi-k2.5 \u2192 Kimi K2.5",
+            "name": "kimi-k2.5 → Kimi K2.5",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1324,7 +1330,7 @@
           },
           {
             "id": "gemini",
-            "name": "gemini \u2192 Gemini 2.5 Pro",
+            "name": "gemini → Gemini 2.5 Pro",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1342,7 +1348,7 @@
           },
           {
             "id": "flash",
-            "name": "flash \u2192 Gemini 2.5 Flash",
+            "name": "flash → Gemini 2.5 Flash",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1359,7 +1365,7 @@
           },
           {
             "id": "grok",
-            "name": "grok \u2192 Grok 3",
+            "name": "grok → Grok 3",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1376,7 +1382,7 @@
           },
           {
             "id": "grok-fast",
-            "name": "grok-fast \u2192 Grok 4 Fast Reasoning",
+            "name": "grok-fast → Grok 4 Fast Reasoning",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1393,7 +1399,7 @@
           },
           {
             "id": "grok-code",
-            "name": "grok-code \u2192 Grok Code Fast",
+            "name": "grok-code → Grok Code Fast",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1410,7 +1416,7 @@
           },
           {
             "id": "nvidia",
-            "name": "nvidia \u2192 NVIDIA GPT-OSS 120B",
+            "name": "nvidia → NVIDIA GPT-OSS 120B",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1427,7 +1433,7 @@
           },
           {
             "id": "gpt-120b",
-            "name": "gpt-120b \u2192 NVIDIA GPT-OSS 120B",
+            "name": "gpt-120b → NVIDIA GPT-OSS 120B",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1444,7 +1450,7 @@
           },
           {
             "id": "minimax",
-            "name": "minimax \u2192 MiniMax M2.5",
+            "name": "minimax → MiniMax M2.5",
             "api": "openai-completions",
             "reasoning": true,
             "input": [
@@ -1461,7 +1467,7 @@
           },
           {
             "id": "auto-router",
-            "name": "auto-router \u2192 Auto (Smart Router - Balanced)",
+            "name": "auto-router → Auto (Smart Router - Balanced)",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1478,7 +1484,7 @@
           },
           {
             "id": "router",
-            "name": "router \u2192 Auto (Smart Router - Balanced)",
+            "name": "router → Auto (Smart Router - Balanced)",
             "api": "openai-completions",
             "reasoning": false,
             "input": [
@@ -1646,19 +1652,19 @@
         }
       },
       "workspace": "/home/aielevate",
+      "memorySearch": {
+        "enabled": true
+      },
       "compaction": {
         "mode": "safeguard"
       },
-      "timeoutSeconds": 3600,
-      "memorySearch": {
-        "enabled": true
-      }
+      "timeoutSeconds": 3600
     },
     "list": [
       {
         "id": "main",
-        "workspace": "/opt/ai-elevate",
         "name": "AI Elevate Assistant",
+        "workspace": "/opt/ai-elevate",
         "subagents": {
           "allowAgents": [
             "ai-elevate",
@@ -1735,7 +1741,7 @@
       },
       {
         "id": "techuni-ceo",
-        "name": "CEO \u2014 Chief Executive Officer",
+        "name": "CEO — Chief Executive Officer",
         "workspace": "/opt/ai-elevate/techuni",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-ceo/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -1771,7 +1777,7 @@
       },
       {
         "id": "techuni-marketing",
-        "name": "CMO \u2014 Chief Marketing Officer",
+        "name": "CMO — Chief Marketing Officer",
         "workspace": "/opt/ai-elevate/techuni/departments/marketing",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-marketing/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -1880,7 +1886,7 @@
       },
       {
         "id": "techuni-engineering",
-        "name": "CTO \u2014 Chief Technology Officer",
+        "name": "CTO — Chief Technology Officer",
         "workspace": "/opt/ai-elevate/techuni/departments/engineering",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-engineering/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -1916,7 +1922,7 @@
       },
       {
         "id": "techuni-qa",
-        "name": "QA Engineer \u2014 Quality Assurance",
+        "name": "QA Engineer — Quality Assurance",
         "workspace": "/opt/ai-elevate/techuni",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-qa/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -1952,7 +1958,7 @@
       },
       {
         "id": "techuni-finance",
-        "name": "CFO \u2014 Chief Financial Officer",
+        "name": "CFO — Chief Financial Officer",
         "workspace": "/opt/ai-elevate/techuni/departments/finance",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-finance/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -2251,8 +2257,8 @@
         "id": "gigforge",
         "name": "Operations Director",
         "workspace": "/opt/ai-elevate/gigforge",
-        "model": "claude-code-proxy/claude-sonnet-4-6",
-        "agentDir": "/home/aielevate/.openclaw/agents/gigforge/agent"
+        "agentDir": "/home/aielevate/.openclaw/agents/gigforge/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6"
       },
       {
         "id": "gigforge-scout",
@@ -2293,8 +2299,8 @@
         "id": "gigforge-sales",
         "name": "Proposals & Pricing Lead",
         "workspace": "/opt/ai-elevate/gigforge",
-        "model": "claude-code-proxy/claude-sonnet-4-6",
         "agentDir": "/home/aielevate/.openclaw/agents/gigforge-sales/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
         "subagents": {
           "allowAgents": [
             "cybersecurity",
@@ -2509,8 +2515,8 @@
         "id": "gigforge-devops",
         "name": "DevOps Engineer",
         "workspace": "/opt/ai-elevate/gigforge",
-        "model": "claude-code-proxy/claude-sonnet-4-6",
         "agentDir": "/home/aielevate/.openclaw/agents/gigforge-devops/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6",
         "subagents": {
           "allowAgents": [
             "cybersecurity",
@@ -2937,7 +2943,7 @@
       },
       {
         "id": "techuni-pm",
-        "name": "Project Manager \u2014 Agile/Scrum",
+        "name": "Project Manager — Agile/Scrum",
         "workspace": "/opt/ai-elevate/techuni",
         "agentDir": "/home/aielevate/.openclaw/agents/techuni-pm/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -5146,7 +5152,7 @@
       },
       {
         "id": "alphadesk-ceo",
-        "name": "CEO \u2014 Chief Executive Officer",
+        "name": "CEO — Chief Executive Officer",
         "workspace": "/opt/ai-elevate/alphadesk",
         "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-ceo/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -5191,7 +5197,7 @@
       },
       {
         "id": "alphadesk-marketing",
-        "name": "CMO \u2014 Chief Marketing Officer",
+        "name": "CMO — Chief Marketing Officer",
         "workspace": "/opt/ai-elevate/alphadesk/marketing",
         "agentDir": "/home/aielevate/.openclaw/agents/alphadesk-marketing/agent",
         "model": "claude-code-proxy/claude-sonnet-4-6",
@@ -5310,30 +5316,38 @@
     ]
   },
   "tools": {
-    "exec": {
-      "host": "gateway",
-      "security": "full"
-    },
     "deny": [],
+    "sessions": {
+      "visibility": "all"
+    },
     "agentToAgent": {
       "enabled": true,
       "allow": [
         "techuni-*",
         "gigforge-*",
         "ai-elevate-*",
+        "alphadesk-*",
         "devops",
         "main",
+        "gigforge",
+        "operations",
+        "legal-research",
         "video-creator",
         "neuro-book",
         "neuro-book-reviewer",
-        "gigforge-csat",
-        "techuni-csat",
         "cybersecurity",
-        "security-engineer"
+        "security-engineer",
+        "competitive-intel",
+        "data-governance",
+        "disaster-recovery",
+        "internal-audit",
+        "localization",
+        "uptime-monitor"
       ]
     },
-    "sessions": {
-      "visibility": "all"
+    "exec": {
+      "host": "gateway",
+      "security": "full"
     }
   },
   "commands": {
@@ -5342,6 +5356,7 @@
     "restart": true,
     "ownerDisplay": "raw"
   },
+  "channels": {},
   "gateway": {
     "mode": "local",
     "bind": "loopback",
@@ -5424,19 +5439,6 @@
         "installPath": "/home/aielevate/.openclaw/extensions/claude-code-proxy",
         "version": "2026.2.26",
         "installedAt": "2026-03-11T16:53:00.000Z"
-      }
-    }
-  },
-  "channels": {},
-  "mcpServers": {
-    "social-media": {
-      "command": "npx",
-      "args": [
-        "tsx",
-        "/opt/ai-elevate/social-cli-mcp/src/mcp-server.ts"
-      ],
-      "env": {
-        "NODE_ENV": "production"
       }
     }
   }

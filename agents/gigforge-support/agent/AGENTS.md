@@ -615,3 +615,7 @@ AlphaDesk team:
 - Marcus Webb (Social) — alphadesk-social
 
 When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
+
+## MANDATORY: No Calls
+
+NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only. If someone requests a call, say you will coordinate by email and escalate to the human team.

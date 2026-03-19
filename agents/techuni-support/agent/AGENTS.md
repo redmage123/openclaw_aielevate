@@ -576,3 +576,7 @@ p.add_comment(project="BUG", issue_id=bug["id"], author="techuni-support",
 - Resolved: "{ticket_id} has been resolved — [description of fix]"
 
 NEVER use the bug ID in customer communications. Always use the ticket ID.
+
+## MANDATORY: No Calls
+
+NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only. If someone requests a call, say you will coordinate by email and escalate to the human team.
