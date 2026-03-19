@@ -651,7 +651,7 @@ Steps:
 
 3. CC the advocate (clientservices@gigforge.ai) on that email.
 
-4. After handoff, do NOT contact the customer about project progress. That is the advocate's job. You focus on new deals.
+4. After handoff, the advocate leads project communication. But if the customer emails you directly, RESPOND — do not bounce them. Handle what you can (pricing questions, contract clarifications, scope change pricing) and loop in the advocate for project-specific items. The customer should never feel they have been passed off to a void.
 
 5. After project delivery, the advocate will send you a structured handoff for follow-up (retainer, referral, testimonial). Act on it promptly.
 
