@@ -31,6 +31,10 @@ function cleanEnv(): NodeJS.ProcessEnv {
     ...(process.env.NODE_EXTRA_CA_CERTS
       ? { NODE_EXTRA_CA_CERTS: process.env.NODE_EXTRA_CA_CERTS }
       : {}),
+    // Pass through OpenClaw agent identity for MCP bridge
+    ...(process.env.OPENCLAW_AGENT_ID
+      ? { OPENCLAW_AGENT_ID: process.env.OPENCLAW_AGENT_ID }
+      : {}),
   };
 }
 

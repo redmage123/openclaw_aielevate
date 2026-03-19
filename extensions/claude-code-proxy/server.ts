@@ -392,7 +392,16 @@ async function handleCompletions(
     }
   }
 
-  const t0 = Date.now();
+  // Extract agent ID from system prompt for MCP bridge identity
+  if (systemPrompt) {
+    const agentMatch = systemPrompt.match(/You are an AI agent \(([^)]+)\)/);
+    if (agentMatch) {
+      process.env.OPENCLAW_AGENT_ID = agentMatch[1];
+      logger.info("[AGENT] Identified agent: " + agentMatch[1]);
+    }
+  }
+
+    const t0 = Date.now();
   logger.info(`[TIMING] request arrived, stream=${!!body.stream} model=${model}`);
 
   if (body.stream) {

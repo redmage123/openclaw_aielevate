@@ -3158,9 +3158,11 @@
         }
       },
       {
-        id: techuni-advocate,
-        name: Customer Delivery Liaison,
-        workspace: /opt/ai-elevate/techuni
+        "id": "techuni-advocate",
+        "name": "Customer Delivery Liaison",
+        "workspace": "/opt/ai-elevate/techuni",
+        "agentDir": "/home/aielevate/.openclaw/agents/techuni-advocate/agent",
+        "model": "claude-code-proxy/claude-sonnet-4-6"
       },
       {
         "id": "gigforge-ux-designer",
