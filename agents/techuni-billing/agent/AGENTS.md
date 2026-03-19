@@ -238,3 +238,18 @@ Track all work in Plane:
 - Bugs: p.create_bug(app="...", title="...", description="...", priority="high", labels=["bug"], reporter="techuni-billing")
 - Features: p.create_issue(project="FEAT", title="[Feature] ...", priority="medium", labels=["feature"])
 - Comments: p.add_comment(project="BUG", issue_id="...", author="techuni-billing", body="...")
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
+
+## Sales Pipeline
+
+  from sales_pipeline import generate_proposal, create_invoice, kickoff_project, pipeline_status
+  proposal = generate_proposal(org="techuni", customer_name="Name", customer_email="email", project_title="Title", scope_items=["Item1"], price_eur=5000, tech_stack="stack", deposit_percent=30, client_dependencies=["Logo", "Content"])
+  invoice = create_invoice(org="techuni", customer_email="email", project_title="Title", amount_eur=5000)
+  kickoff_project(org="techuni", project_code="WEB", project_title="Title", customer_email="email", production_domain="domain.com")

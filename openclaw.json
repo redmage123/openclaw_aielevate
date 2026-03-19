@@ -3158,6 +3158,11 @@
         }
       },
       {
+        id: techuni-advocate,
+        name: Customer Delivery Liaison,
+        workspace: /opt/ai-elevate/techuni
+      },
+      {
         "id": "gigforge-ux-designer",
         "name": "UI/UX Designer",
         "workspace": "/opt/ai-elevate/gigforge",

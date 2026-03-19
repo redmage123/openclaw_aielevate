@@ -154,7 +154,8 @@ To send email, use the Mailgun API:
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "to": "recipient@example.com",
+    "h:Reply-To": "support@techuni.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
@@ -580,3 +581,15 @@ NEVER use the bug ID in customer communications. Always use the ticket ID.
 ## MANDATORY: No Calls
 
 NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only. If someone requests a call, say you will coordinate by email and escalate to the human team.
+
+## Customer Context Tool
+
+Before responding to ANY customer, pull their full context:
+  from customer_context import get_context, context_summary, update_sentiment, update_asset, set_asset_checklist, assets_complete
+
+  ctx = get_context("customer@email.com")
+  print(context_summary("customer@email.com"))
+  update_sentiment("customer@email.com", "positive", "Loved the preview")
+  update_asset("customer@email.com", "Logo", received=True, notes="SVG format")
+
+Sentiment ratings: positive, neutral, frustrated, at_risk

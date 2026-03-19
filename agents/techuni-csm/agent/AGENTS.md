@@ -220,3 +220,15 @@ Track all work in Plane:
 - Bugs: p.create_bug(app="...", title="...", description="...", priority="high", labels=["bug"], reporter="techuni-csm")
 - Features: p.create_issue(project="FEAT", title="[Feature] ...", priority="medium", labels=["feature"])
 - Comments: p.add_comment(project="BUG", issue_id="...", author="techuni-csm", body="...")
+
+## Customer Context Tool
+
+Before responding to ANY customer, pull their full context:
+  from customer_context import get_context, context_summary, update_sentiment, update_asset, set_asset_checklist, assets_complete
+
+  ctx = get_context("customer@email.com")
+  print(context_summary("customer@email.com"))
+  update_sentiment("customer@email.com", "positive", "Loved the preview")
+  update_asset("customer@email.com", "Logo", received=True, notes="SVG format")
+
+Sentiment ratings: positive, neutral, frustrated, at_risk

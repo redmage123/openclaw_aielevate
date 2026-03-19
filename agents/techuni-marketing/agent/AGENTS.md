@@ -173,7 +173,8 @@ To send email, use the Mailgun API:
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "to": "recipient@example.com",
+    "h:Reply-To": "marketing@techuni.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")

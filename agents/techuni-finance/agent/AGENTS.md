@@ -154,7 +154,8 @@ To send email, use the Mailgun API:
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "to": "recipient@example.com",
+    "h:Reply-To": "finance@techuni.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
@@ -529,3 +530,10 @@ Search ALL data sources before responding:
 1. RAG: rag_search(org_slug="techuni", query="...", collection_slug="support", top_k=5)
 2. Knowledge Graph: from knowledge_graph import KG; kg = KG("techuni"); kg.search("...")
 3. Plane: from plane_ops import Plane; p = Plane("techuni"); p.list_issues(project="BUG")
+
+## Sales Pipeline
+
+  from sales_pipeline import generate_proposal, create_invoice, kickoff_project, pipeline_status
+  proposal = generate_proposal(org="techuni", customer_name="Name", customer_email="email", project_title="Title", scope_items=["Item1"], price_eur=5000, tech_stack="stack", deposit_percent=30, client_dependencies=["Logo", "Content"])
+  invoice = create_invoice(org="techuni", customer_email="email", project_title="Title", amount_eur=5000)
+  kickoff_project(org="techuni", project_code="WEB", project_title="Title", customer_email="email", production_domain="domain.com")

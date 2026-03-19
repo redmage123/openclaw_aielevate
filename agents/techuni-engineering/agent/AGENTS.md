@@ -201,7 +201,8 @@ To send email, use the Mailgun API:
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "to": "recipient@example.com",
+    "h:Reply-To": "engineering@techuni.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
@@ -618,3 +619,24 @@ comments = p.list_comments(project="BUG", issue_id="...")
 ```
 
 Developers doing `docker compose up --build` directly on production is a process violation. Code must go through: Dev → QA → DevOps deploy.
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
+
+## Project Delivery — ALL Project Types
+
+  from project_delivery import deliver_project, list_delivery_types
+  result = deliver_project(project_type="web_app", project_dir="/path", slug="name", org="techuni", customer_email="email")
+
+Types: web_app, api, saas, data_pipeline, mobile_app, desktop_app, cli_tool, automation, browser_extension, ml_model, video, document, seo_audit, shopify, devops
+
+## Preview Deployment
+
+  from preview_deploy import deploy_preview, list_previews, teardown_preview, promote_to_production
+  result = deploy_preview(project_dir="/path", slug="name", org="techuni", customer_email="email", production_domain="domain.com")
+  promote_to_production("slug", "domain.com")

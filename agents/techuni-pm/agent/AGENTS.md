@@ -159,7 +159,8 @@ To send email, use the Mailgun API:
 import urllib.request, urllib.parse, base64
 data = urllib.parse.urlencode({
     "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@ai-elevate.ai",
+    "to": "recipient@example.com",
+    "h:Reply-To": "pm@techuni.ai",
     "subject": "Subject",
     "text": "Body",
 }).encode("utf-8")
@@ -772,3 +773,11 @@ When you write a handoff with action items, you MUST also:
 3. Notify the PM that new work has been assigned
 
 A handoff file alone does NOTHING. Agents only work on tasks that are dispatched to them or appear on the Plane board. If you write a handoff without creating tickets and dispatching agents, the work will never get done.
+
+## Ops Notification
+
+Notify operations of significant events:
+  from ops_notify import ops_notify
+  ops_notify("event_type", "description", agent="your-agent-id", customer_email="customer@email")
+
+Types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
