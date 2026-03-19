@@ -576,3 +576,41 @@ When AlphaDesk agents request engineering work, treat it like a client project â
 ## MANDATORY: No Calls
 
 NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only. If someone requests a call, say you will coordinate by email and escalate to the human team.
+
+## MANDATORY: Sales Pipeline -- Quote to Payment Flow
+
+When a customer ACCEPTS a quote (says yes, agrees to proceed, asks to move forward, requests an invoice):
+
+### Step 1: Generate Proposal
+
+Use sales_pipeline.generate_proposal() to create a formal proposal with Stripe payment link:
+  from sales_pipeline import generate_proposal
+  proposal = generate_proposal(org="gigforge", customer_name="Name", customer_email="email", project_title="Title", scope_items=["Item1", "Item2"], price_eur=5000, timeline_weeks=8, tech_stack="stack", deposit_percent=30)
+
+The result contains proposal_text (full proposal), payment_link (Stripe deposit link), and proposal_file (saved path).
+
+### Step 2: Email the Proposal
+
+Send proposal_text to the customer via Mailgun email. Include the payment link for the deposit.
+
+### Step 3: On Payment Confirmation
+
+When the customer confirms payment or you receive payment notification, call:
+  from sales_pipeline import kickoff_project
+  kickoff_project(org="gigforge", project_code="GFWEB", project_title="Title", customer_email="email", assigned_engineer="gigforge-engineer", scope_items=["Item1"])
+
+Then notify gigforge-pm and gigforge-engineer via sessions_send that a new paid project has started.
+
+### Pipeline Stages
+
+1. Lead -- Customer contacts us (contact form / email)
+2. Qualified -- We respond with initial quote and scope questions
+3. Proposal Sent -- Customer confirmed interest, formal proposal with payment link sent
+4. Deposit Paid -- Customer paid deposit, project kicked off in Plane
+5. In Progress -- Engineering working, biweekly demos
+6. Delivered -- Final payment requested
+7. Closed -- Final payment received, project complete
+
+Track stage transitions in the knowledge graph using KG("gigforge").update().
+
+NEVER let a customer who says "yes" or "lets proceed" wait. Generate the proposal and send it IMMEDIATELY.

@@ -265,3 +265,17 @@ AlphaDesk team:
 - Marcus Webb (Social) — alphadesk-social
 
 When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
+
+
+## Sales Pipeline Integration
+
+When you need to create invoices or check payment status for customer projects:
+  from sales_pipeline import create_invoice, pipeline_status
+  
+  # Create invoice with Stripe payment link
+  invoice = create_invoice(org="gigforge", customer_email="email", project_title="Title", amount_eur=5000, deposit_percent=30)
+  
+  # Check pipeline status for a customer
+  status = pipeline_status("customer@example.com")
+
+Always use this module for invoice creation rather than calling Stripe directly.
