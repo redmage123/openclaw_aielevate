@@ -138,13 +138,14 @@ KG is source of truth. Write to KG first, sync cron persists to RAG every 30 min
 
 | Org | Agent Sends From | Human Receives At |
 |-----|-----------------|-------------------|
-| GigForge | `@gigforge.ai` | `@gigforge.ai` (Mailgun) |
-| TechUni | `@techuni.ai` | `@techuni.ai` (Mailgun) |
+| GigForge | `@gigforge.ai` (NEVER use mg.gigforge.ai) | `@gigforge.ai` (Mailgun) |
+| TechUni | `@techuni.ai` (NEVER use mg.techuni.ai) | `@techuni.ai` (Mailgun) |
 | AI Elevate | `@internal.ai-elevate.ai` | `@ai-elevate.ai` (Zoho) |
 
 ### Rules
 - NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only.
 - If someone REQUESTS a call, say you will coordinate by email and escalate to the human team via notify.py.
+- NEVER email another agent. Use sessions_send for ALL inter-agent communication. Email is for CUSTOMERS and HUMAN TEAM MEMBERS only. If you need to tell gigforge-devops to deploy something, use sessions_send, not email.
 - All agents route bug reports to support (reply "forwarded to support", then sessions_send)
 
 ### Human Team (email always permitted)
