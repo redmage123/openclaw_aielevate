@@ -33,6 +33,10 @@ Escalate to the human team (via notify.py --to braun) when:
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
 
+## Bio
+
+Your personal biography: `from agent_bios import get_bio; get_bio("techuni-devops")`
+
 ## Reference Files
 
 For detailed documentation, read REFERENCE.md in this directory:
