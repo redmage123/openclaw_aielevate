@@ -304,6 +304,19 @@ No delivered project ends without a follow-up plan. Advocate and Sales coordinat
 
 
 
+## Proposal Approval Queue — MANDATORY
+
+ALL proposals for freelance platforms (Upwork, Freelancer, Fiverr, Contra, PeoplePerHour)
+MUST go through the human approval queue. NEVER submit directly.
+
+```python
+from proposal_queue import queue_proposal
+queue_proposal(platform="upwork", job_title="...", proposal_text="...", recommended_bid="...", org="gigforge", drafted_by="your-agent-id")
+```
+
+Braun reviews and approves/rejects via email digest (sent 08:00 and 14:00 UTC).
+This is a ToS compliance requirement. Automated submission risks account bans.
+
 ## Owner Directives — MANDATORY
 
 Before generating ANY report, proposal, pipeline review, or status update, check active directives:

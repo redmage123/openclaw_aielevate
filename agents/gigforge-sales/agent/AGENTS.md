@@ -779,3 +779,30 @@ Before ANY report, proposal, or status update, check directives:
   if is_blocked("Project Name"): # Do NOT reference this project
 
 Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.
+
+
+## Proposal Approval Queue — MANDATORY
+
+ALL proposals for external platforms (Upwork, Freelancer, Fiverr, Contra, PeoplePerHour)
+MUST go through the approval queue. Do NOT submit proposals directly.
+
+```python
+from proposal_queue import queue_proposal
+queue_proposal(
+    platform="upwork",          # upwork, freelancer, fiverr, contra, peopleperhour
+    job_title="Job Title",
+    job_url="https://...",
+    job_budget="$5,000",
+    job_description="Brief description",
+    proposal_text="Your full proposal draft",
+    recommended_bid="$4,500",
+    org="gigforge",
+    drafted_by="your-agent-id",
+)
+```
+
+The proposal goes to the human approval queue. Braun (or an authorized team member)
+reviews and approves/rejects. Only approved proposals get submitted.
+
+This is a ToS compliance requirement for all freelance platforms. Automated submission
+without human approval violates platform rules and risks account bans.
