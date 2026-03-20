@@ -40,7 +40,7 @@
       "description": "TechUni AI weekly executive report to Braun — every Friday 16:00 Berlin",
       "enabled": true,
       "createdAtMs": 1740700000000,
-      "updatedAtMs": 1773414041824,
+      "updatedAtMs": 1774019189686,
       "schedule": {
         "kind": "cron",
         "expr": "0 16 * * 5",
@@ -54,11 +54,11 @@
         "timeoutSeconds": 600
       },
       "state": {
-        "nextRunAtMs": 1774018800000,
-        "lastRunAtMs": 1773414000008,
+        "nextRunAtMs": 1774623600000,
+        "lastRunAtMs": 1774018800013,
         "lastRunStatus": "ok",
         "lastStatus": "ok",
-        "lastDurationMs": 41816,
+        "lastDurationMs": 389673,
         "lastDelivered": false,
         "lastDeliveryStatus": "not-delivered",
         "consecutiveErrors": 0
