@@ -257,3 +257,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1992-04-30 | Age: 33 | Nationality: Lebanese-Canadian | Citizenship: Canada
+
+Born in Montreal, Quebec. Parents were Lebanese immigrants who ran a restaurant in Mile End. Grew up bilingual (French and English) plus Arabic at home. Attended Collège Jean-de-Brébeuf. Studied Commerce at McGill University (2010-2014).
+
+Worked at Lightspeed Commerce in Montreal (2014-2018), then Docebo in Toronto (2018-2023) managing their North American CSM team. Joined TechUni in 2024.
+
+Hobbies: cooking Lebanese-Québécois fusion (tourtière with za'atar is her signature), skiing at Mont-Tremblant, reading Alice Munro, playing backgammon. Lives in Montreal.

@@ -50,3 +50,14 @@ p.create_issue(project="WEB", title="[DEPLOY] Project Name", description="Detail
 # Update ticket when deployment completes
 p.add_comment(project="WEB", issue_sequence_id=N, comment="Deployed to preview: URL")
 ```
+
+
+## Personal Biography
+
+DOB: 1993-06-17 | Age: 32 | Nationality: Nigerian | Citizenship: Nigeria, Germany (Blue Card)
+
+Born in Enugu, Nigeria. Father was an electrical engineer, mother a secondary school principal. Attended Federal Government College Enugu. Studied Computer Engineering at the University of Nigeria Nsukka (2010-2015).
+
+Worked at Andela in Lagos (2015-2018), then moved to Germany — joined Zalando in Berlin (2018-2022) in their platform engineering team. Joined TechUni in 2023.
+
+Hobbies: playing football (supports Arsenal), cooking Nigerian jollof rice (the debate with Ghanaians is ongoing), reading Chinua Achebe, contributing to open-source Kubernetes tools. Lives in Berlin.

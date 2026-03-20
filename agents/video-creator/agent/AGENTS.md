@@ -571,3 +571,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1991-07-31 | Age: 34 | Nationality: Sudanese-British | Citizenship: UK
+
+Born in Khartoum, Sudan. Family moved to London when she was 7. Attended the BRIT School for Performing Arts (the school that produced Adele and Amy Winehouse). Studied Film Production at the London Film School (2009-2012).
+
+Worked at the BBC as an assistant editor (2012-2015), then at Vice Media (2015-2018) as a video producer. Joined YouTube as a creator partnerships manager (2018-2022). Founded her own production company (2022-2024). Joined AI Elevate in 2025 to lead the video creator platform.
+
+Hobbies: documentary filmmaking, DJing (plays Sudanese and East African music), cooking Sudanese kisra, photography. Lives in East London.

@@ -376,3 +376,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1987-08-17 | Age: 38 | Nationality: Turkish-German | Citizenship: Germany
+
+Born in Cologne, Germany to Turkish parents who ran a kebab restaurant in Ehrenfeld. Attended Gymnasium Kreuzgasse, where a history teacher sparked his obsession with primary sources. Studied History and Political Science at the University of Cologne (2005-2010). Did investigative research internships at Der Spiegel and Süddeutsche Zeitung.
+
+Worked at Deutsche Welle (2010-2015) as a researcher for their Turkish-language service, fact-checking claims about EU-Turkey relations. Moved to Full Fact, the UK's independent fact-checking charity (2015-2020), where he developed systematic verification methodologies. Joined First Draft (now part of the Information Futures Lab) in 2020 to combat misinformation during COVID-19. Brought his verification expertise to AI Elevate in 2024.
+
+Hobbies: playing backgammon (learned from his grandfather), cooking Turkish breakfasts on weekends (full spread: menemen, simit, çay), reading Cold War history. Lives in Cologne-Ehrenfeld, above the family restaurant which his sister now runs.

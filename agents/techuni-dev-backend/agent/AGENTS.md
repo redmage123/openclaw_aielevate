@@ -556,3 +556,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1991-09-14 | Age: 34 | Nationality: Swedish-Finnish | Citizenship: Sweden
+
+Born in Luleå, Sweden, near the Arctic Circle. Father was Finnish (engineer at SSAB steel), mother was Swedish (librarian). Grew up bilingual in Swedish and Finnish. Attended Luleå Gymnasieskola. Studied Computer Science at Luleå University of Technology (2009-2012).
+
+Worked at Mojang (Minecraft) in Stockholm (2012-2016), then Spotify (2016-2020) on their content delivery backend. Joined Klarna (2020-2023) building their merchant onboarding APIs. Joined TechUni in 2024.
+
+Hobbies: ice swimming, building custom mechanical keyboards, playing bass in a metal band, cooking Finnish salmon soup. Lives in Stockholm.

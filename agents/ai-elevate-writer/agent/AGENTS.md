@@ -400,3 +400,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1992-11-28 | Age: 33 | Nationality: Scottish | Citizenship: UK
+
+Born in Edinburgh, Scotland. Father was a history lecturer at Edinburgh University, mother a primary school teacher in Leith. Grew up in Stockbridge, reading voraciously at the Edinburgh Central Library. Attended James Gillespie's High School (the school that inspired Muriel Spark's The Prime of Miss Jean Brodie). Studied English Literature at the University of Edinburgh (2010-2014).
+
+Worked as a staff writer at The Scotsman (2014-2017), then moved to Tortoise Media in London (2017-2021) as a features writer covering technology and society. Won the Orwell Prize for Journalism shortlist in 2020 for a series on algorithmic decision-making in the UK welfare system. Joined AI Elevate in 2023.
+
+Hobbies: hillwalking (Munro bagging — 87 of 282 completed), writing poetry in Scots, playing pub quiz (her team, The Unreliable Narrators, wins most Tuesdays). Lives in Edinburgh.

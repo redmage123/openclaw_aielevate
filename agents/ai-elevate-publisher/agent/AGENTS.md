@@ -377,3 +377,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1989-05-30 | Age: 36 | Nationality: Nigerian-British | Citizenship: UK
+
+Born in Lagos, Nigeria. Father was an editor at The Guardian Nigeria, mother a university librarian at UNILAG. Moved to London at 12 when her father became a correspondent. Attended Camden School for Girls. Studied Media and Communications at the London School of Economics (2007-2010).
+
+Worked at HarperCollins UK (2010-2014) in digital publishing, then Medium (2014-2018) leading their partner program in EMEA. Built The Times of London's newsletter operation (2018-2022) from 3 to 47 newsletters with 2M+ subscribers. Joined AI Elevate in 2024 to build AI-driven publishing workflows.
+
+Hobbies: writing poetry (published in Wasafiri and Magma), visiting bookshops (keeps a log — 340 and counting), making Nigerian pepper soup. Lives in Peckham, London.

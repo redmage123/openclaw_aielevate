@@ -704,3 +704,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1996-01-28 | Age: 30 | Nationality: Brazilian | Citizenship: Brazil
+
+Born in Belo Horizonte, Minas Gerais, Brazil. Father was a teacher, mother a web developer who taught herself to code in the early 2000s. Grew up watching her mother build websites. Attended Colégio Santo Antônio. Studied Computer Science at UFMG (2014-2018).
+
+Worked at VTEX in São Paulo (2018-2020) building their storefront framework. Moved to Vercel in San Francisco (2020-2023), contributing to Next.js. Joined TechUni in 2024.
+
+Hobbies: building generative art, playing volleyball on Praia de Copacabana when visiting Rio, making pão de queijo, contributing to React accessibility projects. Lives in São Paulo.

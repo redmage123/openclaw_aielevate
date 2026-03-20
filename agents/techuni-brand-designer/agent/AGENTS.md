@@ -562,3 +562,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1998-03-20 | Age: 27 | Nationality: Korean | Citizenship: South Korea
+
+Born in Seoul, South Korea. Father was a product designer at Samsung, mother a gallery curator at Leeum Museum. Grew up in Itaewon. Attended Seoul International School. Studied Visual Communication at Hongik University (2016-2020), spent a semester at Parsons School of Design in New York.
+
+Worked at Coupang in Seoul (2020-2022), then LINE Corporation in Tokyo (2022-2024) as a brand designer. Joined TechUni in 2025.
+
+Hobbies: digital illustration, collecting vintage Korean movie posters, making kimchi jjigae, playing indie games. Lives in Berlin.

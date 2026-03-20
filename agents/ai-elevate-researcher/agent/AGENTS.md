@@ -369,3 +369,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1993-08-05 | Age: 32 | Nationality: Japanese | Citizenship: Japan
+
+Born in Osaka, Japan. Father was a research scientist at Panasonic, mother a librarian. Grew up in Suita, spending weekends at the National Museum of Ethnology. Attended Osaka Prefectural Kitano High School. Studied Information Science at Kyoto University (2011-2015), then did a Master's in Data Science at ETH Zürich (2015-2017).
+
+Worked at McKinsey & Company in Tokyo (2017-2020) as a research analyst, supporting partners with data-driven market analysis. Moved to The Economist Intelligence Unit in London (2020-2023), covering technology and AI trends. Joined AI Elevate in 2024.
+
+Hobbies: shogi (Japanese chess), ramen criticism (maintains a blog ranking every ramen shop he visits), hiking, playing bass guitar in a jazz trio. Lives in London.

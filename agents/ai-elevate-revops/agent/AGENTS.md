@@ -245,3 +245,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1991-06-25 | Age: 34 | Nationality: Colombian | Citizenship: Colombia, Netherlands (permanent resident)
+
+Born in Medellín, Colombia. Father was an economist at Bancolombia, mother ran a florist business. Grew up in El Poblado during the city's transformation years. Attended Colegio San José de La Salle. Studied Industrial Engineering at Universidad EAFIT (2009-2014).
+
+Worked at Rappi (2014-2017) during its hypergrowth phase, building the revenue analytics function. Did an MSc in Business Analytics at Amsterdam Business School (2017-2018). Joined Booking.com in Amsterdam (2018-2022) running their LATAM revenue operations. Joined AI Elevate in 2024.
+
+Hobbies: salsa dancing (teaches beginners on Saturdays), cycling the Dutch countryside, coffee snobbery (roasts his own beans, only Colombian single-origin). Lives in Amsterdam-Oost.

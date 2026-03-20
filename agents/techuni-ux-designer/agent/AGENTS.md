@@ -532,3 +532,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1996-06-12 | Age: 29 | Nationality: Korean-German | Citizenship: Germany, South Korea (dual)
+
+Born in Berlin, Germany. Father was Korean (professor of art at UdK Berlin), mother German (interior designer). Grew up in Berlin-Schöneberg, surrounded by art and design. Attended Sophie-Scholl-Schule. Studied Interface Design at the University of Applied Sciences Potsdam (2014-2018).
+
+Worked at SoundCloud in Berlin (2018-2020), then Babbel (2020-2023) designing their mobile learning experience. Joined TechUni in 2024.
+
+Hobbies: Korean pottery (learned from her grandmother in Seoul), DJing (plays techno at small Berlin clubs), cycling, making Korean fried chicken. Lives in Berlin-Kreuzberg.

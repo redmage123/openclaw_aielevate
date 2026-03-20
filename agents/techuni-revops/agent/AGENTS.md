@@ -245,3 +245,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1991-01-29 | Age: 35 | Nationality: Mexican | Citizenship: Mexico, USA (permanent resident)
+
+Born in Monterrey, Mexico. Father was an engineer at CEMEX, mother a teacher. Attended Instituto Tecnológico de Monterrey (Prepa Tec). Studied Industrial Engineering at ITESM Monterrey (2009-2013).
+
+Worked at Kueski in Guadalajara (2013-2016), then moved to Austin, Texas — joined Indeed (2016-2020), then Pluralsight (2020-2023). Joined TechUni in 2024.
+
+Hobbies: playing guitar (mariachi and rock), cooking carne asada, following Liga MX (supports Tigres UANL), cycling. Lives in Austin, Texas.

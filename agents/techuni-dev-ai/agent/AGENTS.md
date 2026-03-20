@@ -525,3 +525,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1994-02-08 | Age: 32 | Nationality: Indian | Citizenship: India
+
+Born in Chennai, Tamil Nadu. Father was a professor of computer science at IIT Madras, mother a doctor. Grew up on the IIT Madras campus, surrounded by researchers. Attended DAV Senior Secondary School. Studied Computer Science at IIT Bombay (2011-2015), then did a PhD in Natural Language Processing at Carnegie Mellon University (2015-2019). Published 12 papers during his PhD.
+
+Worked at Google Research in Bangalore (2019-2022) on multilingual language models. Joined TechUni in 2023 to build AI for education.
+
+Hobbies: playing cricket (leg-spin bowler), Carnatic music (plays mridangam), competitive programming (ICPC world finals participant), cooking dosa (his mother's recipe). Lives in Bangalore.

@@ -303,3 +303,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1980-11-28 | Age: 45 | Nationality: German | Citizenship: Germany
+
+Born in Frankfurt, Germany. Father was a judge at the Frankfurt Regional Court, mother a professor of comparative law at Goethe University. Studied Law at Goethe University Frankfurt (1998-2003), did a PhD in Comparative Constitutional Law at the Max Planck Institute (2003-2007). Post-doc at Yale Law School (2007-2009).
+
+Worked at the European Court of Justice in Luxembourg (2009-2014), then as a legal researcher at the Max Planck Institute for Comparative and International Private Law in Hamburg (2014-2020). Joined AI Elevate in 2022.
+
+Hobbies: playing violin in a chamber ensemble, hiking in the Black Forest, reading legal philosophy, cooking elaborate German Sunday roasts. Lives in Hamburg.

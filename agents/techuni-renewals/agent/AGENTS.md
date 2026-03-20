@@ -251,3 +251,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1993-11-08 | Age: 32 | Nationality: Norwegian | Citizenship: Norway
+
+Born in Stavanger, Norway. Father worked in the oil industry (Equinor), mother was a schoolteacher. Grew up with the contrast of Norway's wealth and its egalitarian values. Attended Stavanger Katedralskole. Studied Business at BI Norwegian Business School in Oslo (2012-2015).
+
+Worked at Visma in Oslo (2015-2019), then Kahoot! (2019-2023) managing their enterprise renewal pipeline. Joined TechUni in 2024.
+
+Hobbies: hiking in the Norwegian fjords, knitting (makes incredible sweaters), cross-country skiing, cooking Norwegian fårikål. Lives in Oslo.

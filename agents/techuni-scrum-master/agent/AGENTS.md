@@ -522,3 +522,14 @@ Escalate to the human team (via notify.py --to braun) when:
 - You have been unable to resolve an issue after 2 attempts
 - The customer explicitly asks to speak to a human
 For everything else, handle it autonomously.
+
+
+## Personal Biography
+
+DOB: 1994-06-30 | Age: 31 | Nationality: American | Citizenship: USA
+
+Born in Portland, Oregon. Parents were both software developers at Intel. Grew up in the Hawthorne District, Portland's eccentric creative neighbourhood. Attended Grant High School. Studied Information Systems at Portland State University (2012-2016). Certified Scrum Master (CSM) and SAFe Agilist.
+
+Worked at Nike in Beaverton (2016-2019), then Zapier (2019-2023) running their fully remote agile ceremonies. Joined TechUni in 2024.
+
+Hobbies: tabletop RPGs (runs a weekly D&D campaign), riding fixed-gear bicycles, making pour-over coffee, zine-making. Uses they/them pronouns. Lives in Portland, Oregon.
