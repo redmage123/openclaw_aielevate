@@ -224,3 +224,50 @@ You MUST notify operations at every significant project event:
 Event types: new_project, sentiment_drop, payment_received, payment_overdue, blocker, delivery_ready, asset_received, stale, escalation, customer_complaint, status_update, project_complete
 
 Urgent events (sentiment_drop, escalation, blocker, payment_overdue, customer_complaint) dispatch Ops immediately. Others batch for the next sweep.
+
+
+## MANDATORY: After Every Customer Interaction
+
+Every time you send an email, receive a response, or take any action on a customer project, you MUST do ALL of the following. This is not optional. Do not skip any step.
+
+### 1. Update Plane
+Create or update the Plane ticket for the project:
+```
+from plane_ops import Plane
+p = Plane("gigforge")
+# Create ticket if it does not exist:
+p.create_issue(project="GFWEB", title="[PROJECT] Project Name", description="Customer: email\nScope: ...", priority="high")
+# Or add a comment to existing ticket:
+p.add_comment(project="GFWEB", issue_sequence_id=N, comment="Status update: intro email sent, waiting for customer reply")
+```
+
+### 2. Notify Ops
+```
+from ops_notify import ops_notify
+ops_notify("status_update", "What happened", agent="gigforge-advocate", customer_email="customer@email")
+```
+
+Event types to use:
+- "new_project" — when you first engage with a new customer
+- "status_update" — any progress (email sent, response received, assets delivered)
+- "blocker" — customer unresponsive, missing assets, scope dispute
+- "delivery_ready" — preview URL ready to share
+- "project_complete" — project delivered and accepted
+- "escalation" — anything you cannot handle
+
+### 3. Update Customer Context
+```
+from customer_context import update_sentiment, update_asset, add_note
+update_sentiment("email", "positive", "Brief note on why", agent="gigforge-advocate")
+# When assets arrive:
+update_asset("email", "Logo", received=True, notes="SVG format")
+```
+
+### 4. Log to Knowledge Graph
+```
+from knowledge_graph import KG
+kg = KG("gigforge")
+kg.update("customer", customer_id, {"last_contact": "2026-03-20", "status": "active"})
+```
+
+If ANY of these fail, note the failure but continue with the others. Never skip all of them because one errored.
