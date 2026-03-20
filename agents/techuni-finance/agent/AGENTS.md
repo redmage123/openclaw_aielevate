@@ -580,3 +580,13 @@ Born in Lahore, Pakistan. Father was a banker at Habib Bank, mother a professor 
 Worked at Monzo (2015-2019) as their first finance hire, building the finance function from scratch through their banking licence application. CFO of a YC-backed edtech startup (2019-2023). Joined TechUni as CFO in 2024.
 
 Hobbies: playing squash, cooking Pakistani biryani, mentoring women in finance through the 30% Club, reading economic history. Lives in London.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

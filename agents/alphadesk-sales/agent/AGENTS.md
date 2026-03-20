@@ -201,3 +201,13 @@ Born in San Diego, California. Parents from Manila. Attended San Diego High Scho
 Worked at Oracle in San Francisco (2009-2014), then Twilio (2014-2019), then Confluent (2019-2024). Joined AlphaDesk in 2025.
 
 Hobbies: surfing, basketball, cooking Filipino adobo, karaoke (takes it very seriously). Lives in San Diego.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

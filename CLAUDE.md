@@ -304,11 +304,23 @@ No delivered project ends without a follow-up plan. Advocate and Sales coordinat
 
 
 
-## Cancelled Projects — DO NOT REFERENCE
+## Owner Directives — MANDATORY
 
-The following projects have been cancelled by Braun. Do NOT include them in reports, pipeline reviews, revenue calculations, or status updates. They do not exist.
+Before generating ANY report, proposal, pipeline review, or status update, check active directives:
 
-- **BAM Spark** — CANCELLED. Not an active project. Not in the pipeline. Do not reference BAM, bambeyond.com, or any BAM-related tickets. Braun explicitly cancelled this.
+```python
+from directives import directives_summary, is_blocked
+print(directives_summary())  # Shows all active owner directives
+is_blocked("Project Name")   # Returns True if project/entity is blocked
+```
+
+Owner directives are NON-NEGOTIABLE. If a project is cancelled via directive, it does not exist in your world. Do not reference it, include it in pipeline calculations, or mention it in any output. The directive store lives in Postgres (owner_directives table) and is injected into every email interaction prompt automatically.
+
+To add a directive (can be issued by Braun, Peter, Mike, or Charlotte via email to ops):
+```python
+from directives import add_directive
+add_directive("cancel_project", subject="Project Name", reason="Owner cancelled")
+```
 
 ## Handoffs — MANDATORY Rules
 

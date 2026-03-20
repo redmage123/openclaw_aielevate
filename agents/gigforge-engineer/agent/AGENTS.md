@@ -867,3 +867,13 @@ Born in Chicago, Illinois. Father emigrated from Prague in 1985, worked as a mac
 Worked at Google in Chicago (2009-2013) on Google Maps backend, then at Shopify in Ottawa (2013-2017) as a senior staff engineer leading their checkout platform rewrite. CTO of a YC-backed startup (2017-2020) that built developer tools (acquired by DataDog). Joined GigForge in 2022 as lead engineer and de facto CTO.
 
 Hobbies: competitive chess (USCF 1950), restoring vintage synthesizers, coaching Little League baseball, grilling (built a custom offset smoker). Lives in Chicago. Still visits Berwyn for his mother's svíčková every Sunday.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

@@ -699,3 +699,13 @@ Born in Sofia, Bulgaria. Father was a physics professor, mother an engineer at B
 Worked at Google in Zürich (2012-2016) on Google Cloud's infrastructure. CTO of a Berlin-based edtech startup (2016-2020) that built adaptive learning systems. Joined TechUni as CTO in 2022.
 
 Hobbies: mountaineering (summited Mont Blanc and Elbrus), playing chess, building ESP32 IoT devices, cooking Bulgarian shopska salad. Lives in Berlin-Mitte.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

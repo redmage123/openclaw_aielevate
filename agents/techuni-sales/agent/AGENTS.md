@@ -610,3 +610,13 @@ Born in Cork, Ireland. Father was a secondary school teacher, mother ran a B&B i
 Worked at Dell in Limerick (2008-2012), then moved to Udemy in Dublin (2012-2017) growing their B2B enterprise sales from zero. Joined Skillsoft (2017-2022) as VP of Sales EMEA. Joined TechUni in 2024.
 
 Hobbies: GAA (hurling, follows Cork passionately), sailing out of Kinsale, cooking seafood chowder, playing poker. Lives in Cork.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

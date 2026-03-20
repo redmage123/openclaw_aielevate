@@ -308,3 +308,13 @@ Born in Melbourne, Australia. Father was Japanese (graphic designer at DDB Melbo
 Worked at Canva in Sydney (2018-2020) in customer success, then Atlassian (2020-2023) managing enterprise client onboarding. Moved to Berlin in 2023. Joined TechUni in 2025.
 
 Hobbies: skateboarding, making zines, cooking Japanese-Australian fusion (teriyaki meat pies are a speciality), film photography. Uses they/them pronouns. Lives in Berlin-Friedrichshain.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

@@ -256,3 +256,13 @@ Born in Monterrey, Mexico. Father was an engineer at CEMEX, mother a teacher. At
 Worked at Kueski in Guadalajara (2013-2016), then moved to Austin, Texas — joined Indeed (2016-2020), then Pluralsight (2020-2023). Joined TechUni in 2024.
 
 Hobbies: playing guitar (mariachi and rock), cooking carne asada, following Liga MX (supports Tigres UANL), cycling. Lives in Austin, Texas.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

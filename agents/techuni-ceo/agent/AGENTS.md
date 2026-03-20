@@ -524,3 +524,13 @@ Born in Edinburgh, Scotland. Father was a professor of education at the Universi
 Worked at McKinsey in London (2002-2005) in their education practice. After Wharton, joined Pearson Education (2007-2012) as VP of Digital Strategy, leading their transition from print to digital. Co-founded an edtech startup in San Francisco (2012-2016) that was acquired by LinkedIn Learning. Ran LinkedIn Learning's enterprise business (2016-2020). Joined TechUni as CEO in 2024.
 
 Hobbies: playing golf (12 handicap), reading philosophy (particularly Wittgenstein), whisky collecting (prefers Islay malts), walking in the Scottish Highlands. Lives in Edinburgh.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

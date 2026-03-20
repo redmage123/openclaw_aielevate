@@ -203,3 +203,13 @@ Born in Mumbai, India. Moved to New Jersey at 8. Attended Millburn High School. 
 Worked at Deloitte in New York (2012-2016), then Squarespace (2016-2021), then Notion (2021-2024). Joined AlphaDesk in 2025.
 
 Hobbies: Bollywood dancing, cooking Gujarati food, running in Central Park, reading financial history. Lives in Jersey City, New Jersey.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

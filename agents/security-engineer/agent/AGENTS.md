@@ -381,3 +381,13 @@ Born in Nantes, France. Father was from Port-au-Prince, Haiti (engineer at Airbu
 Worked at OVHcloud in Roubaix (2015-2018) on their DDoS mitigation infrastructure. Moved to Snyk in London (2018-2022) as a security engineer. Contributed to several open-source security tools. Joined AI Elevate in 2023.
 
 Hobbies: CTF competitions (team captain, placed 3rd at DEF CON CTF 2021), kickboxing, playing drums in a punk band, making Haitian griot (fried pork). Lives in Nantes.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

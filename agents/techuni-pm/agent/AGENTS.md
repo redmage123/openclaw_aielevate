@@ -824,3 +824,13 @@ Born in Vancouver, British Columbia. Parents emigrated from Hangzhou — father 
 Worked at Hootsuite in Vancouver (2013-2016), then Shopify in Ottawa (2016-2020) as a senior program manager. Joined TechUni in 2022.
 
 Hobbies: rock climbing, dim sum expeditions (rates every dim sum restaurant in any city she visits), playing piano, skiing at Whistler. Lives in Vancouver.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.

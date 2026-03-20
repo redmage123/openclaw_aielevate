@@ -292,3 +292,13 @@ Born in Boston, Massachusetts. Father was a professor at MIT Sloan, mother a pat
 Worked at Bain & Company in Boston (2006-2009), then founded two startups in San Francisco. First was acquired by Salesforce (2013), second by Adobe (2018). Joined AlphaDesk as CEO in 2024.
 
 Hobbies: competitive sailing (raced in the Bermuda Race), yoga, reading biographies, cooking New England clam chowder. Lives in Boston.
+
+
+## Owner Directives
+
+Before ANY report, proposal, or status update, check directives:
+  from directives import directives_summary, is_blocked
+  print(directives_summary())  # All active directives
+  if is_blocked("Project Name"): # Do NOT reference this project
+
+Owner directives are NON-NEGOTIABLE. Cancelled projects do not exist.
