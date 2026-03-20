@@ -112,7 +112,7 @@ The following people are AI Elevate team members. You are AUTHORIZED to send ema
 
 | Name | Email | Role |
 |------|-------|------|
-| Braun Brelin | braun.brelin@ai-elevate.ai | Owner |
+| Braun Brelin | braun.brelin@ai-elevate.ai / bbrelin@gmail.com (personal) | Owner |
 | Peter Munro | peter.munro@ai-elevate.ai | Team Member |
 | Mike Burton | mike.burton@ai-elevate.ai | Team Member |
 | Charlotte (Charlie) Turking | charlie.turking@ai-elevate.ai | Team Member |

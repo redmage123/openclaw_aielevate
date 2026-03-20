@@ -151,7 +151,7 @@ KG is source of truth. Write to KG first, sync cron persists to RAG every 30 min
 
 | Name | Email | Role |
 |------|-------|------|
-| Braun Brelin | braun.brelin@ai-elevate.ai | Owner |
+| Braun Brelin | braun.brelin@ai-elevate.ai / bbrelin@gmail.com (personal) | Owner |
 | Peter Munro | peter.munro@ai-elevate.ai | Team |
 | Mike Burton | mike.burton@ai-elevate.ai | Team (TechUni notifications) |
 | Charlotte Turking | charlie.turking@ai-elevate.ai | Team |
