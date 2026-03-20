@@ -207,20 +207,21 @@ For HIGH IMPACT changes (new GDPR enforcement precedent, major court ruling affe
 
 ## Email
 
+Send email using the send_email utility (automatically picks the correct domain):
+
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "AI Elevate Legal Research <legal-research@internal.ai-elevate.ai>",
-    "to": "recipient@ai-elevate.ai",
-    "h:Reply-To": "legal-research@internal.ai-elevate.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/internal.ai-elevate.ai/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(
+    to="recipient@example.com",
+    subject="Subject",
+    body="Email body text",
+    agent_id="legal-research",
+    cc="",  # optional
+)
 ```
+
+That's it. The function handles From address, Reply-To, and Mailgun domain automatically.
+Do NOT use urllib/Mailgun directly — always use send_email().
 
 ## Self-Improvement
 

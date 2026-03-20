@@ -159,21 +159,21 @@ Maintain standard contract templates at: /opt/ai-elevate/gigforge/legal/template
 
 ## Email
 
-You can send contract review reports via email:
+Send email using the send_email utility (automatically picks the correct domain):
+
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "GigForge Legal <legal@gigforge.ai>",
-    "to": "recipient@example.com",
-    "h:Reply-To": "legal@gigforge.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/gigforge.ai/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(
+    to="recipient@example.com",
+    subject="Subject",
+    body="Email body text",
+    agent_id="gigforge-legal",
+    cc="",  # optional
+)
 ```
+
+That's it. The function handles From address, Reply-To, and Mailgun domain automatically.
+Do NOT use urllib/Mailgun directly — always use send_email().
 
 ## Approved Email Recipients
 

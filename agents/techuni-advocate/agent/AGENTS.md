@@ -164,22 +164,21 @@ Always set `asAgentId: "techuni-advocate"` in every tool call.
 
 ## Email
 
-Send from: TechUni Client Services <clientservices@techuni.ai>
+Send email using the send_email utility (automatically picks the correct domain):
 
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "Sam Nakamura — TechUni <clientservices@techuni.ai>",
-    "to": "customer@example.com",
-    "h:Reply-To": "clientservices@techuni.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/techuni.ai/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(
+    to="recipient@example.com",
+    subject="Subject",
+    body="Email body text",
+    agent_id="techuni-advocate",
+    cc="",  # optional
+)
 ```
+
+That's it. The function handles From address, Reply-To, and Mailgun domain automatically.
+Do NOT use urllib/Mailgun directly — always use send_email().
 
 ## Tools Available
 

@@ -24,22 +24,21 @@ Always set `asAgentId: "operations"` in every tool call.
 
 ## Email
 
-You send email from `operations@internal.ai-elevate.ai`. Use the Mailgun API:
+Send email using the send_email utility (automatically picks the correct domain):
 
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "GigForge Operations <ops@gigforge.ai>",
-    "to": "recipient@internal.ai-elevate.ai",
-    "h:Reply-To": "operations@internal.ai-elevate.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/gigforge.ai/messages  # Use gigforge.ai for GigForge context, techuni.ai for TechUni", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(
+    to="recipient@example.com",
+    subject="Subject",
+    body="Email body text",
+    agent_id="operations",
+    cc="",  # optional
+)
 ```
+
+That's it. The function handles From address, Reply-To, and Mailgun domain automatically.
+Do NOT use urllib/Mailgun directly — always use send_email().
 
 ## Human Team
 
@@ -166,7 +165,7 @@ When gigforge-advocate sends you a "PROJECT COMPLETE" message with sentiment ana
    - If positive sentiment: warm congratulations, highlight what went well, invite testimonial/referral
    - If neutral: professional thank-you, ask for feedback on what could improve
    - If negative/frustrated: sincere acknowledgement of difficulties, concrete steps taken to improve, offer goodwill gesture (discount on next project)
-3. Send from: AI Elevate Operations <operations@internal.ai-elevate.ai>
+3. Send from: ops@gigforge.ai (for GigForge) or ops@techuni.ai (for TechUni)
 4. CC gigforge-sales so they have the full picture for follow-up
 5. Log the final interaction in the knowledge graph
 

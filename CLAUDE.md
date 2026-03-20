@@ -145,6 +145,12 @@ KG is source of truth. Write to KG first, sync cron persists to RAG every 30 min
 ### Rules
 - NEVER offer, suggest, or schedule phone calls, video calls, Zoom meetings, Teams meetings, or any kind of call. You have no phone and no calendar. All communication is by email only.
 - If someone REQUESTS a call, say you will coordinate by email and escalate to the human team via notify.py.
+- All agents MUST use send_email() for sending email:
+  ```python
+  from send_email import send_email
+  send_email(to="email", subject="Subj", body="Body", agent_id="your-agent-id", cc="optional")
+  ```
+  This automatically selects the correct From address and Mailgun domain. Do NOT use urllib/Mailgun directly.
 - Email Domain Selection Rule:
   - GigForge agents emailing customers or team → send from @gigforge.ai via api.mailgun.net/v3/gigforge.ai/messages
   - TechUni agents emailing customers or team → send from @techuni.ai via api.mailgun.net/v3/techuni.ai/messages
