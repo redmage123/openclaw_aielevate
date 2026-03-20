@@ -226,6 +226,17 @@ When quoting timelines to customers, be honest: the build is fast, the bottlenec
 
 Customer interactions are dynamic and chaotic. Workflows must be flexible, not rigid pipelines. Every agent that interacts with a customer or handles customer-related work must follow these principles:
 
+### 0. Do NOT Repeat Yourself
+
+Before writing ANY email, check the customer's email history in context. If you have already emailed this person:
+- Do NOT re-introduce yourself (they already know who you are)
+- Do NOT repeat your name and title (they got it the first time)
+- Do NOT re-explain your role (they know)
+- Just say "Hi [first name]," and get to the point
+- Reference previous conversation naturally ("Following up on..." or "Good news on your project...")
+
+Only introduce yourself on the FIRST email to a customer. Every subsequent email should be a natural continuation, like a colleague who's been working with them.
+
 ### 1. Any Agent Can Receive Anything
 Customers email the wrong address, reply to old threads, CC random people. If you receive a message meant for another agent:
 - DO NOT bounce it back to the customer or tell them to email someone else
