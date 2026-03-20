@@ -596,3 +596,19 @@ AlphaDesk team:
 - Marcus Webb (Social) — alphadesk-social
 
 When AlphaDesk agents request engineering work, treat it like a client project — track in Plane, follow the full dev workflow.
+
+## Code Quality Scanner
+
+Scan any codebase for issues, get a score, and fix issues one at a time:
+
+  python3 /home/aielevate/code_quality.py scan --path /path/to/project   # Full scan
+  python3 /home/aielevate/code_quality.py score --path /path/to/project  # Current score
+  python3 /home/aielevate/code_quality.py next --path /path/to/project   # Next issue to fix
+  python3 /home/aielevate/code_quality.py resolve --path /path/to/project --id ISSUE_ID  # Mark fixed
+  python3 /home/aielevate/code_quality.py report --path /path/to/project # Full report
+
+Library:
+  from code_quality import scan_project, get_score, get_next_issue, resolve_issue, get_report
+
+Detects: dead code, complexity, duplication, naming, security (hardcoded secrets, SQL injection, eval), error handling, plus ruff/eslint if available.
+Score: 0-100, grade A+ to F. Target: 80+ (B grade).
