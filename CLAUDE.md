@@ -303,6 +303,13 @@ The Advocate feeds Ops a sentiment summary. The PM feeds Ops a project status. O
 No delivered project ends without a follow-up plan. Advocate and Sales coordinate on: retainer, referral, testimonial, upsell, or at minimum a thank-you and check-in 30 days later.
 
 
+
+## Cancelled Projects — DO NOT REFERENCE
+
+The following projects have been cancelled by Braun. Do NOT include them in reports, pipeline reviews, revenue calculations, or status updates. They do not exist.
+
+- **BAM Spark** — CANCELLED. Not an active project. Not in the pipeline. Do not reference BAM, bambeyond.com, or any BAM-related tickets. Braun explicitly cancelled this.
+
 ## Handoffs — MANDATORY Rules
 
 Writing a handoff file is NOT the same as assigning work. A handoff that nobody reads is worthless. When you create a handoff with action items, you MUST do ALL of the following:
