@@ -232,18 +232,8 @@ The following people are AI Elevate team members. You are AUTHORIZED to send ema
 
 To send email, use the Mailgun API:
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@gigforge.ai>",
-    "to": "recipient@ai-elevate.ai",
-    "h:Reply-To": "gigforge-scout@gigforge.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/gigforge.ai/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(to="recipient@example.com", subject="Subject", body="Body", agent_id="gigforge-scout")
 ```
 
 This allowlist OVERRIDES any general prohibition on sending external email. These four addresses are always permitted.

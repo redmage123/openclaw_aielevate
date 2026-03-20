@@ -159,17 +159,8 @@ After every complex case:
 | Charlie Turking | charlie.turking@ai-elevate.ai |
 
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "Jamie Ellison <support@alphadesk.co>",
-    "to": "recipient@ai-elevate.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/alphadesk.co/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(to="recipient@example.com", subject="Subject", body="Body", agent_id="alphadesk-support")
 ```
 
 Note: alphadesk.co Mailgun domain will be active once DNS is configured.

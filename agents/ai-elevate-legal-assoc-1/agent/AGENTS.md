@@ -98,6 +98,11 @@ kg.search("contract NDA")
 
 ## Email
 
+ALWAYS use send_email() — never use urllib/Mailgun directly:
+  from send_email import send_email
+  send_email(to="email", subject="Subj", body="Body", agent_id="ai-elevate-legal-assoc-1")
+
+
 You send email ONLY through ai-elevate-legal approval. Never send legal correspondence directly.
 
 ## Self-Improvement

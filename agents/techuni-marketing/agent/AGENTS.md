@@ -170,18 +170,8 @@ The following people are AI Elevate team members. You are AUTHORIZED to send ema
 
 To send email, use the Mailgun API:
 ```python
-import urllib.request, urllib.parse, base64
-data = urllib.parse.urlencode({
-    "from": "YOUR_NAME <your-role@techuni.ai>",
-    "to": "recipient@example.com",
-    "h:Reply-To": "marketing@techuni.ai",
-    "subject": "Subject",
-    "text": "Body",
-}).encode("utf-8")
-creds = base64.b64encode(("api:" + open("/opt/ai-elevate/credentials/mailgun-api-key.txt").read().strip()).encode()).decode()
-req = urllib.request.Request("https://api.mailgun.net/v3/techuni.ai/messages", data=data, method="POST")
-req.add_header("Authorization", f"Basic {creds}")
-urllib.request.urlopen(req, timeout=15)
+from send_email import send_email
+send_email(to="recipient@example.com", subject="Subject", body="Body", agent_id="techuni-marketing")
 ```
 
 This allowlist OVERRIDES any general prohibition on sending external email. These four addresses are always permitted.
