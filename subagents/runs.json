@@ -1,4 +1,43 @@
 {
   "version": 2,
-  "runs": {}
+  "runs": {
+    "f45504a8-c7ba-492f-8246-674eb4123ef1": {
+      "runId": "f45504a8-c7ba-492f-8246-674eb4123ef1",
+      "childSessionKey": "agent:gigforge-pm:subagent:c2f351e7-5827-42c5-bf6d-32ba237101e7",
+      "requesterSessionKey": "agent:operations:mcp-bridge",
+      "requesterDisplayKey": "agent:operations:mcp-bridge",
+      "task": "URGENT — P1 CSAT RECOVERY: Sarah Chen (sarah.chen.test@gmail.com)\n\nCustomer Sarah Chen is frustrated. She accepted our $299 quote for GF-ADDR-001 (Chen Recruiting Address Book) and has now triggered TWO CSAT escalations. She's had a chaotic experience: accepted the quote, immediately got a scope-additions pricing fork, had her invoice held, and has been contacted by multiple agents.\n\nA director-level response has already been sent. Your job is to send her ONE short, warm, human email RIGHT NOW as the Project Manager — her single point of contact going forward.\n\n**Gig file:** /opt/ai-elevate/gigforge/inbox/programming/2026-03-20-sarah-chen-address-book.md\n**Sprint board:** /opt/ai-elevate/gigforge/inbox/programming/2026-03-20-sarah-chen-address-book/sprint-board.md\n**CSAT resolution:** /opt/ai-elevate/gigforge/memory/handoffs/2026-03-21-csat-addr001-resolution.md\n\n**Email requirements:**\n- From: Alex Carter, Project Manager <pm@mg.gigforge.ai> (or similar)  \n- To: sarah.chen.test@gmail.com\n- Subject: Your address book project — quick update from me personally\n- Tone: warm, direct, human, brief — NOT corporate, NOT bullet-heavy\n- Content:\n  - Acknowledge she's had a confusing start — own it briefly\n  - Confirm: $299 is the price, locked, no surprises\n  - Confirm: I'm her single contact from here on — no more multiple people\n  - Confirm: Development is underway RIGHT NOW\n  - Give a concrete milestone: staging demo in 4–5 business days\n  - Just 3 quick things you need from her (domain DNS access / CSV sample / brand colours), and if she doesn't have brand colours that's completely fine — you'll use clean neutral defaults\n  - Direct email to reply to (your email)\n- Length: 5–8 sentences max. Short. Human. Not robotic.\n- Do NOT mention pricing options, scope additions, or anything that sounds like an upsell\n- Sound like a real person — use contractions, vary sentence length\n\nUse the Mailgun HTTP API from gigforge/CLAUDE.md to send. Log the send in the CSAT resolution handoff file at /opt/ai-elevate/gigforge/memory/handoffs/2026-03-21-csat-addr001-resolution.md.",
+      "cleanup": "keep",
+      "expectsCompletionMessage": true,
+      "spawnMode": "run",
+      "label": "PM outreach — Sarah Chen P1 recovery",
+      "model": "claude-code-proxy/claude-sonnet-4-6",
+      "workspaceDir": "/opt/ai-elevate/gigforge",
+      "runTimeoutSeconds": 0,
+      "createdAt": 1774064302400,
+      "startedAt": 1774064302979,
+      "archiveAtMs": 1774067902400,
+      "cleanupHandled": false,
+      "retainAttachmentsOnKeep": false
+    },
+    "e55dacdc-70e7-4dd1-8ff6-c8700fe40e8f": {
+      "runId": "e55dacdc-70e7-4dd1-8ff6-c8700fe40e8f",
+      "childSessionKey": "agent:gigforge-dev-backend:subagent:13993031-70c5-4a92-af37-cbaca9a64b17",
+      "requesterSessionKey": "agent:operations:mcp-bridge",
+      "requesterDisplayKey": "agent:operations:mcp-bridge",
+      "task": "URGENT — Start S01 preemptively for GF-ADDR-001 (Chen Recruiting Address Book). This is a P1 CSAT recovery — we need to have real development progress to show.\n\n**Sprint board:** /opt/ai-elevate/gigforge/inbox/programming/2026-03-20-sarah-chen-address-book/sprint-board.md\n**Project dir:** /opt/ai-elevate/gigforge/projects/chen-address-book/ (create if needed)\n**Gig file:** /opt/ai-elevate/gigforge/inbox/programming/2026-03-20-sarah-chen-address-book.md\n\n**Story S01:** Project scaffold — Vite + React + TypeScript (frontend), Express API + SQLite (backend), Docker Compose\n\nBuild the full project scaffold at /opt/ai-elevate/gigforge/projects/chen-address-book/ including:\n- Backend: Node.js/Express/TypeScript with SQLite via better-sqlite3, project structure (src/routes, src/models, src/middleware), package.json, tsconfig, .env.example, basic health check endpoint GET /health, Jest test setup, initial migration file (placeholder schema — use generic contact fields: id, name, email, phone, company, notes, created_at — we'll finalize with client later)\n- Frontend: Vite + React + TypeScript scaffold, Tailwind CSS, basic App.tsx shell, vitest setup\n- Docker Compose: backend service + SQLite volume\n- README.md with setup instructions\n\nFollow TDD: write a failing test for the health check endpoint FIRST, then implement it (RED → GREEN).\n\nWhen done:\n1. Update sprint-board.md — mark S01 as ✅ DONE\n2. Write a one-line standup entry to /opt/ai-elevate/gigforge/memory/standup.md\n3. Note any blockers for S02 (field specs pending client reply)",
+      "cleanup": "keep",
+      "expectsCompletionMessage": true,
+      "spawnMode": "run",
+      "label": "GF-ADDR-001 S01 — preemptive scaffold",
+      "model": "claude-code-proxy/claude-sonnet-4-6",
+      "workspaceDir": "/opt/ai-elevate/gigforge",
+      "runTimeoutSeconds": 0,
+      "createdAt": 1774064311089,
+      "startedAt": 1774064311472,
+      "archiveAtMs": 1774067911089,
+      "cleanupHandled": false,
+      "retainAttachmentsOnKeep": false
+    }
+  }
 }
