@@ -534,7 +534,7 @@
     "publicKey": "9xhU7Bd881zyJAzTOkOr3Id5net70jzadOmw861q7f8",
     "platform": "linux",
     "clientId": "cli",
-    "clientMode": "cli",
+    "clientMode": "probe",
     "role": "operator",
     "roles": [
       "operator"
