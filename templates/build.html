@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Build-Org | Organization Factory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e1a;color:#c9d1d9;line-height:1.6}
+.top{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid #30363d;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top h1{font-size:18px;color:#f0f6fc}.top h1 span{color:#bc8cff}
+.top .links a{color:#60a5fa;text-decoration:none;margin-left:16px;font-size:13px}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.hero{text-align:center;padding:40px 20px;background:linear-gradient(180deg,rgba(188,140,255,0.08) 0%,transparent 100%);border-radius:12px;margin-bottom:24px}
+.hero h2{font-size:32px;color:#f0f6fc;margin-bottom:8px}.hero h2 span{background:linear-gradient(135deg,#bc8cff,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#8b949e;font-size:15px;max-width:500px;margin:0 auto}
+h2{color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:24px 0 12px}
+.card{background:#161b22;border-radius:8px;padding:16px;border:1px solid #334155;margin-bottom:12px}
+.card h3{color:#f8fafc;font-size:14px;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.org-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;cursor:pointer;transition:border-color .2s}
+.org-card:hover{border-color:#bc8cff}
+.org-card h3{color:#f0f6fc;font-size:16px;margin-bottom:4px}
+.org-card .meta{color:#8b949e;font-size:12px}
+.org-card .count{color:#bc8cff;font-weight:700;font-size:20px;float:right}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;color:#8b949e;font-size:12px;text-transform:uppercase;margin-bottom:4px}
+.form-group input,.form-group textarea,.form-group select{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:14px;width:100%;font-family:inherit}
+.form-group input:focus,.form-group textarea:focus{border-color:#bc8cff;outline:none}
+.form-group textarea{height:80px;resize:vertical}
+.btn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:8px 20px;border-radius:6px;font-size:13px;cursor:pointer;transition:all .15s}
+.btn:hover{background:#30363d}
+.btn-purple{background:#6e40c9;border-color:#8957e5;color:#fff}
+.btn-purple:hover{background:#8957e5}
+.btn-purple:disabled{opacity:.5;cursor:not-allowed}
+.s{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.s-active{background:#15803d;color:#bbf7d0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:6px 8px;color:#64748b;font-size:11px;text-transform:uppercase;border-bottom:1px solid #21262d}
+td{padding:6px 8px;border-bottom:1px solid #161b22}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;justify-content:center;align-items:center}
+.modal-overlay.open{display:flex}
+.modal{background:#161b22;border:1px solid #334155;border-radius:12px;padding:24px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{color:#f8fafc;margin-bottom:16px}.modal .close{float:right;background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer}
+.toast{position:fixed;bottom:20px;right:20px;background:#6e40c9;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;display:none;z-index:200}
+.building{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="top">
+<h1>Build<span>-Org</span></h1>
+<div class="links">
+<a href="/">Dashboard</a>
+<a href="/build">Build-Org</a>
+            <a href="/approvals">Approvals</a>
+</div>
+</div>
+<div class="wrap">
+
+<div class="hero">
+<h2>Organization <span>Factory</span></h2>
+<p>Describe a business. We build the entire AI organization — agents, workflows, website, email, everything.</p>
+</div>
+
+<h2>Create New Organization</h2>
+<div class="card">
+<div class="form-group"><label>Organization Name</label><input type="text" id="org-name" placeholder="e.g. HelpDesk Pro"></div>
+<div class="form-group"><label>Domain</label><input type="text" id="org-domain" placeholder="e.g. helpdesk-pro.ai (leave blank to auto-generate)"></div>
+<div class="form-group"><label>Type</label><select id="org-type"><option value="commercial">Commercial (sales, billing, client delivery)</option><option value="non-commercial">Non-Commercial (content, research, internal)</option></select></div>
+<div class="form-group"><label>Description</label><textarea id="org-desc" placeholder="Describe what this organization does. The more detail, the better the agents will be."></textarea></div>
+<button class="btn btn-purple" id="build-btn" onclick="buildOrg()">Build Organization</button>
+<span id="build-status" style="margin-left:12px;color:#8b949e;font-size:13px"></span>
+</div>
+
+<h2>Existing Organizations</h2>
+<div class="grid" id="org-list"></div>
+
+</div>
+
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+<button class="close" onclick="closeModal()">&times;</button>
+<div id="modalContent"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none'},3000)}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+async function buildOrg(){
+    var name=document.getElementById('org-name').value.trim();
+    var domain=document.getElementById('org-domain').value.trim();
+    var type=document.getElementById('org-type').value;
+    var desc=document.getElementById('org-desc').value.trim();
+    if(!name){toast('Name is required');return}
+    var btn=document.getElementById('build-btn');
+    btn.disabled=true;
+    document.getElementById('build-status').innerHTML='<span class="building">&#9881;</span> Building organization...';
+    try{
+        var r=await fetch('/api/orgs/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,domain:domain,org_type:type,description:desc})});
+        var d=await r.json();
+        if(d.error){toast('Error: '+d.error);document.getElementById('build-status').textContent='Failed'}
+        else{toast('Organization build started: '+d.workflow_id);document.getElementById('build-status').textContent='Workflow: '+d.workflow_id;loadOrgs()}
+    }catch(e){toast('Error: '+e.message);document.getElementById('build-status').textContent='Failed'}
+    btn.disabled=false;
+}
+
+async function loadOrgs(){
+    try{
+        var r=await fetch('/api/orgs');
+        var d=await r.json();
+        document.getElementById('org-list').innerHTML=d.orgs.map(function(o){
+            return '<div class="org-card" onclick="showOrg(\x27'+o.slug+'\x27)"><div class="count">'+o.agent_count+'</div><h3>'+o.slug+'</h3><div class="meta">'+(o.director||'No director')+' &middot; '+(o.director_role||'')+'</div></div>'
+        }).join('');
+    }catch(e){}
+}
+
+async function showOrg(slug){
+    document.getElementById('modalContent').innerHTML='<p style="color:#8b949e">Loading...</p>';
+    document.getElementById('modal').classList.add('open');
+    try{
+        var r=await fetch('/api/orgs/'+slug);
+        var d=await r.json();
+        var html='<h3>'+d.slug+'</h3>';
+        html+='<table><tr><th>Agent ID</th><th>Name</th><th>Role</th></tr>';
+        d.agents.forEach(function(a){html+='<tr><td style="color:#bc8cff;font-family:monospace;font-size:12px">'+a.id+'</td><td style="color:#f0f6fc">'+a.name+'</td><td style="color:#8b949e">'+a.role+'</td></tr>'});
+        html+='</table>';
+        html+='<h3 style="margin-top:16px">Files</h3>';
+        Object.entries(d.files).forEach(function(e){html+='<div style="padding:4px 0;font-size:13px"><span style="color:'+(e[1]?'#3fb950':'#f85149')+'">'+(e[1]?'\u2713':'\u2717')+'</span> '+e[0]+'</div>'});
+        document.getElementById('modalContent').innerHTML=html;
+    }catch(e){document.getElementById('modalContent').innerHTML='Error: '+e.message}
+}
+
+loadOrgs();
+</script>
+</body>
+</html>

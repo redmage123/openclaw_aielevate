@@ -1,0 +1,14 @@
+import type { WebSocket } from "ws";
+import type { ConnectParams } from "../protocol/index.js";
+
+export type GatewayWsClient = {
+  socket: WebSocket;
+  connect: ConnectParams;
+  connId: string;
+  presenceKey?: string;
+  clientIp?: string;
+  canvasCapability?: string;
+  canvasCapabilityExpiresAtMs?: number;
+  /** Present when auth mode is multi-user. */
+  userId?: string;
+};

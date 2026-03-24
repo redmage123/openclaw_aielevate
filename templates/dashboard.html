@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GigForge Ops</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
+        .topbar { background: #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 50; }
+        .topbar h1 { font-size: 18px; color: #f8fafc; }
+        .topbar .links a { color: #60a5fa; text-decoration: none; margin-left: 16px; font-size: 13px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        h2 { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 24px 0 12px; cursor: pointer; user-select: none; }
+        h2:hover { color: #cbd5e1; }
+        h2::before { content: '\25BC '; font-size: 10px; }
+        h2.collapsed::before { content: '\25B6 '; }
+        .section { transition: max-height 0.3s ease; overflow: hidden; }
+        .section.collapsed { max-height: 0 !important; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card { background: #1e293b; border-radius: 8px; padding: 16px; border: 1px solid #334155; transition: border-color 0.2s; }
+        .card.clickable { cursor: pointer; }
+        .card.clickable:hover { border-color: #60a5fa; }
+        .card h3 { color: #f8fafc; font-size: 14px; margin-bottom: 8px; }
+        .s { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .s-up, .s-active, .s-completed, .s-closed { background: #15803d; color: #bbf7d0; }
+        .s-down, .s-inactive, .s-failed { background: #b91c1c; color: #fecaca; }
+        .s-running { background: #1d4ed8; color: #bfdbfe; }
+        .s-pending { background: #854d0e; color: #fef3c7; }
+        .s-cancelled, .s-timed_out { background: #525252; color: #d4d4d4; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        td, th { padding: 6px 8px; text-align: left; border-bottom: 1px solid #1e293b; }
+        th { color: #64748b; font-weight: 500; font-size: 11px; text-transform: uppercase; }
+        tr.clickable { cursor: pointer; }
+        tr.clickable:hover { background: #334155; }
+        .progress-bar { background: #334155; border-radius: 4px; height: 6px; overflow: hidden; }
+        .progress-fill { background: #4ade80; height: 100%; border-radius: 4px; }
+        .ts { color: #64748b; font-size: 11px; }
+        .site-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .site-dot.up { background: #4ade80; }
+        .site-dot.down { background: #f87171; }
+        .btn { background: #334155; color: #e2e8f0; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn:hover { background: #475569; }
+        .btn-gold { background: #854d0e; color: #fef3c7; }
+        .btn-gold:hover { background: #a16207; }
+        .email-in { color: #60a5fa; }
+        .email-out { color: #4ade80; }
+        .refresh-indicator { font-size: 11px; color: #64748b; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal h3 { color: #f8fafc; margin-bottom: 16px; }
+        .modal .close { float: right; background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
+        .modal .close:hover { color: #f8fafc; }
+        .activity-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 13px; }
+        .activity-item .name { color: #f1f5f9; }
+        .activity-item .time { color: #64748b; font-size: 11px; }
+        .milestone { padding: 8px 0; display: flex; align-items: center; gap: 8px; }
+        .milestone .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .milestone .dot.completed { background: #4ade80; }
+        .milestone .dot.pending { background: #64748b; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #15803d; color: #bbf7d0; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 200; display: none; }
+        .wf-filter { margin-bottom: 8px; }
+        .wf-filter select { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .kpi-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+        .kpi-card{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:14px 16px;text-align:center}
+        .kpi-card .kv{color:#f1f5f9;font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
+        .kpi-card .kl{color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+        .kpi-card.ka{border-color:#d97706}.kpi-card.ka .kv{color:#fbbf24}
+        .kpi-card.kr{border-color:#dc2626}.kpi-card.kr .kv{color:#f87171}
+        .al-panel{margin-bottom:12px}
+        .al-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:6px;margin-bottom:6px;font-size:13px}
+        .al-row.critical{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4)}
+        .al-row.warning{background:rgba(217,119,6,.15);border:1px solid rgba(217,119,6,.4)}
+        .al-msg{flex:1;color:#f1f5f9}
+        .al-act{background:#334155;color:#e2e8f0;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;text-decoration:none;display:inline-block}
+        .all-clear{background:rgba(21,128,61,.15);border:1px solid rgba(21,128,61,.4);color:#4ade80;padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:12px}
+        .badge{background:#dc2626;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:9px;margin-left:4px;vertical-align:middle;display:inline-block}
+        .badge.am{background:#d97706}
+        .badge.hd{display:none}
+        .ps-accepted{color:#4ade80}.ps-rejected{color:#f87171}.ps-sent{color:#60a5fa}.ps-negotiating{color:#fbbf24}.ps-pending{color:#94a3b8}.ps-other{color:#94a3b8}
+        .etabs{display:flex;gap:6px;margin-bottom:8px}
+        .etab{background:#334155;border:none;color:#94a3b8;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+        .etab.active{background:#475569;color:#f1f5f9}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>GigForge Ops</h1>
+        <div class="links">
+            <a href="/build">Build-Org</a>
+            <a href="/approvals">Approvals <span id="approvalBadge" class="badge hd"></span></a>
+            <a href="https://gigforge.ai" target="_blank">Website</a>
+            <span class="refresh-indicator" id="lastRefresh"></span>
+        </div>
+    </div>
+    <div class="container">
+
+    <div class="al-panel" id="alertsPanel"></div>
+    <div class="kpi-bar" id="kpiBar"></div>
+
+    <h2 onclick="toggle('healthSection')">System Health</h2>
+    <div class="section" id="healthSection"><div class="grid" id="health"></div></div>
+
+    <h2 onclick="toggle('sitesSection')">Deployed Sites</h2>
+    <div class="section" id="sitesSection"><div class="grid" id="sites"></div></div>
+
+    <div class="grid-2">
+        <div>
+            <h2 onclick="toggle('projectsSection')">Projects</h2>
+            <div class="section" id="projectsSection"><div class="card" id="projects"></div></div>
+        </div>
+        <div>
+            <h2 onclick="toggle('customersSection')">Customers</h2>
+            <div class="section" id="customersSection"><div class="card" id="customers"></div></div>
+        </div>
+    </div>
+
+    <h2 onclick="toggle('emailsSection')">Email Activity</h2>
+    <div class="section" id="emailsSection">
+        <div class="etabs">
+            <button class="etab active" id="etabAll" onclick="switchEmailTab('all')">All Activity</button>
+            <button class="etab" id="etabCust" onclick="switchEmailTab('customer')">By Customer</button>
+        </div>
+        <div class="card" id="emails"></div>
+    </div>
+
+    <h2 onclick="toggle('proposalsSection')">Pipeline — Proposals</h2>
+    <div class="section" id="proposalsSection"><div class="card" id="proposals"></div></div>
+
+    <h2 onclick="toggle('workflowsSection')">Workflows</h2>
+    <div class="section" id="workflowsSection">
+        <div class="wf-filter">
+            <select id="wfFilter" onchange="load()">
+                <option value="">All</option>
+                <option value="RUNNING">Running</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="FAILED">Failed</option>
+            </select>
+        </div>
+        <div class="card" id="workflows"></div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2 onclick="toggle('servicesSection')">Services</h2>
+            <div class="section" id="servicesSection"><div class="grid" id="services"></div></div>
+        </div>
+        <div>
+            <h2 onclick="toggle('actionsSection')">Quick Actions</h2>
+            <div class="section" id="actionsSection">
+                <div class="card">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-gold" onclick="doAction('scout')">Run Scout</button>
+                        <button class="btn" onclick="doAction('restart/email-gateway')">Restart Gateway</button>
+                        <button class="btn" onclick="doAction('restart/build-worker')">Restart Builder</button>
+                        <button class="btn" onclick="doAction('restart/temporal-worker')">Restart Temporal</button>
+                        <button class="btn" onclick="doAction('restart/orchestrator-worker')">Restart Orchestrator</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Modal for workflow/project details -->
+    <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+            <button class="close" onclick="closeModal()">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    function toggle(id) {
+        const el = document.getElementById(id);
+        const h2 = el.previousElementSibling;
+        el.classList.toggle('collapsed');
+        h2.classList.toggle('collapsed');
+    }
+
+    function showModal(html) {
+        document.getElementById('modalContent').innerHTML = html;
+        document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+    }
+
+    function toast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    async function showWorkflow(id) {
+        showModal('<p class="ts">Loading...</p>');
+        const d = await (await fetch('/api/workflows/' + encodeURIComponent(id))).json();
+        let html = '<h3>' + d.id + '</h3>';
+        html += '<p><span class="s s-' + d.status.toLowerCase() + '">' + d.status + '</span> Started: <span class="ts">' + (d.started||'').slice(0,19) + '</span></p>';
+        html += '<div style="margin-top:16px">';
+        let stepNum = 0;
+        d.activities.forEach(a => {
+            if (a.type === 'scheduled') {
+                stepNum++;
+                html += '<div class="activity-item"><span class="name">' + stepNum + '. ' + a.name + '</span></div>';
+            } else if (a.type === 'failed') {
+                html += '<div class="activity-item" style="color:#f87171">FAILED: ' + (a.error||'') + '</div>';
+            }
+        });
+        html += '</div>';
+        showModal(html);
+    }
+
+    async function showProject(email) {
+        showModal('<p class="ts">Loading...</p>');
+        const d = await (await fetch('/api/projects/' + encodeURIComponent(email))).json();
+        let html = '<h3>' + d.customer + '</h3>';
+        html += '<div style="margin-top:12px">';
+        d.milestones.forEach(m => {
+            html += '<div class="milestone"><div class="dot ' + m.status + '"></div><span>' + m.name + '</span><span class="ts" style="margin-left:auto">' + m.status + '</span></div>';
+        });
+        html += '</div>';
+        if (d.notes.length) {
+            html += '<h3 style="margin-top:16px">Notes</h3>';
+            d.notes.forEach(n => {
+                html += '<div class="activity-item"><span class="name">' + n.note + '</span><br><span class="time">' + n.agent + ' - ' + (n.time||'').slice(0,19) + '</span></div>';
+            });
+        }
+        showModal(html);
+    }
+
+    async function doAction(type) {
+        const url = type === 'scout' ? '/api/actions/scout' : '/api/actions/' + type;
+        await fetch(url, {method: 'POST'});
+        toast(type === 'scout' ? 'Scout started' : type.replace('restart/', '') + ' restarted');
+        setTimeout(load, 2000);
+    }
+
+    async function loadKPIs() {
+        try {
+            const k = await (await fetch('/api/kpis')).json();
+            const badge = document.getElementById('approvalBadge');
+            if (badge) {
+                if (k.pending_approvals > 0) {
+                    badge.textContent = k.pending_approvals;
+                    badge.className = 'badge' + (k.pending_approvals >= 3 ? '' : ' am');
+                } else { badge.className = 'badge hd'; }
+            }
+            const items = [
+                {l:'Pending Approvals', v:k.pending_approvals, c:k.pending_approvals>0?'ka':''},
+                {l:'Submitted Proposals', v:k.active_projects, c:''},
+                {l:'Pipeline Value', v:'$'+Number(k.open_proposals).toLocaleString(), c:''},
+                {l:'Services Down', v:k.services_down, c:k.services_down>0?'kr':''},
+                {l:'Emails Today', v:k.emails_today, c:''},
+            ];
+            document.getElementById('kpiBar').innerHTML = items.map(i =>
+                '<div class="kpi-card '+i.c+'"><div class="kv">'+i.v+'</div><div class="kl">'+i.l+'</div></div>'
+            ).join('');
+        } catch(e) {}
+    }
+
+    async function loadAlerts() {
+        try {
+            const a = await (await fetch('/api/alerts')).json();
+            const panel = document.getElementById('alertsPanel');
+            if (a.all_clear) {
+                panel.innerHTML = '<div class="all-clear">✅ All Clear — no alerts</div>';
+            } else {
+                panel.innerHTML = '<div class="al-panel">' + a.alerts.map(al =>
+                    '<div class="al-row '+al.severity+'"><span>'+al.icon+'</span><span class="al-msg">'+al.message+'</span>'+(al.action?'<a href="'+al.action+'" class="al-act">'+al.action_label+'</a>':'')+'</div>'
+                ).join('') + '</div>';
+            }
+        } catch(e) {}
+    }
+
+    let _emailTab = 'all';
+    function switchEmailTab(tab) {
+        _emailTab = tab;
+        document.getElementById('etabAll').className = 'etab'+(tab==='all'?' active':'');
+        document.getElementById('etabCust').className = 'etab'+(tab==='customer'?' active':'');
+        loadEmailContent();
+    }
+
+    async function loadEmailContent() {
+        try {
+            if (_emailTab === 'all') {
+                const e = await (await fetch('/api/emails')).json();
+                document.getElementById('emails').innerHTML = e.emails.length ?
+                    '<table><tr><th>Time</th><th>Dir</th><th>From/To</th><th>Agent</th><th>Subject</th></tr>' +
+                    e.emails.slice(0,15).map(em =>
+                        '<tr><td class="ts">'+(em.created_at||'').slice(11,19)+'</td><td><span class="'+(em.direction==='inbound'?'email-in':'email-out')+'">'+(em.direction==='inbound'?'IN':'OUT')+'</span></td><td class="ts">'+(em.sender_email||'').slice(0,25)+'</td><td class="ts">'+(em.agent_id||'')+'</td><td>'+(em.subject||'').slice(0,40)+'</td></tr>'
+                    ).join('')+'</table>' : '<p class="ts">No email activity</p>';
+            } else {
+                const e = await (await fetch('/api/emails/by-customer')).json();
+                document.getElementById('emails').innerHTML = e.customers.length ?
+                    '<table><tr><th>Customer</th><th>Total</th><th>In/Out</th><th>Last Contact</th><th>Last Subject</th></tr>' +
+                    e.customers.map(cu =>
+                        '<tr><td class="ts">'+(cu.sender_email||'').slice(0,28)+'</td><td>'+cu.total+'</td><td><span class="email-in">'+cu.inbound_count+'</span>/<span class="email-out">'+cu.outbound_count+'</span></td><td class="ts">'+(cu.last_contact||'').slice(0,19)+'</td><td>'+(cu.last_subject||'').slice(0,35)+'</td></tr>'
+                    ).join('')+'</table>' : '<p class="ts">No email data</p>';
+            }
+        } catch(e) {}
+    }
+
+    async function load() {
+        const ts = new Date().toLocaleTimeString();
+        document.getElementById('lastRefresh').textContent = 'Updated ' + ts;
+        const filter = document.getElementById('wfFilter')?.value || '';
+        loadKPIs();
+        loadAlerts();
+
+        try {
+            const h = await (await fetch('/api/health')).json();
+            document.getElementById('health').innerHTML =
+                '<div class="card"><h3>Circuit Breaker</h3><span class="s s-' + h.circuit_breaker.status + '">' + h.circuit_breaker.status + '</span> <span class="ts">Failures: ' + h.circuit_breaker.failures + '</span></div>' +
+                '<div class="card"><h3>Gateway</h3><span class="s s-' + (h.gateway==='up'?'up':'down') + '">' + h.gateway + '</span></div>' +
+                (h.checkpoints||[]).map(c => '<div class="card"><h3>' + c.project + '</h3><span class="ts">' + c.progress + ' steps</span></div>').join('');
+            document.getElementById('services').innerHTML = Object.entries(h.services).map(([k,v]) =>
+                '<div class="card clickable" data-restart="' + k + '""><span class="s s-' + v + '">' + v + '</span> <span style="font-size:12px">' + k + '</span></div>'
+            ).join('');
+        } catch(e) {}
+
+        try {
+            const s = await (await fetch('/api/sites')).json();
+            document.getElementById('sites').innerHTML = s.sites.map(site =>
+                '<div class="card clickable" data-url="' + site.url + '""><span class="site-dot ' + site.status + '"></span><span style="font-size:13px">' + site.name + '</span><span class="ts" style="float:right">' + site.code + '</span></div>'
+            ).join('');
+        } catch(e) {}
+
+        try {
+            const p = await (await fetch('/api/projects')).json();
+            document.getElementById('projects').innerHTML = p.projects.length ?
+                '<table><tr><th>Project</th><th>Customer</th><th>Progress</th></tr>' +
+                p.projects.map(pr =>
+                    '<tr class="clickable" data-customer="' + pr.customer + '""><td>' + pr.title.slice(0,30) + '</td><td class="ts">' + pr.customer.slice(0,25) + '</td><td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:' + pr.progress + '%"></div></div><span class="ts">' + pr.done + '/' + pr.total + '</span></td></tr>'
+                ).join('') + '</table>' :
+                '<p class="ts">No active projects</p>';
+        } catch(e) {}
+
+        try {
+            const c = await (await fetch('/api/customers')).json();
+            document.getElementById('customers').innerHTML = c.customers.length ?
+                '<table><tr><th>Email</th><th>Sentiment</th><th>Agent</th></tr>' +
+                c.customers.slice(0,10).map(cu =>
+                    '<tr><td class="ts">' + cu.email.slice(0,25) + '</td><td><span class="s s-' + (cu.rating==='positive'?'up':cu.rating==='frustrated'?'down':'pending') + '">' + cu.rating + '</span></td><td class="ts">' + (cu.agent||'') + '</td></tr>'
+                ).join('') + '</table>' :
+                '<p class="ts">No customer data</p>';
+        } catch(e) {}
+
+        loadEmailContent();
+
+        try {
+            const proposals = await (await fetch('/api/proposals')).json();
+            _proposalsData = proposals;
+            const pending = proposals.filter(p => p.status === 'pending').length;
+            const approved = proposals.filter(p => p.status === 'approved').length;
+            const submitted = proposals.filter(p => p.status === 'submitted').length;
+            const totalBid = proposals.reduce((s,p) => s + (parseFloat(p.recommended_bid)||0), 0);
+            const statusColors = {pending:'#fbbf24',approved:'#4ade80',submitted:'#60a5fa',rejected:'#f87171'};
+
+            document.getElementById('proposals').innerHTML = proposals.length ?
+                '<p class="ts" style="margin-bottom:8px">' +
+                'Pipeline: <strong style="color:#f1f5f9">$' + totalBid.toLocaleString() + '</strong> &nbsp;|&nbsp; ' +
+                '<span style="color:#fbbf24">' + pending + ' pending</span> &nbsp;|&nbsp; ' +
+                '<span style="color:#4ade80">' + approved + ' approved</span> &nbsp;|&nbsp; ' +
+                '<span style="color:#60a5fa">' + submitted + ' submitted</span></p>' +
+                '<table><tr><th>Date</th><th>Platform</th><th>Job</th><th>Bid</th><th>Status</th><th>Action</th></tr>' +
+                proposals.map(p => {
+                    const sc = statusColors[p.status] || '#94a3b8';
+                    const actions = p.status === 'pending' ?
+                        '<button onclick="approveProposal(\'' + p.id + '\')" style="background:#4ade80;color:#000;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">Approve</button>' +
+                        '<button onclick="rejectProposal(\'' + p.id + '\')" style="background:#f87171;color:#000;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px">Reject</button>' :
+                        p.status === 'approved' ?
+                        '<button onclick="markSubmitted(\'' + p.id + '\')" style="background:#60a5fa;color:#000;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:11px">Mark Submitted</button>' :
+                        '';
+                    return '<tr class="clickable" data-proposal-id="' + p.id + '" style="cursor:pointer">' +
+                        '<td class="ts">' + (p.created_at||'').slice(0,10) + '</td>' +
+                        '<td class="ts">' + (p.platform||'').toUpperCase() + '</td>' +
+                        '<td style="color:#93c5fd">' + (p.job_title||'').slice(0,45) + '</td>' +
+                        '<td class="ts">$' + (p.recommended_bid||0) + '</td>' +
+                        '<td><span style="color:' + sc + ';font-weight:600">' + p.status + '</span></td>' +
+                        '<td>' + actions + '</td></tr>';
+                }).join('') + '</table>' :
+                '<p class="ts">No proposals in queue</p>';
+        } catch(e) { console.error('proposals:', e); }
+
+        try {
+            const w = await (await fetch('/api/workflows')).json();
+            const filtered = filter ? w.workflows.filter(wf => wf.status === filter) : w.workflows;
+            document.getElementById('workflows').innerHTML =
+                '<table><tr><th>ID</th><th>Type</th><th>Status</th><th>Started</th></tr>' +
+                filtered.slice(0,25).map(wf =>
+                    '<tr class="clickable" data-workflow="' + wf.id + '""><td class="ts">' + wf.id.slice(0,35) + '</td><td>' + wf.type.replace('Workflow','') + '</td><td><span class="s s-' + wf.status.toLowerCase() + '">' + wf.status + '</span></td><td class="ts">' + (wf.started||'').slice(0,19) + '</td></tr>'
+                ).join('') + '</table>';
+        } catch(e) {}
+    }
+
+    load();
+    setInterval(load, 5000);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Event delegation for dynamic elements
+    document.addEventListener('click', function(e) {
+        // Site cards — open URL
+        const siteCard = e.target.closest('[data-url]');
+        if (siteCard) { window.open(siteCard.dataset.url, '_blank'); return; }
+
+        // Service restart
+        const restartCard = e.target.closest('[data-restart]');
+        if (restartCard) { doAction('restart/' + restartCard.dataset.restart); return; }
+
+        // Project detail
+        const projectRow = e.target.closest('[data-customer]');
+        if (projectRow) { showProject(projectRow.dataset.customer); return; }
+
+        // Proposal detail
+        const proposalRow = e.target.closest('[data-proposal-id]');
+        if (proposalRow && !e.target.closest('button')) { showProposal(proposalRow.dataset.proposalId); return; }
+
+        // Workflow detail
+        const workflowRow = e.target.closest('[data-workflow]');
+        if (workflowRow) { showWorkflow(workflowRow.dataset.workflow); return; }
+    });
+    async function approveProposal(id) {
+        if (!confirm('Approve this proposal? An email with the proposal text will be sent to you.')) return;
+        const r = await fetch('/api/proposals/' + id + '/approve', {method:'POST'});
+        const d = await r.json();
+        if (d.status === 'approved') { alert('Approved! Check your email for the proposal text.'); load(); }
+        else alert('Error: ' + (d.error||'unknown'));
+    }
+    async function rejectProposal(id) {
+        if (!confirm('Reject this proposal?')) return;
+        await fetch('/api/proposals/' + id + '/reject', {method:'POST'});
+        load();
+    }
+    async function markSubmitted(id) {
+        await fetch('/api/proposals/' + id + '/submitted', {method:'POST'});
+        load();
+    }
+    let _proposalsData = [];
+
+    async function showProposal(id) {
+        const p = _proposalsData.find(x => String(x.id) === String(id));
+        if (!p) return;
+
+        let milestones = '';
+        if (p.milestones && p.milestones.length) {
+            milestones = '<h4 style="color:#94a3b8;margin:16px 0 8px">Milestones</h4>' +
+                '<table style="width:100%"><tr><th>Milestone</th><th>Amount</th><th>Due</th></tr>' +
+                p.milestones.map(m =>
+                    '<tr><td>' + m.name + '</td><td style="color:#4ade80">$' + m.amount + '</td><td class="ts">' + (m.due||'') + '</td></tr>'
+                ).join('') + '</table>';
+        }
+
+        let screening = '';
+        if (p.screening_answers && Object.keys(p.screening_answers).length) {
+            screening = '<h4 style="color:#94a3b8;margin:16px 0 8px">Screening Answers</h4>';
+            for (const [q, a] of Object.entries(p.screening_answers)) {
+                screening += '<div style="margin-bottom:12px"><div style="color:#fbbf24;font-size:12px;font-weight:600;margin-bottom:4px">Q: ' + q + '</div>' +
+                    '<div style="color:#e2e8f0;font-size:12px;white-space:pre-wrap;background:#0f172a;padding:8px;border-radius:4px">' + a + '</div></div>';
+            }
+        }
+
+        const coverLetter = p.cover_letter ?
+            '<h4 style="color:#94a3b8;margin:16px 0 8px">Cover Letter</h4>' +
+            '<div style="color:#e2e8f0;font-size:12px;white-space:pre-wrap;background:#0f172a;padding:12px;border-radius:4px;max-height:400px;overflow-y:auto">' + p.cover_letter + '</div>' : '';
+
+        const meta = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' +
+            '<div><span class="ts">Platform:</span> <strong>' + (p.platform||'').toUpperCase() + '</strong></div>' +
+            '<div><span class="ts">Bid:</span> <strong style="color:#4ade80">$' + p.recommended_bid + '</strong></div>' +
+            '<div><span class="ts">Type:</span> ' + (p.bid_type||'project') + '</div>' +
+            '<div><span class="ts">Due:</span> ' + (p.due_date||'N/A') + '</div>' +
+            '<div><span class="ts">Status:</span> ' + p.status + '</div>' +
+            '<div><span class="ts">Drafted by:</span> ' + (p.drafted_by||'') + '</div>' +
+            '</div>' +
+            (p.job_url ? '<div style="margin-bottom:12px"><a href="' + p.job_url + '" target="_blank" style="color:#60a5fa;font-size:12px">Open job listing ↗</a></div>' : '');
+
+        const html = '<h3>' + p.job_title + '</h3>' + meta + coverLetter + milestones + screening;
+        showModal(html);
+    }
+
+
+
+    </script>
+</body>
+</html>

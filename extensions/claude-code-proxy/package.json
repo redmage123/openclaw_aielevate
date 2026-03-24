@@ -1,0 +1,12 @@
+{
+  "name": "@openclaw/claude-code-proxy",
+  "version": "2026.2.26",
+  "private": true,
+  "description": "OpenClaw Claude Code CLI proxy provider plugin",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
