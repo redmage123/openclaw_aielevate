@@ -292,9 +292,35 @@ class EmailOrchestratorWorkflow:
         if running:
             result.actions.append(f"existing_workflows:{list(running.keys())}")
 
-        # 3. Dispatch based on intent — support chain for bug/support, simple reply for others
-        support_intents = {"bug_report"}  # Only actual bugs get full ACK→investigate→verify→RCA chain
-        if result.intent in support_intents:
+        # 3. Dispatch based on intent — with guards to prevent routing loops
+        import re as _re
+
+        # Guard 1: References an existing ticket → direct reply (not a new bug)
+        has_ticket_ref = bool(_re.search(r'GF-\d+|CC-\d+|\[GF-\d+\]', f"{input.subject} {input.body[:200]}"))
+
+        # Guard 2: Reply in existing thread → direct reply
+        is_reply = input.subject.lower().startswith("re:") or input.subject.lower().startswith("fwd:")
+
+        # Guard 3: Internal sender (owner, team) → direct reply
+        internal_senders = {"braun.brelin@ai-elevate.ai", "bbrelin@gmail.com",
+                           "peter.munro@ai-elevate.ai", "mike.burton@ai-elevate.ai",
+                           "charlie.turking@ai-elevate.ai"}
+        is_internal = input.sender_email.lower() in internal_senders
+
+        # Guard 4: Already has running workflows for this sender+subject
+        has_existing = bool(running)
+
+        # Only trigger support chain for NEW bug reports from EXTERNAL customers
+        # with NO existing ticket reference and NO existing thread
+        use_support_chain = (
+            result.intent == "bug_report"
+            and not has_ticket_ref
+            and not is_reply
+            and not is_internal
+            and not has_existing
+        )
+
+        if use_support_chain:
             # Full support chain: ACK → Investigation → Status Updates → RCA
             chain_json = await workflow.execute_activity(
                 trigger_support_chain, input,
@@ -303,7 +329,13 @@ class EmailOrchestratorWorkflow:
             result.actions.append(f"support_chain:{chain_json[:80]}")
             result.workflows_started.append("support_chain")
         else:
-            # Simple email interaction for non-support intents
+            # Direct agent reply — the agent reads context and responds naturally
+            if has_ticket_ref:
+                result.actions.append(f"direct_reply:ticket_ref")
+            elif is_reply:
+                result.actions.append(f"direct_reply:thread")
+            elif is_internal:
+                result.actions.append(f"direct_reply:internal")
             email_result_json = await workflow.execute_activity(
                 trigger_email_workflow, input,
                 start_to_close_timeout=tl, retry_policy=RETRY)
