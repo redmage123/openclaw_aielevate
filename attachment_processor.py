@@ -189,19 +189,121 @@ def _extract_svg(content_bytes):
 
 
 def _extract_image_ocr(content_bytes):
-    """Extract text from images using OCR."""
+    """Extract text from images using OCR + vision model for visual understanding.
+
+    Two passes:
+    1. OCR (Tesseract) — extracts visible text from the image
+    2. Vision model (Ollama/moondream) — describes what the image shows
+    Combined gives both textual and visual understanding.
+    """
+    text_parts = []
+
+    # Pass 1: OCR for visible text
     try:
         import pytesseract
         from PIL import Image
         img = Image.open(io.BytesIO(content_bytes))
-        text = pytesseract.image_to_string(img)
-        return text[:20000]
+        ocr_text = pytesseract.image_to_string(img).strip()
+        if ocr_text and len(ocr_text) > 10:
+            text_parts.append(f"[OCR text]: {ocr_text}")
     except ImportError:
         log.debug("pytesseract or PIL not installed — skipping OCR")
-        return ""
     except Exception as e:
         log.debug(f"OCR failed: {e}")
-        return ""
+
+    # Pass 2: Vision model for image understanding
+    try:
+        description = _vision_describe(content_bytes)
+        if description:
+            text_parts.append(f"[Image description]: {description}")
+    except Exception as e:
+        log.debug(f"Vision analysis failed: {e}")
+
+    return "\n".join(text_parts)[:20000]
+
+
+def _vision_describe(content_bytes, prompt="Describe this image in detail. What does it show? Include any text, diagrams, charts, UI elements, or data visible."):
+    """Describe an image using a local vision model (Ollama/moondream).
+
+    Runs locally — no API cost, ~2-5 seconds per image.
+    Falls back to Claude Vision API if local model unavailable.
+    """
+    import base64
+    import json
+    import urllib.request
+
+    img_b64 = base64.b64encode(content_bytes).decode("utf-8")
+
+    # Try local Ollama first (free, fast)
+    try:
+        payload = json.dumps({
+            "model": "moondream",
+            "prompt": prompt,
+            "images": [img_b64],
+            "stream": False,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "http://localhost:11434/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        resp = urllib.request.urlopen(req, timeout=90)
+        result = json.loads(resp.read().decode("utf-8"))
+        description = result.get("response", "").strip()
+        if description:
+            log.info(f"Vision (moondream): {len(description)} chars")
+            return description[:5000]
+    except Exception as e:
+        log.debug(f"Ollama vision failed: {e}")
+
+    # Fallback: Claude Vision API (costs ~$0.01-0.05 per image)
+    try:
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            key_file = Path("/opt/ai-elevate/credentials/anthropic-api-key.txt")
+            if key_file.exists():
+                api_key = key_file.read_text().strip()
+
+        if api_key:
+            from PIL import Image
+            img = Image.open(io.BytesIO(content_bytes))
+            fmt = img.format or "png"
+            media_type = f"image/{fmt.lower()}"
+
+            payload = json.dumps({
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 500,
+                "messages": [{
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": img_b64}},
+                        {"type": "text", "text": prompt}
+                    ]
+                }]
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                "https://api.anthropic.com/v1/messages",
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "x-api-key": api_key,
+                    "anthropic-version": "2023-06-01",
+                },
+                method="POST"
+            )
+            resp = urllib.request.urlopen(req, timeout=30)
+            result = json.loads(resp.read().decode("utf-8"))
+            text = result.get("content", [{}])[0].get("text", "")
+            if text:
+                log.info(f"Vision (claude): {len(text)} chars")
+                return text[:5000]
+    except Exception as e:
+        log.debug(f"Claude vision failed: {e}")
+
+    return ""
 
 
 
@@ -288,6 +390,28 @@ def _extract_pptx(content_bytes):
         log.warning(f"PPTX extraction failed: {e}")
     return ""
 
+
+
+
+def warmup_vision():
+    """Pre-load the vision model so first request isn't slow.
+    Call this once at gateway startup."""
+    import json, urllib.request, base64, threading
+    def _warmup():
+        try:
+            # Tiny 1x1 PNG
+            payload = json.dumps({
+                "model": "moondream",
+                "prompt": "hi",
+                "images": ["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="],
+                "stream": False,
+            }).encode()
+            req = urllib.request.Request("http://localhost:11434/api/generate", data=payload, headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=120)
+            log.info("Vision model warmed up")
+        except Exception as e:
+            log.debug(f"Vision warmup: {e}")
+    threading.Thread(target=_warmup, daemon=True).start()
 
 def process_attachments(files):
     """Process a list of uploaded files, return combined extracted text.
