@@ -147,44 +147,15 @@ def send_email(
             f"OUTBOUND DEDUP: skipping duplicate send to {to} subject={subject}")
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
-    # Strip internal metadata and call suggestions from outgoing emails
-    import re as _re
+    # NLP-based email scrubbing — removes metadata, call suggestions, AI language
+    try:
+        from nlp_email_scrubber import scrub_email
+        body = scrub_email(body)
+    except Exception as _scrub_err:
+        import logging
+        logging.getLogger("send_email").debug(f"Scrubber: {_scrub_err}")
 
-    # Line-by-line removal of trigger/workflow/internal metadata
-    _lines = body.split("\n")
-    _clean = []
-    for _line in _lines:
-        _stripped = _line.strip().lower()
-        if _stripped.startswith("trigger:"):
-            continue
-        if _stripped.startswith("workflow:") and any(w in _stripped for w in ["execute", "bash", "before writing"]):
-            continue
-        if _stripped.startswith("[internal]"):
-            continue
-        _clean.append(_line)
-    body = "\n".join(_clean)
-
-    # Regex removal of call/meeting suggestions
-    _call_pats = [
-        r"[Hh]appy to (?:jump|hop|get) on a (?:quick )?(?:call|screen.?share|meeting|zoom|video).*?[.!]",
-        r"[Hh]appy to (?:chat|talk|discuss|walk|provide).*?(?:call|phone|zoom|video|teams|screen.?share|in (?:more )?detail).*?[.!]",
-        r"[Ii]'?d love to have a.*?(?:conversation|chat|discussion|call).*?[.!]",
-        r"[Ii]'?ll (?:reach out|be in touch).*?(?:to set|to get|directly).*?[.!]",
-        r"[Ww]e.?d? (?:suggest|recommend|love to) (?:scheduling|setting up|hopping on|having).*?(?:call|screen.?share|meeting|walk.?through|conversation).*?[.!]",
-        r"[Ss]hall we (?:set up|schedule|hop on|jump on|arrange).*?(?:call|meeting|screen.?share|chat).*?[.!]",
-        r"[Ww]ould you (?:like|prefer|be open|want).*?(?:call|meeting|screen.?share|walk.?through|chat|discuss).*?[.!]",
-        r"[Ww]e can (?:walk|talk|take) (?:you )?through.*?[.!]",
-        r"[Ll]et me know if you.?d? (?:prefer|like|rather|want).*?(?:call|chat|meeting|screen.?share|walk.?through).*?[.!]",
-        r"[Ff]eel free to (?:book|schedule|set up|arrange).*?(?:call|meeting|zoom|video|screen.?share).*?[.!]",
-        r"[Ii]f you.?d? (?:like|prefer|want) to (?:discuss|walk|talk|chat).*?(?:call|detail|phone|zoom).*?[.!]",
-    ]
-    for _pat in _call_pats:
-        body = _re.sub(_pat, "", body, flags=_re.DOTALL).strip()
-
-    # Clean up triple+ blank lines
-    body = _re.sub(r"\n{3,}", "\n\n", body).strip()
-
-    from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
+        from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
     reply_to = reply_to or default_reply_to
 
     key = _get_key()
