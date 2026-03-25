@@ -105,7 +105,7 @@ async def trigger_support_chain(input: EmailInput) -> str:
 async def classify_email_intent(input: EmailInput) -> dict:
     """Classify email intent using LDA + KG + RAG (with LLM fallback)."""
     try:
-        from lda_classifier import classify_email
+        from email_nlp_pipeline import classify_email
         result = classify_email(input.sender_email, input.subject, input.body)
         return {
             "type": result["intent"],
