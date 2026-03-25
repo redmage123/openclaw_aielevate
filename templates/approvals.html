@@ -37,7 +37,7 @@
         list.innerHTML = res.approvals.map(p => `
             <div class="card" id="card-${p.id}">
                 <h3>${p.project_title || 'Untitled'}</h3>
-                <div class="meta">${p.customer_email || ''} &middot; ${(p.created_at || '').slice(0,10)}</div>
+                <div class="meta">${p.customer_display || ''} &middot; ${(p.created_at || '').slice(0,10)}</div>
                 <div class="price">EUR ${(p.price_eur || 0).toFixed(0)}</div>
                 <div style="margin-top:12px">
                     <button class="btn btn-approve" onclick="act(${p.id},'approve')">Approve</button>

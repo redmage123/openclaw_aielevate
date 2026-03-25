@@ -14,6 +14,14 @@ from pathlib import Path
 
 sys.path.insert(0, "/home/aielevate")
 
+DB_CONN = dict(
+    host=os.environ.get("DB_HOST", "127.0.0.1"),
+    port=int(os.environ.get("DB_PORT", "5434")),
+    dbname=os.environ.get("DB_NAME", "rag"),
+    user=os.environ.get("DB_USER", "rag"),
+    password=os.environ.get("DB_PASSWORD", "rag_vec_2026"),
+)
+
 PASS = "\033[92mPASS\033[0m"
 FAIL = "\033[91mFAIL\033[0m"
 SKIP = "\033[93mSKIP\033[0m"
@@ -29,13 +37,14 @@ def check(name, condition, detail=""):
 
 def clean():
     """Wipe all test data."""
-    conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+    conn = psycopg2.connect(**DB_CONN)
     conn.autocommit = True
     cur = conn.cursor()
-    for t in ["email_dedup", "email_interactions"]:
-        cur.execute(f"DELETE FROM {t}")
-    for t in ["customer_sentiment", "customer_notes", "project_milestones"]:
-        cur.execute(f"DELETE FROM {t} WHERE {'email' if t != 'project_milestones' else 'customer_email'} LIKE '%e2etest%'")
+    cur.execute("DELETE FROM email_dedup")
+    cur.execute("DELETE FROM email_interactions")
+    cur.execute("DELETE FROM customer_sentiment WHERE email LIKE '%e2etest%'")
+    cur.execute("DELETE FROM customer_notes WHERE email LIKE '%e2etest%'")
+    cur.execute("DELETE FROM project_milestones WHERE customer_email LIKE '%e2etest%'")
     conn.close()
 
     # Clear sessions
@@ -104,7 +113,7 @@ def main():
 
     # Test 2: Verify response
     print("\n--- Test 2: Verify Response ---")
-    conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+    conn = psycopg2.connect(**DB_CONN)
     cur = conn.cursor()
 
     cur.execute("SELECT count(*) FROM email_dedup WHERE sender = 'e2etest@example.com'")

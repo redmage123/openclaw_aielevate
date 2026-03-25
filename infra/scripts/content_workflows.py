@@ -33,7 +33,13 @@ sys.path.insert(0, "/home/aielevate")
 log = logging.getLogger("content-workflows")
 
 RETRY = RetryPolicy(maximum_attempts=3, initial_interval=timedelta(seconds=30))
-DB_CONN = dict(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+DB_CONN = dict(
+    host=os.environ.get("DB_HOST", "127.0.0.1"),
+    port=int(os.environ.get("DB_PORT", "5434")),
+    dbname=os.environ.get("DB_NAME", "rag"),
+    user=os.environ.get("DB_USER", "rag"),
+    password=os.environ.get("DB_PASSWORD", "rag_vec_2026"),
+)
 
 
 @dataclass

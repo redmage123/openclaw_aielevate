@@ -22,6 +22,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from exceptions import AiElevateError  # TODO: Use specific exception types, AgentError
+AgentError = Exception  # placeholder until agent_dispatch exports AgentError
 
 sys.path.insert(0, "/home/aielevate")
 
@@ -189,6 +190,7 @@ def archive_email(org: str, sender: str, agent_id: str, subject: str,
             org=org,
             title=f"Email: {subject[:50]} ({sender})",
             content=content,
+            excerpt=f"{subject[:100]} — {sender}",
             category="correspondence",
             author=agent_id,
             tags=["email", sender.split("@")[0], agent_id],

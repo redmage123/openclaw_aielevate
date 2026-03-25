@@ -41,6 +41,31 @@ def _log(msg):
         f.write(f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} -- {msg}\n")
 
 
+_DEDUP_WINDOW_SECS = 300  # suppress identical blocker messages within 5 minutes
+
+
+def _recently_dispatched(message: str, event_type: str, window_secs: int = _DEDUP_WINDOW_SECS) -> bool:
+    """Return True if an identical event was already dispatched within the dedup window."""
+    if not EVENT_LOG.exists():
+        return False
+    cutoff = datetime.now(timezone.utc).timestamp() - window_secs
+    try:
+        with open(EVENT_LOG) as f:
+            for line in f:
+                try:
+                    e = json.loads(line)
+                    if (e.get("message") == message
+                            and e.get("type") == event_type
+                            and e.get("dispatched")
+                            and datetime.fromisoformat(e["timestamp"].replace("Z", "+00:00")).timestamp() >= cutoff):
+                        return True
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return False
+
+
 def ops_notify(event_type: str, message: str, agent: str = "", customer_email: str = "", urgent: bool = False):
     """Notify operations of a project event.
 
@@ -49,8 +74,35 @@ def ops_notify(event_type: str, message: str, agent: str = "", customer_email: s
                 customer_complaint, status_update, project_complete
     """
     now = datetime.now(timezone.utc)
+    dispatched = False
 
-    # Log event
+    # Decide whether to dispatch ops immediately or batch
+    if urgent or event_type in IMMEDIATE:
+        # Suppress duplicate immediate notifications within the dedup window
+        if not _recently_dispatched(message, event_type):
+            prefix = "URGENT " if urgent or event_type == "escalation" else ""
+            dispatch_msg = (
+                f"{prefix}OPS NOTIFICATION — {event_type.upper()}\n\n"
+                f"{message}\n\n"
+                f"Reported by: {agent or 'system'}\n"
+                f"Customer: {customer_email or 'N/A'}\n"
+                f"Time: {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+                f"Assess the situation and take appropriate action."
+            )
+            try:
+                subprocess.Popen(
+                    ["agent-queue", "--agent", "operations", "--message", dispatch_msg,
+                     "--thinking", "low", "--timeout", "180"],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
+                dispatched = True
+                _log(f"Dispatched ops immediately for {event_type}")
+            except (AgentError, Exception) as e:
+                _log(f"Failed to dispatch ops: {e}")
+        else:
+            _log(f"Suppressed duplicate {event_type} (dedup window): {message[:80]}")
+
+    # Log event — write after dispatch attempt so dispatched flag is accurate
     EVENT_LOG.parent.mkdir(parents=True, exist_ok=True)
     event = {
         "timestamp": now.isoformat(),
@@ -58,34 +110,12 @@ def ops_notify(event_type: str, message: str, agent: str = "", customer_email: s
         "message": message,
         "agent": agent,
         "customer": customer_email,
-        "dispatched": False,
+        "dispatched": dispatched,
     }
     with open(EVENT_LOG, "a") as f:
         f.write(json.dumps(event) + "\n")
 
     _log(f"{event_type}: {message[:100]}")
-
-    # Decide whether to dispatch ops immediately or batch
-    if urgent or event_type in IMMEDIATE:
-        prefix = "URGENT " if urgent or event_type == "escalation" else ""
-        dispatch_msg = (
-            f"{prefix}OPS NOTIFICATION — {event_type.upper()}\n\n"
-            f"{message}\n\n"
-            f"Reported by: {agent or 'system'}\n"
-            f"Customer: {customer_email or 'N/A'}\n"
-            f"Time: {now.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
-            f"Assess the situation and take appropriate action."
-        )
-        try:
-            subprocess.Popen(
-                ["agent-queue", "--agent", "operations", "--message", dispatch_msg,
-                 "--thinking", "low", "--timeout", "180"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
-            event["dispatched"] = True
-            _log(f"Dispatched ops immediately for {event_type}")
-        except (AgentError, Exception) as e:
-            _log(f"Failed to dispatch ops: {e}")
 
 
 def get_recent_events(hours: int = 24) -> list:

@@ -33,6 +33,7 @@ from temporalio.common import RetryPolicy
 from dao import BaseDAO  # TODO: Replace inline DB calls with specific DAOs
 from logging_config import get_logger  # Structured JSON logging
 from exceptions import AiElevateError  # TODO: Use specific exception types, AgentError, DatabaseError
+AgentError = Exception  # placeholder until agent_dispatch exports AgentError
 import psycopg2
 DatabaseError = psycopg2.DatabaseError
 import argparse

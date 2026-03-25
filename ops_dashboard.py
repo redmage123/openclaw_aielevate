@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """GigForge Ops Dashboard — full operations center."""
 import asyncio
+import hashlib
+import hmac
 import json
 import os
 import sys
@@ -9,12 +11,14 @@ import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from dao import BaseDAO  # TODO: Replace inline DB calls with specific DAOs
 from exceptions import AiElevateError  # TODO: Use specific exception types, AgentError, DatabaseError
 AgentError = Exception  # placeholder until agent_dispatch exports AgentError
 DatabaseError = Exception  # placeholder until psycopg2.DatabaseError is imported directly
+
+from starlette.middleware.sessions import SessionMiddleware
 
 sys.path.insert(0, "/home/aielevate")
 
@@ -30,6 +34,130 @@ DB_CONN = dict(
     password=os.environ.get("DB_PASSWORD", "rag_vec_2026"),
 )
 
+# ============================================================================
+# Auth
+# ============================================================================
+
+_SESSION_SECRET = os.environ.get("SESSION_SECRET", "1dfaafdffc23963ee7aff18ce0c1c128ac41f3f7ccbe789cb7628134dce07897")
+
+_USERS = {
+    "braun": {
+        "salt": "746ec994f0e5da1614edee6f1d9d74f0",
+        "hash": "5303ddb57eb07d37c34f60bdde95737bdce8854270b8033bc14aa837e5dc2476",
+        "name": "Braun Brelin",
+    },
+    "pete": {
+        "salt": "702f5926f49526dc26e2d9476654bf55",
+        "hash": "faf809b70b048c961593fee4a0ff041cfd71175843cb63276ea8acd34455edc8",
+        "name": "Pete Munro",
+    },
+    "team": {
+        "salt": "5fc5581c3ebd5427a23450e3ea1ccfcf",
+        "hash": "69854b804d48451022b2ee031ab68aa4666cb0679dc23cdf737ca0fdb0f67c5c",
+        "name": "GigForge Team",
+    },
+}
+
+
+def _verify_pw(username: str, password: str) -> bool:
+    user = _USERS.get(username.lower())
+    if not user:
+        return False
+    h = hashlib.pbkdf2_hmac("sha256", password.encode(), user["salt"].encode(), 100000).hex()
+    return hmac.compare_digest(h, user["hash"])
+
+
+def mask_email(email: str) -> str:
+    """Mask email for display: jo***@example.com"""
+    if not email or "@" not in email:
+        return email or ""
+    local, domain = email.split("@", 1)
+    masked = (local[:2] + "***") if len(local) > 2 else "***"
+    return f"{masked}@{domain}"
+
+
+_LOGIN_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GigForge Ops — Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
+        .card {{ background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 40px; width: 360px; }}
+        h1 {{ color: #f8fafc; font-size: 20px; margin-bottom: 6px; }}
+        .sub {{ color: #64748b; font-size: 12px; margin-bottom: 28px; }}
+        label {{ display: block; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }}
+        input {{ width: 100%; background: #0f172a; border: 1px solid #334155; color: #f1f5f9; padding: 10px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 16px; outline: none; }}
+        input:focus {{ border-color: #60a5fa; }}
+        button {{ width: 100%; background: #3b82f6; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; }}
+        button:hover {{ background: #2563eb; }}
+        .error {{ background: rgba(220,38,38,.15); border: 1px solid rgba(220,38,38,.4); color: #f87171; font-size: 13px; padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>GigForge Ops</h1>
+        <p class="sub">Authorised personnel only</p>
+        {error_block}
+        <form method="POST" action="/login">
+            <label>Username</label>
+            <input type="text" name="username" autocomplete="username" autofocus required>
+            <label>Password</label>
+            <input type="password" name="password" autocomplete="current-password" required>
+            <button type="submit">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>"""
+
+
+@app.middleware("http")
+async def _auth_gate(request: Request, call_next):
+    public = {"/login", "/login/"}
+    if request.url.path in public:
+        return await call_next(request)
+    if not request.session.get("user"):
+        return RedirectResponse(url="/login", status_code=302)
+    return await call_next(request)
+
+
+# SessionMiddleware must be added AFTER the auth middleware decorator so it runs
+# first (outermost) and populates request.session before _auth_gate runs.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=_SESSION_SECRET,
+    session_cookie="gfops_session",
+    https_only=False,
+    max_age=86400,  # 24h
+)
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page():
+    return _LOGIN_HTML.format(error_block="")
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_submit(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+):
+    if _verify_pw(username, password):
+        request.session["user"] = _USERS[username.lower()]["name"]
+        return RedirectResponse(url="/", status_code=302)
+    err = '<div class="error">Invalid username or password.</div>'
+    return HTMLResponse(_LOGIN_HTML.format(error_block=err), status_code=401)
+
+
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=302)
+
+
 def _db():
     import psycopg2
     conn = psycopg2.connect(**DB_CONN)
@@ -43,7 +171,6 @@ def _db():
 
 @app.get("/api/workflows")
 async def get_workflows():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     workflows = []
@@ -58,19 +185,18 @@ async def get_workflows():
                 "started": desc.start_time.isoformat() if desc.start_time else "",
                 "closed": desc.close_time.isoformat() if desc.close_time else "",
             })
-        except (AiElevateError, Exception) as e:
+        except (AiElevateError, Exception):
             pass
     return {"workflows": sorted(workflows, key=lambda w: w["started"], reverse=True)[:50]}
 
 
 @app.get("/api/health")
 async def get_health():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     try:
         from agent_dispatch import circuit_status, check_gateway
         circuit = circuit_status()
         gateway = check_gateway()
-    except (AgentError, Exception) as e:
+    except (AgentError, Exception):
         circuit = {"status": "unknown"}
         gateway = False
 
@@ -88,7 +214,7 @@ async def get_health():
                 done = sum(1 for s in data.get("steps", {}).values() if s.get("status") in ("completed", "skipped"))
                 total = len(data.get("steps", {}))
                 checkpoints.append({"project": f.stem, "progress": f"{done}/{total}", "updated": data.get("updated_at", "")})
-            except (DatabaseError, Exception) as e:
+            except (DatabaseError, Exception):
                 pass
 
     return {
@@ -117,7 +243,9 @@ async def get_projects():
     """)
     for row in cur.fetchall():
         projects.append({
-            "customer": row[0],
+            "customer_id": row[0],
+            "customer": mask_email(row[0]),
+            "customer_display": mask_email(row[0]),
             "title": row[1],
             "total": row[2],
             "done": row[3],
@@ -136,14 +264,21 @@ async def get_customers():
 
     cur.execute("SELECT email, rating, notes, agent FROM customer_sentiment ORDER BY timestamp DESC LIMIT 30")
     cols = [d[0] for d in cur.description]
-    customers = [dict(zip(cols, r)) for r in cur.fetchall()]
+    customers = []
+    for r in cur.fetchall():
+        d = dict(zip(cols, r))
+        d["email_display"] = mask_email(d.pop("email", "") or "")
+        customers.append(d)
 
     cur.execute("SELECT email, note, agent, timestamp FROM customer_notes ORDER BY timestamp DESC LIMIT 30")
     cols = [d[0] for d in cur.description]
-    notes = [dict(zip(cols, r)) for r in cur.fetchall()]
-    for n in notes:
-        if n.get("timestamp"):
-            n["timestamp"] = n["timestamp"].isoformat()
+    notes = []
+    for r in cur.fetchall():
+        d = dict(zip(cols, r))
+        if d.get("timestamp"):
+            d["timestamp"] = d["timestamp"].isoformat()
+        d["email_display"] = mask_email(d.pop("email", "") or "")
+        notes.append(d)
 
     conn.close()
     return {"customers": customers, "notes": notes}
@@ -164,6 +299,7 @@ async def get_emails():
         d = dict(zip(cols, r))
         if d.get("created_at"):
             d["created_at"] = d["created_at"].isoformat()
+        d["sender_display"] = mask_email(d.pop("sender_email", "") or "")
         emails.append(d)
     conn.close()
     return {"emails": emails}
@@ -189,7 +325,7 @@ async def get_sites():
                 capture_output=True, text=True, timeout=5)
             s["status"] = "up" if r.stdout.strip() in ("200", "301", "302", "304") else "down"
             s["code"] = r.stdout.strip()
-        except (AgentError, Exception) as e:
+        except (AgentError, Exception):
             s["status"] = "down"
             s["code"] = "000"
     return {"sites": sites}
@@ -197,7 +333,6 @@ async def get_sites():
 
 @app.get("/api/agents")
 async def get_agents():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     conn = _db()
     cur = conn.cursor()
     cur.execute("SELECT agent_id, name, role FROM agent_bios WHERE name != '' ORDER BY agent_id")
@@ -242,7 +377,7 @@ async def get_proposals_legacy():
                 if m:
                     try:
                         value = int(m.group(1).replace(",", ""))
-                    except (AgentError, Exception) as e:
+                    except (AgentError, Exception):
                         pass
                 if any(w in cl for w in ["accepted", "won", "confirmed"]):
                     status = "accepted"
@@ -252,7 +387,7 @@ async def get_proposals_legacy():
                     status = "negotiating"
                 elif any(w in cl for w in ["submitted", "ready to submit", "proposal sent"]):
                     status = "sent"
-            except (AgentError, Exception) as e:
+            except (AgentError, Exception):
                 pass
             proposals.append({"file": f.name, "client": client_name, "practice": practice,
                                "value": value, "status": status, "date": date_str})
@@ -261,7 +396,6 @@ async def get_proposals_legacy():
 
 @app.get("/api/approvals")
 async def get_approvals():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     conn = _db()
     cur = conn.cursor()
     try:
@@ -272,8 +406,9 @@ async def get_approvals():
             d = dict(zip(cols, r))
             if d.get("created_at"):
                 d["created_at"] = d["created_at"].isoformat()
+            d["customer_display"] = mask_email(d.pop("customer_email", "") or "")
             proposals.append(d)
-    except (DatabaseError, Exception) as e:
+    except (DatabaseError, Exception):
         proposals = []
     conn.close()
     return {"approvals": proposals}
@@ -281,7 +416,6 @@ async def get_approvals():
 
 @app.post("/api/approvals/{item_id}/approve")
 async def approve_item(item_id: int):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     conn = _db()
     conn.cursor().execute("UPDATE proposal_queue SET status='approved', approved_by='braun' WHERE id=%s", (item_id,))
     conn.close()
@@ -290,7 +424,6 @@ async def approve_item(item_id: int):
 
 @app.post("/api/approvals/{item_id}/reject")
 async def reject_item(item_id: int):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     conn = _db()
     conn.cursor().execute("UPDATE proposal_queue SET status='rejected' WHERE id=%s", (item_id,))
     conn.close()
@@ -299,7 +432,6 @@ async def reject_item(item_id: int):
 
 @app.post("/api/actions/restart/{service}")
 async def restart_service(service: str):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     allowed = ["email-gateway", "temporal-worker", "build-worker", "project-worker", "orchestrator-worker"]
     if service not in allowed:
         return JSONResponse({"error": "Not allowed"}, status_code=403)
@@ -309,7 +441,6 @@ async def restart_service(service: str):
 
 @app.post("/api/actions/scout")
 async def run_scout():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     subprocess.Popen(
         ["/opt/ai-elevate/cron/job-scout-pipeline.sh"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -320,38 +451,33 @@ async def run_scout():
 async def get_kpis():
     """KPI summary bar — live business metrics from DB and process checks."""
     import psycopg2
-    conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+    conn = psycopg2.connect(**DB_CONN)
     cur = conn.cursor()
 
-    # Pending approvals (proposal queue)
     try:
         cur.execute("SELECT COUNT(*) FROM proposal_queue WHERE status='pending'")
         pending_approvals = int(cur.fetchone()[0])
     except Exception:
         pending_approvals = 0
 
-    # Submitted proposals (active pipeline)
     try:
         cur.execute("SELECT COUNT(*) FROM proposal_queue WHERE status='submitted'")
         submitted = int(cur.fetchone()[0])
     except Exception:
         submitted = 0
 
-    # Pipeline value
     try:
         cur.execute("SELECT COALESCE(SUM(CAST(NULLIF(regexp_replace(recommended_bid, '[^0-9.]', '', 'g'), '') AS NUMERIC)), 0) FROM proposal_queue WHERE status='submitted'")
         pipeline_value = int(cur.fetchone()[0])
     except Exception:
         pipeline_value = 0
 
-    # Emails today
     try:
         cur.execute("SELECT COUNT(*) FROM email_interactions WHERE created_at::date = CURRENT_DATE")
         emails_today = int(cur.fetchone()[0])
     except Exception:
         emails_today = 0
 
-    # Services check — check running processes, not systemd
     services_down = 0
     critical_processes = {
         "email-gateway": "email-gateway",
@@ -371,7 +497,6 @@ async def get_kpis():
             services_down += 1
             down_list.append(name)
 
-    # Active agents (running openclaw sessions)
     try:
         r = subprocess.run(["pgrep", "-fc", "openclaw"], capture_output=True, text=True, timeout=3)
         active_agents = int(r.stdout.strip()) if r.returncode == 0 else 0
@@ -403,7 +528,7 @@ async def get_alerts():
             alerts.append({"severity": "critical", "icon": "🔔",
                            "message": f"{n} proposal{'s' if n > 1 else ''} awaiting your approval",
                            "action": "/approvals", "action_label": "Go to Approvals"})
-    except (DatabaseError, Exception) as e:
+    except (DatabaseError, Exception):
         pass
     down_svcs = []
     for svc, pattern in [("email-gateway", "email-gateway"), ("temporal-server", "temporal-server"),
@@ -427,9 +552,9 @@ async def get_alerts():
             AND MIN(created_at) < NOW() - INTERVAL '7 days'""")
         for row in cur.fetchall():
             alerts.append({"severity": "warning", "icon": "⚠️",
-                           "message": f"Stalled project: {row[1]} ({row[3]}/{row[2]} milestones done)",
+                           "message": f"Stalled project: {row[1]} — {mask_email(row[0])} ({row[3]}/{row[2]} milestones done)",
                            "action": None, "action_label": None})
-    except (DatabaseError, Exception) as e:
+    except (DatabaseError, Exception):
         pass
     try:
         cur.execute("SELECT COUNT(*) FROM customer_sentiment WHERE rating='frustrated' AND timestamp > NOW() - INTERVAL '24 hours'")
@@ -438,7 +563,7 @@ async def get_alerts():
             alerts.append({"severity": "warning", "icon": "😟",
                            "message": f"{n} frustrated customer(s) flagged in the last 24h",
                            "action": None, "action_label": None})
-    except (DatabaseError, Exception) as e:
+    except (DatabaseError, Exception):
         pass
     conn.close()
     return {"alerts": alerts, "all_clear": len(alerts) == 0}
@@ -463,13 +588,12 @@ async def get_emails_by_customer():
             d = dict(zip(cols, r))
             if d.get("last_contact"):
                 d["last_contact"] = d["last_contact"].isoformat()
+            d["sender_display"] = mask_email(d.pop("sender_email", "") or "")
             customers.append(d)
-    except (DatabaseError, Exception) as e:
+    except (DatabaseError, Exception):
         customers = []
     conn.close()
     return {"customers": customers}
-
-
 
 
 @app.get("/api/workflows/{workflow_id}")
@@ -518,7 +642,8 @@ async def get_project_detail(customer_email: str):
     notes = [{"note": r[0], "agent": r[1], "time": r[2].isoformat() if r[2] else ""} for r in cur.fetchall()]
 
     conn.close()
-    return {"customer": customer_email, "milestones": milestones, "notes": notes}
+    return {"customer": mask_email(customer_email), "milestones": milestones, "notes": notes}
+
 
 # ============================================================================
 # HTML Pages
@@ -529,7 +654,7 @@ async def get_proposals():
     try:
         import psycopg2
         import psycopg2.extras
-        conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+        conn = psycopg2.connect(**DB_CONN)
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute(
             "SELECT id, job_title, job_url, job_budget, platform, status, "
@@ -538,7 +663,6 @@ async def get_proposals():
         )
         rows = cur.fetchall()
         conn.close()
-        # Convert datetimes to strings
         for r in rows:
             if r.get("created_at"):
                 r["created_at"] = r["created_at"].isoformat()
@@ -546,10 +670,12 @@ async def get_proposals():
     except Exception as e:
         return [{"error": str(e)}]
 
+
 @app.get("/api/proposals")
 async def api_proposals():
     """Proposals queue API."""
     return await get_proposals()
+
 
 @app.post("/api/proposals/{proposal_id}/approve")
 async def approve_proposal(proposal_id: str):
@@ -559,7 +685,7 @@ async def approve_proposal(proposal_id: str):
         sys.path.insert(0, "/home/aielevate")
         from proposal_approval_system import update_status, send_approved_proposal
         import psycopg2, psycopg2.extras
-        conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+        conn = psycopg2.connect(**DB_CONN)
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute("SELECT * FROM proposal_queue WHERE id = %s", (proposal_id,))
         p = cur.fetchone()
@@ -572,6 +698,7 @@ async def approve_proposal(proposal_id: str):
     except Exception as e:
         return {"error": str(e)}
 
+
 @app.post("/api/proposals/{proposal_id}/reject")
 async def reject_proposal(proposal_id: str):
     """Reject a proposal."""
@@ -581,6 +708,7 @@ async def reject_proposal(proposal_id: str):
         return {"status": "rejected"}
     except Exception as e:
         return {"error": str(e)}
+
 
 @app.post("/api/proposals/{proposal_id}/submitted")
 async def mark_submitted(proposal_id: str):
@@ -595,12 +723,7 @@ async def mark_submitted(proposal_id: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     return (_TEMPLATE_DIR / "dashboard.html").read_text()
-
-
-
-
 
 
 @app.get("/api/orgs")
@@ -652,7 +775,6 @@ async def get_org_detail(slug: str):
     agents = [{"id": r[0], "name": r[1], "role": r[2]} for r in cur.fetchall()]
     conn.close()
 
-    # Check for org files
     org_dir = Path(f"/opt/ai-elevate/{slug}")
     files = {}
     for fname in ["org-design.json", "team-roster.txt", "email-aliases.json", "dns-requirements.md", "ORG_SUMMARY.md"]:
@@ -664,13 +786,11 @@ async def get_org_detail(slug: str):
 
 @app.get("/build", response_class=HTMLResponse)
 async def build_page():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     return (_TEMPLATE_DIR / "build.html").read_text()
 
 
 @app.get("/approvals", response_class=HTMLResponse)
 async def approvals_page():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
     return (_TEMPLATE_DIR / "approvals.html").read_text()
 
 

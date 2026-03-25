@@ -271,14 +271,14 @@ def _is_duplicate(msg_id: str, sender: str, subject: str) -> bool:
             pass
         # Check if exists
         cur.execute("SELECT 1 FROM email_dedup WHERE dedup_key = %s", (key,))
-        if cur.fetchone():
-            conn.close()
-            return True
-        # Insert
-        cur.execute("INSERT INTO email_dedup (dedup_key, sender, subject) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
-                    (key, sender, subject))
+        exists = cur.fetchone() is not None
+        if not exists and msg_id:
+            # Only insert message-id based dedup (prevents Mailgun re-delivery of same message)
+            # Do NOT insert sender+subject here — that's done by _mark_responded after reply
+            cur.execute("INSERT INTO email_dedup (dedup_key, sender, subject) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                        (key, sender, subject))
         conn.close()
-        return False
+        return exists
     except Exception as e:
         logger.error(f"Dedup check error: {e}")
         return False  # Allow through on error rather than blocking
@@ -615,8 +615,8 @@ async def inbound_email(
                     sender_email, recipient, subject, full_message,
                     message_id=message_id, agent_id=agent_id, org=org)
                 logger.info(f"Orchestrator started: {orch_result}")
-                # The orchestrator handles everything — reply, workflows, etc.
-                _mark_responded(sender_email, subject)
+                # NOTE: Do NOT mark responded here — the orchestrator runs async.
+                # send_email.py marks responded AFTER the reply is actually sent.
                 return {"status": "orchestrated", "workflow": orch_result.get("workflow_id", "")}
             except Exception as orch_err:
                 logger.warning(f"Orchestrator unavailable ({orch_err}), falling back to direct")
@@ -718,7 +718,11 @@ async def inbound_email(
             return {"status": "auth_error"}
 
         # --- Send auto-reply ---
-        if response and len(response) > 10:
+        # DISABLED: Agents send their own replies via send_email.py.
+        # This _send_mailgun call was creating duplicate emails.
+        # The orchestrator path already returns early; this fallback path
+        # was also sending, causing 2-3x duplicate replies.
+        if False and response and len(response) > 10:
             try:
                 # Format with email template — only if response is a real reply
                 _skip_template = any(skip in response.lower() for skip in [

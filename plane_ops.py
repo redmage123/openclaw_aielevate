@@ -135,6 +135,8 @@ ORG_PREFIX = {
 
 class Plane:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
+    _state_cache = {}  # class-level cache shared across instances to avoid repeated API calls
+
     def __init__(self, org: str):
         """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
         if org not in _ORG_CONFIG:
@@ -156,7 +158,6 @@ class Plane:
         self.workspace = cfg["workspace"]
         self.projects = cfg["projects"]
         self.bug_project = cfg["bug_project"]
-        self._state_cache = {}
 
     def _api(self, method: str, path: str, data: dict = None) -> dict:
         url = f"{self.base_url}/api/v1/workspaces/{self.workspace}/{path}"

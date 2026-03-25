@@ -94,6 +94,7 @@
             <a href="/approvals">Approvals <span id="approvalBadge" class="badge hd"></span></a>
             <a href="https://gigforge.ai" target="_blank">Website</a>
             <span class="refresh-indicator" id="lastRefresh"></span>
+            <a href="/logout" style="color:#f87171;margin-left:16px;font-size:13px">Sign Out</a>
         </div>
     </div>
     <div class="container">
@@ -177,6 +178,12 @@
     <div class="toast" id="toast"></div>
 
     <script>
+    function maskEmail(e) {
+        if (!e || !e.includes('@')) return e || '';
+        const [local, domain] = e.split('@');
+        return (local.length > 2 ? local.slice(0,2) + '***' : '***') + '@' + domain;
+    }
+
     function toggle(id) {
         const el = document.getElementById(id);
         const h2 = el.previousElementSibling;
@@ -296,14 +303,14 @@
                 document.getElementById('emails').innerHTML = e.emails.length ?
                     '<table><tr><th>Time</th><th>Dir</th><th>From/To</th><th>Agent</th><th>Subject</th></tr>' +
                     e.emails.slice(0,15).map(em =>
-                        '<tr><td class="ts">'+(em.created_at||'').slice(11,19)+'</td><td><span class="'+(em.direction==='inbound'?'email-in':'email-out')+'">'+(em.direction==='inbound'?'IN':'OUT')+'</span></td><td class="ts">'+(em.sender_email||'').slice(0,25)+'</td><td class="ts">'+(em.agent_id||'')+'</td><td>'+(em.subject||'').slice(0,40)+'</td></tr>'
+                        '<tr><td class="ts">'+(em.created_at||'').slice(11,19)+'</td><td><span class="'+(em.direction==='inbound'?'email-in':'email-out')+'">'+(em.direction==='inbound'?'IN':'OUT')+'</span></td><td class="ts">'+(em.sender_display || maskEmail(em.sender_email||'')).slice(0,25)+'</td><td class="ts">'+(em.agent_id||'')+'</td><td>'+(em.subject||'').slice(0,40)+'</td></tr>'
                     ).join('')+'</table>' : '<p class="ts">No email activity</p>';
             } else {
                 const e = await (await fetch('/api/emails/by-customer')).json();
                 document.getElementById('emails').innerHTML = e.customers.length ?
                     '<table><tr><th>Customer</th><th>Total</th><th>In/Out</th><th>Last Contact</th><th>Last Subject</th></tr>' +
                     e.customers.map(cu =>
-                        '<tr><td class="ts">'+(cu.sender_email||'').slice(0,28)+'</td><td>'+cu.total+'</td><td><span class="email-in">'+cu.inbound_count+'</span>/<span class="email-out">'+cu.outbound_count+'</span></td><td class="ts">'+(cu.last_contact||'').slice(0,19)+'</td><td>'+(cu.last_subject||'').slice(0,35)+'</td></tr>'
+                        '<tr><td class="ts">'+(cu.sender_display || maskEmail(cu.sender_email||'')).slice(0,28)+'</td><td>'+cu.total+'</td><td><span class="email-in">'+cu.inbound_count+'</span>/<span class="email-out">'+cu.outbound_count+'</span></td><td class="ts">'+(cu.last_contact||'').slice(0,19)+'</td><td>'+(cu.last_subject||'').slice(0,35)+'</td></tr>'
                     ).join('')+'</table>' : '<p class="ts">No email data</p>';
             }
         } catch(e) {}
@@ -339,7 +346,7 @@
             document.getElementById('projects').innerHTML = p.projects.length ?
                 '<table><tr><th>Project</th><th>Customer</th><th>Progress</th></tr>' +
                 p.projects.map(pr =>
-                    '<tr class="clickable" data-customer="' + pr.customer + '""><td>' + pr.title.slice(0,30) + '</td><td class="ts">' + pr.customer.slice(0,25) + '</td><td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:' + pr.progress + '%"></div></div><span class="ts">' + pr.done + '/' + pr.total + '</span></td></tr>'
+                    '<tr class="clickable" data-customer="' + pr.customer + '""><td>' + pr.title.slice(0,30) + '</td><td class="ts">' + (pr.customer_display || maskEmail(pr.customer)).slice(0,25) + '</td><td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:' + pr.progress + '%"></div></div><span class="ts">' + pr.done + '/' + pr.total + '</span></td></tr>'
                 ).join('') + '</table>' :
                 '<p class="ts">No active projects</p>';
         } catch(e) {}
@@ -349,7 +356,7 @@
             document.getElementById('customers').innerHTML = c.customers.length ?
                 '<table><tr><th>Email</th><th>Sentiment</th><th>Agent</th></tr>' +
                 c.customers.slice(0,10).map(cu =>
-                    '<tr><td class="ts">' + cu.email.slice(0,25) + '</td><td><span class="s s-' + (cu.rating==='positive'?'up':cu.rating==='frustrated'?'down':'pending') + '">' + cu.rating + '</span></td><td class="ts">' + (cu.agent||'') + '</td></tr>'
+                    '<tr><td class="ts">' + (cu.email_display || maskEmail(cu.email)).slice(0,25) + '</td><td><span class="s s-' + (cu.rating==='positive'?'up':cu.rating==='frustrated'?'down':'pending') + '">' + cu.rating + '</span></td><td class="ts">' + (cu.agent||'') + '</td></tr>'
                 ).join('') + '</table>' :
                 '<p class="ts">No customer data</p>';
         } catch(e) {}

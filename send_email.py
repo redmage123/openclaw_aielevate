@@ -162,6 +162,19 @@ def send_email(
     try:
         resp = urllib.request.urlopen(req, timeout=15)
         result = resp.read().decode()
+        # Mark in gateway dedup so the same sender+subject won't trigger another dispatch
+        try:
+            import hashlib
+            import psycopg2 as _pg
+            _key = hashlib.md5(f"resp:{to.lower()}:{subject.lower().strip()}".encode()).hexdigest()
+            _conn = _pg.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
+            _conn.autocommit = True
+            _conn.cursor().execute(
+                "INSERT INTO email_dedup (dedup_key, sender, subject) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                (_key, to, subject))
+            _conn.close()
+        except Exception:
+            pass
         return {"status": "sent", "domain": mailgun_domain, "response": result[:100]}
     except (EmailError, Exception) as e:
         return {"status": "error", "error": str(e), "domain": mailgun_domain}
