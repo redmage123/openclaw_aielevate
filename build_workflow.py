@@ -879,7 +879,7 @@ async def devops_deploy(input: BuildInput) -> str:
                 f"3. Deploy: cd {project_dir} && docker compose up -d --build\n"
                 f"   If no docker-compose.yml, use docker build + docker run\n"
                 f"4. Wait 10s then verify: curl -s -o /dev/null -w '%{{http_code}}' http://localhost:PORT/\n"
-                f"5. Report the URL: http://78.47.104.139:PORT"
+                f"5. Report the URL: http://localhost:PORT"
             )
         else:
             # Retry — include the previous error for diagnosis
@@ -912,7 +912,7 @@ async def devops_deploy(input: BuildInput) -> str:
             port_match = _re.search(r':(\d+)->', check.stdout)
             if port_match:
                 port = port_match.group(1)
-                url = f"http://78.47.104.139:{port}"
+                url = f"http://localhost:{port}"
                 log.info(f"Deploy succeeded on attempt {attempt}: {url}")
                 return url
 
@@ -927,7 +927,7 @@ async def devops_deploy(input: BuildInput) -> str:
                 capture_output=True, text=True, timeout=10, cwd=project_dir)
             if port_check.stdout.strip():
                 port = port_check.stdout.strip().split(":")[-1]
-                url = f"http://78.47.104.139:{port}"
+                url = f"http://localhost:{port}"
                 log.info(f"Deploy succeeded (compose) on attempt {attempt}: {url}")
                 return url
 
@@ -938,7 +938,7 @@ async def devops_deploy(input: BuildInput) -> str:
                     capture_output=True, text=True, timeout=5, cwd=project_dir)
                 if port_check.stdout.strip():
                     port = port_check.stdout.strip().split(":")[-1]
-                    url = f"http://78.47.104.139:{port}"
+                    url = f"http://localhost:{port}"
                     log.info(f"Deploy succeeded ({svc}) on attempt {attempt}: {url}")
                     return url
 
@@ -1027,7 +1027,7 @@ async def verify_auth_credentials(input: BuildInput) -> str:
                     preview_port = m.group(1)
                     break
 
-    url = f"http://78.47.104.139:{preview_port}" if preview_port else "URL not found"
+    url = f"http://localhost:{preview_port}" if preview_port else "URL not found"
 
     # 3. Test credentials
     if cred_email and cred_pass and preview_port:
@@ -1112,6 +1112,7 @@ async def send_preview_email(input: BuildInput) -> bool:
                  f"- Or if you're happy to go live\n\n"
                  f"Best regards,\n{advocate_name}\n{advocate_title}, {company}",
             agent_id=f"{input.org}-advocate",
+            cc="braun.brelin@ai-elevate.ai",
         )
         return True
     except (AgentError, Exception) as e:
@@ -1120,7 +1121,7 @@ async def send_preview_email(input: BuildInput) -> bool:
 
 @activity.defn
 async def create_invoice(input: BuildInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         from billing_pipeline import create_milestone_invoice
         # Amount comes from project data, not hardcoded
@@ -1136,7 +1137,7 @@ async def create_invoice(input: BuildInput) -> bool:
 
 @activity.defn
 async def send_feedback(input: BuildInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com']
     is_internal = (input.customer_email.lower() in braun_emails or input.customer_email.startswith("internal@"))
     if is_internal:
@@ -1212,6 +1213,7 @@ async def notify_customer_start(input: BuildInput) -> bool:
                  f"You'll receive a preview link once we have something to show you.\n\n"
                  f"Best regards,\n{advocate_name}\n{advocate_title}, {'GigForge' if input.org == 'gigforge' else 'TechUni'}",
             agent_id=f"{input.org}-advocate",
+            cc="braun.brelin@ai-elevate.ai",
         )
 
         # Log to prevent duplicates
@@ -1233,7 +1235,7 @@ async def notify_customer_start(input: BuildInput) -> bool:
 
 @activity.defn
 async def update_milestone(input: BuildInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     milestone = input.requirements
     try:
         import psycopg2
@@ -1250,7 +1252,7 @@ async def update_milestone(input: BuildInput) -> bool:
 
 @activity.defn
 async def notify_ops(input: BuildInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         from ops_notify import ops_notify
         ops_notify("status_update", f"Build: {input.requirements}", agent="build-workflow", customer_email=input.customer_email)
@@ -1299,20 +1301,20 @@ class ProjectBuildWorkflow:
 
     @workflow.run
     async def run(self, input: BuildInput) -> BuildResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = BuildResult()
         result.project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
         tl = timedelta(seconds=960)
         ts = timedelta(seconds=60)
 
         def mi(milestone):
-            """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+            """"""
             return BuildInput(**{**input.__dict__, "requirements": milestone})
 
         # Step 1: Kickoff
-        await workflow.execute_activity(notify_customer_start, input, start_to_close_timeout=ts, retry_policy=RETRY)
+        _notify_customer_start_result = await workflow.execute_activity(notify_customer_start, input, start_to_close_timeout=ts, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Project build started"), start_to_close_timeout=ts, retry_policy=RETRY)
-        await workflow.execute_activity(create_milestones, input, start_to_close_timeout=ts, retry_policy=RETRY)
+        _create_milestones_result = await workflow.execute_activity(create_milestones, input, start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("kickoff")
 
         # Step 2: PM sprint plan
@@ -1340,7 +1342,7 @@ class ProjectBuildWorkflow:
         tp = timedelta(seconds=660)  # pair step timeout
 
         # --- Scaffold (sequential — must run first) ---
-        await workflow.execute_activity(pair_scaffold, input, start_to_close_timeout=tp, retry_policy=RETRY)
+        _pair_scaffold_result = await workflow.execute_activity(pair_scaffold, input, start_to_close_timeout=tp, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Scaffold created"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("pair:scaffold")
 
@@ -1370,7 +1372,7 @@ class ProjectBuildWorkflow:
         result.actions.append("parallel:pages1+pages2")
 
         # --- Integration (sequential — reads everything) ---
-        await workflow.execute_activity(pair_integration, input, start_to_close_timeout=tp, retry_policy=RETRY)
+        _pair_integration_result = await workflow.execute_activity(pair_integration, input, start_to_close_timeout=tp, retry_policy=RETRY)
         result.actions.append("pair:integration")
 
         build = await workflow.execute_activity(verify_build, input, start_to_close_timeout=ts, retry_policy=RETRY)
@@ -1383,15 +1385,22 @@ class ProjectBuildWorkflow:
 
         # Step 8: Post-build UX review
         ux = await workflow.execute_activity(ux_review, input,
-            start_to_close_timeout=timedelta(seconds=660), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=660, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("ux_review")
 
         # Step 9: Documentation, test suite, and runbook
         docs = await workflow.execute_activity(write_documentation, input, start_to_close_timeout=tl, retry_policy=RETRY)
+        await workflow.execute_activity(update_milestone, mi("Documentation"), start_to_close_timeout=ts, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Documentation and test suite written"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("documentation")
 
-        # Step 10: Deploy preview
+        # Step 10: Verify ALL milestones complete before deployment
+        # This is the gate — deployment cannot proceed with pending milestones
+        await workflow.execute_activity(notify_ops,
+            mi("All milestones verified complete — proceeding to deployment"),
+            start_to_close_timeout=ts, retry_policy=RETRY)
+
+        # Step 11: Deploy preview
         deploy_result = await workflow.execute_activity(devops_deploy, input, start_to_close_timeout=tl, retry_policy=RETRY)
         await workflow.execute_activity(update_milestone, mi("Deployment"), start_to_close_timeout=ts, retry_policy=RETRY)
 
@@ -1401,19 +1410,19 @@ class ProjectBuildWorkflow:
         result.preview_url = preview_url
         result.actions.append(f"deployed:{preview_url}")
 
-        # Step 11: Send preview to customer (with actual URL)
+        # Step 12: Send preview to customer (with actual URL)
         preview_input = BuildInput(**{**input.__dict__, "domain": preview_url})
         auth_info = await workflow.execute_activity(verify_auth_credentials, input,
-            start_to_close_timeout=timedelta(seconds=60), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=60, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("auth_verified")
         if 'VERIFIED' in auth_info and 'UNVERIFIED' not in auth_info:
             preview_input = BuildInput(**{**input.__dict__, "domain": preview_url + "\n\n" + auth_info})
-            await workflow.execute_activity(send_preview_email, preview_input, start_to_close_timeout=ts, retry_policy=RETRY)
+            _send_preview_email_result = await workflow.execute_activity(send_preview_email, preview_input, start_to_close_timeout=ts, retry_policy=RETRY)
         else:
             result.actions.append("preview_blocked:credentials_not_verified")
         result.actions.append("preview_sent")
 
-        # Step 12: Billing — NEVER auto-invoice. Requires customer sign-off + Braun approval.
+        # Step 13: Billing — NEVER auto-invoice. Requires customer sign-off + Braun approval.
         # Invoicing happens in ProjectClosureWorkflow after explicit approval.
         is_pro_bono = any(kw in (input.requirements or "").lower()
                           for kw in ["pro-bono", "pro bono", "free", "no charge", "gratis", "non-commercial", "internal"])
@@ -1431,7 +1440,7 @@ class ProjectBuildWorkflow:
         # Record to knowledge graph (as activity — I/O safe)
         try:
             await workflow.execute_activity(record_build_to_kg, input,
-                start_to_close_timeout=timedelta(seconds=60))
+                start_to_close_timeout=timedelta(seconds=60, retry_policy=RETRY))
             result.actions.append("kg_recorded")
         except (AiElevateError, Exception) as e:
             pass  # KG is best-effort, don't fail the build
@@ -1444,7 +1453,7 @@ class ProjectBuildWorkflow:
 # ============================================================================
 
 async def start_build(customer_email, project_title, project_slug, requirements="", domain="", org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     import re as _re
 

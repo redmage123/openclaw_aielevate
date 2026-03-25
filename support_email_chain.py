@@ -163,6 +163,7 @@ GigForge"""
         subject=f"[{ticket_ref}] Re: {input.subject}",
         body=body,
         agent_id=input.agent_id,
+        cc="braun.brelin@ai-elevate.ai",
     )
     log.info(f"ACK sent to {input.sender_email}: {ticket_ref} ({result.get('status')})")
     return result.get("status") == "sent"
@@ -234,6 +235,7 @@ GigForge Engineering"""
         subject=f"[{ticket_ref}] {status} — {input.subject}",
         body=body,
         agent_id="gigforge-engineer",
+        cc="braun.brelin@ai-elevate.ai",
     )
     log.info(f"Status update sent: {ticket_ref} → {status} ({result.get('status')})")
     return result.get("status") == "sent"

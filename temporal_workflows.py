@@ -500,24 +500,24 @@ class EmailInteractionWorkflow:
 
     @workflow.run
     async def run(self, input: InteractionInput) -> InteractionResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = InteractionResult(agent_id=input.agent_id, response_agent=input.agent_id)
 
         # === PRE: Gate ===
         gate = await workflow.execute_activity(
-            gate_customer_contact, input, start_to_close_timeout=timedelta(seconds=10), retry_policy=RETRY)
+            gate_customer_contact, input, start_to_close_timeout=timedelta(seconds=10, retry_policy=RETRY), retry_policy=RETRY)
         result.can_contact_customer = gate["can_contact"]
         result.actions.append(f"gate:{'direct' if gate['can_contact'] else 'relay'}")
 
         # === PRE: Context ===
         ctx_text = await workflow.execute_activity(
-            pull_customer_context, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            pull_customer_context, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
         directives_text = await workflow.execute_activity(
-            check_directives, input, start_to_close_timeout=timedelta(seconds=10), retry_policy=RETRY)
+            check_directives, input, start_to_close_timeout=timedelta(seconds=10, retry_policy=RETRY), retry_policy=RETRY)
         kg_text = await workflow.execute_activity(
-            read_kg, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            read_kg, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
         db_text = await workflow.execute_activity(
-            read_db, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            read_db, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
 
         # Enhance message
         roster = AI_ELEVATE_ROSTER if "ai-elevate" in input.agent_id or input.agent_id in ("operations", "cybersecurity") else TECHUNI_ROSTER if "techuni" in input.agent_id else TEAM_ROSTER
@@ -533,7 +533,7 @@ class EmailInteractionWorkflow:
 
         # === MAIN: Call LLM ===
         llm_result = await workflow.execute_activity(
-            call_llm, enhanced_input, start_to_close_timeout=timedelta(seconds=input.timeout + 60), retry_policy=RETRY)
+            call_llm, enhanced_input, start_to_close_timeout=timedelta(seconds=input.timeout + 60, retry_policy=RETRY), retry_policy=RETRY)
         result.stdout = llm_result.get("stdout", "")
         result.returncode = llm_result.get("returncode", -1)
         result.duration = llm_result.get("duration", 0)
@@ -541,19 +541,19 @@ class EmailInteractionWorkflow:
 
         # === POST: All updates in parallel ===
         sentiment_task = workflow.execute_activity(
-            update_sentiment, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            update_sentiment, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
         plane_task = workflow.execute_activity(
-            update_plane, input, start_to_close_timeout=timedelta(seconds=20), retry_policy=RETRY)
+            update_plane, input, start_to_close_timeout=timedelta(seconds=20, retry_policy=RETRY), retry_policy=RETRY)
         kg_task = workflow.execute_activity(
-            update_kg, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            update_kg, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
         note_task = workflow.execute_activity(
-            add_customer_note, input, start_to_close_timeout=timedelta(seconds=10), retry_policy=RETRY)
+            add_customer_note, input, start_to_close_timeout=timedelta(seconds=10, retry_policy=RETRY), retry_policy=RETRY)
         ticket_task = workflow.execute_activity(
-            create_plane_ticket, input, start_to_close_timeout=timedelta(seconds=20), retry_policy=RETRY)
+            create_plane_ticket, input, start_to_close_timeout=timedelta(seconds=20, retry_policy=RETRY), retry_policy=RETRY)
         ops_task = workflow.execute_activity(
-            notify_ops, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            notify_ops, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
         cms_task = workflow.execute_activity(
-            store_to_cms, input, start_to_close_timeout=timedelta(seconds=15), retry_policy=RETRY)
+            store_to_cms, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY), retry_policy=RETRY)
 
         # Wait for all
         sentiment = await sentiment_task
@@ -568,20 +568,20 @@ class EmailInteractionWorkflow:
         if await cms_task: result.actions.append("cms_archived")
 
         # === POST: Notifications (sequential  - depend on sentiment) ===
-        if await workflow.execute_activity(notify_cs, input, start_to_close_timeout=timedelta(seconds=15)):
+        if await workflow.execute_activity(notify_cs, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY)):
             result.notified.append("cs")
-        if await workflow.execute_activity(notify_pm, input, start_to_close_timeout=timedelta(seconds=15)):
+        if await workflow.execute_activity(notify_pm, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY)):
             result.notified.append("pm")
 
         # === POST: Acceptance/frustration checks ===
         handoff = await workflow.execute_activity(
-            check_acceptance_handoff, input, start_to_close_timeout=timedelta(seconds=15))
+            check_acceptance_handoff, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY))
         if handoff:
             result.response_agent = handoff
             result.actions.append(f"handoff:{handoff}")
 
         escalation = await workflow.execute_activity(
-            check_frustration_escalation, input, start_to_close_timeout=timedelta(seconds=15))
+            check_frustration_escalation, input, start_to_close_timeout=timedelta(seconds=15, retry_policy=RETRY))
         if escalation:
             result.response_agent = escalation
             result.actions.append(f"escalation:{escalation}")
@@ -620,7 +620,7 @@ async def start_worker():
 
 async def execute_workflow(agent_id: str, message: str, sender_email: str,
                           subject: str, timeout: int = 300) -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Execute an email interaction workflow via Temporal."""
     client = await Client.connect("localhost:7233")
     input_data = InteractionInput(

@@ -100,7 +100,7 @@ def _db():
 # ============================================================================
 
 def init_tables():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         conn = _db()
         cur = conn.cursor()
@@ -133,7 +133,7 @@ def init_tables():
             created_at TIMESTAMPTZ DEFAULT NOW()
         )""")
         conn.close()
-    except (DatabaseError, Exception) as e:
+    except Exception as e:
         log.error(f"Table init error: {e}")
 
 init_tables()
@@ -210,7 +210,7 @@ class DailyBlogWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
@@ -218,10 +218,10 @@ class DailyBlogWorkflow:
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("topic_researched")
         write_input = SweetPeaInput(date=input.date, content=topic[:500])
-        await workflow.execute_activity(write_garden_blog, write_input,
+        _write_garden_blog_result = await workflow.execute_activity(write_garden_blog, write_input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("written")
-        await workflow.execute_activity(publish_garden_blog, write_input,
+        _publish_garden_blog_result = await workflow.execute_activity(publish_garden_blog, write_input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("published")
         result.status = "published"
@@ -263,7 +263,7 @@ async def create_social_post(input: SweetPeaInput) -> str:
 
 @activity.defn
 async def log_social_content(input: SweetPeaInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     conn.cursor().execute(
         "INSERT INTO sweetpea_content (content_type, title, author_agent, status, scheduled_date) "
@@ -278,14 +278,14 @@ class SocialMediaWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
-        await workflow.execute_activity(create_social_post, input,
+        _create_social_post_result = await workflow.execute_activity(create_social_post, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("social_created")
-        await workflow.execute_activity(log_social_content, input,
+        _log_social_content_result = await workflow.execute_activity(log_social_content, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("logged")
         result.status = "scheduled"
@@ -334,7 +334,7 @@ async def compile_garden_newsletter(input: SweetPeaInput) -> str:
 
 @activity.defn
 async def log_newsletter(input: SweetPeaInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     conn.cursor().execute(
         "INSERT INTO sweetpea_content (content_type, title, author_agent, status) "
@@ -349,14 +349,14 @@ class WeeklyNewsletterWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
-        await workflow.execute_activity(compile_garden_newsletter, input,
+        _compile_garden_newsletter_result = await workflow.execute_activity(compile_garden_newsletter, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("compiled")
-        await workflow.execute_activity(log_newsletter, input,
+        _log_newsletter_result = await workflow.execute_activity(log_newsletter, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("logged")
         result.status = "compiled"
@@ -391,10 +391,10 @@ class CustomerResponseWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         response = await workflow.execute_activity(respond_to_customer, input,
-            start_to_close_timeout=timedelta(seconds=240), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=240, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("responded")
         result.output_file = response[:500]
         result.status = "responded"
@@ -428,11 +428,11 @@ class InventoryCheckWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         Path(f"{ORG_DIR}/inventory").mkdir(parents=True, exist_ok=True)
-        await workflow.execute_activity(audit_inventory, input,
-            start_to_close_timeout=timedelta(seconds=240), retry_policy=RETRY)
+        _audit_inventory_result = await workflow.execute_activity(audit_inventory, input,
+            start_to_close_timeout=timedelta(seconds=240, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("audited")
         result.status = "completed"
         return result
@@ -476,11 +476,11 @@ class SeasonalPlannerWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         Path(f"{ORG_DIR}/plans").mkdir(parents=True, exist_ok=True)
-        await workflow.execute_activity(monthly_seasonal_plan, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _monthly_seasonal_plan_result = await workflow.execute_activity(monthly_seasonal_plan, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("planned")
         result.status = "completed"
         return result
@@ -516,11 +516,11 @@ class ContentCalendarWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: SweetPeaInput) -> SweetPeaResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = SweetPeaResult()
         Path(f"{ORG_DIR}/calendars").mkdir(parents=True, exist_ok=True)
-        await workflow.execute_activity(create_content_calendar, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _create_content_calendar_result = await workflow.execute_activity(create_content_calendar, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("calendar_created")
         result.status = "completed"
         return result
@@ -574,7 +574,7 @@ def answer_faq(question):
 # ============================================================================
 
 async def start_daily_blog(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -586,7 +586,7 @@ async def start_daily_blog(date=None):
 
 
 async def start_social_post(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -598,7 +598,7 @@ async def start_social_post(date=None):
 
 
 async def start_newsletter(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -610,7 +610,7 @@ async def start_newsletter(date=None):
 
 
 async def start_inventory_check(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -622,7 +622,7 @@ async def start_inventory_check(date=None):
 
 
 async def start_seasonal_plan(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -634,7 +634,7 @@ async def start_seasonal_plan(date=None):
 
 
 async def start_content_calendar(date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -646,7 +646,7 @@ async def start_content_calendar(date=None):
 
 
 async def handle_customer_question(question):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     inp = SweetPeaInput(task_type="customer", content=question,

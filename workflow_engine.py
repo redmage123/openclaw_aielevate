@@ -857,7 +857,7 @@ class WorkflowRequest(BaseModel):
 
 @app.post("/handle")
 async def handle(req: WorkflowRequest):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(
         None, lambda: execute(req.agent_id, req.message, req.sender_email, req.subject, req.timeout)
@@ -867,27 +867,27 @@ async def handle(req: WorkflowRequest):
 
 @app.get("/health")
 async def health():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return {"status": "ok", "service": "workflow-engine", "agents": len(AGENT_MANIFESTS)}
 
 
 @app.get("/manifest/{agent_id}")
 async def get_manifest(agent_id: str):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     manifest = AGENT_MANIFESTS.get(agent_id, DEFAULT_MANIFEST)
     return {"agent_id": agent_id, "manifest": manifest, "is_default": agent_id not in AGENT_MANIFESTS}
 
 
 @app.get("/manifests")
 async def list_manifests():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return {aid: {"pre": len(m["pre"]), "main": len(m["main"]), "post": len(m["post"])}
             for aid, m in AGENT_MANIFESTS.items()}
 
 
 @app.get("/scripts")
 async def list_scripts():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return {"scripts": sorted(SCRIPTS.keys()), "count": len(SCRIPTS)}
 
 

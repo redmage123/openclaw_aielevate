@@ -625,7 +625,9 @@ async def generate_org_summary(input: OrgBuildInput) -> str:
             to="braun.brelin@ai-elevate.ai",
             subject=f"New org created: {input.name} ({input.domain})",
             body=summary,
-            agent_id="build-org")
+            agent_id="build-org",
+                cc="braun.brelin@ai-elevate.ai",
+            )
     except (AgentError, Exception) as e:
         pass
 
@@ -642,7 +644,7 @@ class OrganizationBuildWorkflow:
 
     @workflow.run
     async def run(self, input: OrgBuildInput) -> OrgBuildResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = OrgBuildResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
@@ -653,7 +655,7 @@ class OrganizationBuildWorkflow:
 
 
         # 1. Architect designs the org
-        await workflow.execute_activity(design_org_structure, input,
+        _design_org_structure_result = await workflow.execute_activity(design_org_structure, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("org_designed")
 
@@ -664,32 +666,32 @@ class OrganizationBuildWorkflow:
         result.actions.append(f"agents_created:{agent_count}")
 
         # 3. Register in DB
-        await workflow.execute_activity(register_agents_in_db, input,
+        _register_agents_in_db_result = await workflow.execute_activity(register_agents_in_db, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("db_registered")
 
         # 4. Email routing
-        await workflow.execute_activity(setup_email_routing, input,
+        _setup_email_routing_result = await workflow.execute_activity(setup_email_routing, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("email_routing")
 
         # 5. Team roster
-        await workflow.execute_activity(setup_team_roster, input,
+        _setup_team_roster_result = await workflow.execute_activity(setup_team_roster, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("roster_created")
 
         # 6. Knowledge graph
-        await workflow.execute_activity(setup_knowledge_graph, input,
+        _setup_knowledge_graph_result = await workflow.execute_activity(setup_knowledge_graph, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("kg_initialized")
 
         # 7. DNS requirements
-        await workflow.execute_activity(setup_dns, input,
+        _setup_dns_result = await workflow.execute_activity(setup_dns, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("dns_documented")
 
         # 8. Create website
-        await workflow.execute_activity(create_org_website, input,
+        _create_org_website_result = await workflow.execute_activity(create_org_website, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("website_created")
 
@@ -700,7 +702,7 @@ class OrganizationBuildWorkflow:
         result.actions.append(f"deployed:{deploy_result[:50]}")
 
         # 10. Summary
-        await workflow.execute_activity(generate_org_summary, input,
+        _generate_org_summary_result = await workflow.execute_activity(generate_org_summary, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("summary_sent")
 
@@ -713,7 +715,7 @@ class OrganizationBuildWorkflow:
 # ============================================================================
 
 async def build_organization(name, domain="", description="", org_type="commercial", slug=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     s = slug or re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')

@@ -122,9 +122,23 @@ def send_email(
     agent_id: str = "operations",
     cc: str = "braun.brelin@ai-elevate.ai",
     reply_to: str = "",
+    in_reply_to: str = "",
+    quoted_body: str = "",
 ) -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
-    """Send an email. Automatically uses the correct From/domain for the agent."""
+    """Send an email. Automatically uses the correct From/domain for the agent.
+
+    Args:
+        to: Recipient email address.
+        subject: Email subject line.
+        body: Plain-text email body.
+        agent_id: Agent sending the email — determines From address and Mailgun domain.
+        cc: CC recipients (comma-separated). Defaults to ops CC address.
+        reply_to: Override Reply-To address. Defaults to the agent's sending address.
+        in_reply_to: Message-ID of the email being replied to (sets In-Reply-To and
+            References headers for proper email threading).
+        quoted_body: Original message text to include as a quoted reply trail.
+            Appended below the body in standard email quote format.
+    """
 
     # Outbound dedup — skip if we already sent to this recipient+subject recently
     if _outbound_dedup_check(to, subject):
@@ -133,11 +147,56 @@ def send_email(
             f"OUTBOUND DEDUP: skipping duplicate send to {to} subject={subject}")
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
+    # Strip internal metadata and call suggestions from outgoing emails
+    import re as _re
+
+    # Line-by-line removal of trigger/workflow/internal metadata
+    _lines = body.split("\n")
+    _clean = []
+    for _line in _lines:
+        _stripped = _line.strip().lower()
+        if _stripped.startswith("trigger:"):
+            continue
+        if _stripped.startswith("workflow:") and any(w in _stripped for w in ["execute", "bash", "before writing"]):
+            continue
+        if _stripped.startswith("[internal]"):
+            continue
+        _clean.append(_line)
+    body = "\n".join(_clean)
+
+    # Regex removal of call/meeting suggestions
+    _call_pats = [
+        r"[Hh]appy to (?:jump|hop|get) on a (?:quick )?(?:call|screen.?share|meeting|zoom|video).*?[.!]",
+        r"[Hh]appy to (?:chat|talk|discuss|walk|provide).*?(?:call|phone|zoom|video|teams|screen.?share|in (?:more )?detail).*?[.!]",
+        r"[Ii]'?d love to have a.*?(?:conversation|chat|discussion|call).*?[.!]",
+        r"[Ii]'?ll (?:reach out|be in touch).*?(?:to set|to get|directly).*?[.!]",
+        r"[Ww]e.?d? (?:suggest|recommend|love to) (?:scheduling|setting up|hopping on|having).*?(?:call|screen.?share|meeting|walk.?through|conversation).*?[.!]",
+        r"[Ss]hall we (?:set up|schedule|hop on|jump on|arrange).*?(?:call|meeting|screen.?share|chat).*?[.!]",
+        r"[Ww]ould you (?:like|prefer|be open|want).*?(?:call|meeting|screen.?share|walk.?through|chat|discuss).*?[.!]",
+        r"[Ww]e can (?:walk|talk|take) (?:you )?through.*?[.!]",
+        r"[Ll]et me know if you.?d? (?:prefer|like|rather|want).*?(?:call|chat|meeting|screen.?share|walk.?through).*?[.!]",
+        r"[Ff]eel free to (?:book|schedule|set up|arrange).*?(?:call|meeting|zoom|video|screen.?share).*?[.!]",
+        r"[Ii]f you.?d? (?:like|prefer|want) to (?:discuss|walk|talk|chat).*?(?:call|detail|phone|zoom).*?[.!]",
+    ]
+    for _pat in _call_pats:
+        body = _re.sub(_pat, "", body, flags=_re.DOTALL).strip()
+
+    # Clean up triple+ blank lines
+    body = _re.sub(r"\n{3,}", "\n\n", body).strip()
+
     from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
     reply_to = reply_to or default_reply_to
 
     key = _get_key()
     creds = base64.b64encode(("api:" + key).encode()).decode()
+
+    # Append quoted original message if provided
+    if quoted_body:
+        import time as _time
+        from email.utils import formatdate
+        date_str = formatdate(localtime=False)
+        quoted_lines = "\n".join("> " + line for line in quoted_body.splitlines())
+        body = f"{body}\n\n---\nOn {date_str}, {to} wrote:\n{quoted_lines}"
 
     form = {
         "from": from_addr,
@@ -146,10 +205,20 @@ def send_email(
         "subject": subject,
         "text": body,
     }
-    # Don't CC Braun if Braun is already the recipient
-    braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com']
-    if cc and to.lower() in braun_emails and cc.lower() in braun_emails:
-        cc = ''  # Skip CC — Braun is already the recipient
+
+    # Threading headers — attach reply to the original message thread
+    if in_reply_to:
+        msg_id = f"<{in_reply_to}>" if not in_reply_to.startswith("<") else in_reply_to
+        form["h:In-Reply-To"] = msg_id
+        form["h:References"] = msg_id
+
+    # Remove any CC address that matches the To address (prevents duplicate delivery)
+    if cc:
+        to_lower = to.lower().strip()
+        cc_addrs = [a.strip() for a in cc.split(",")]
+        cc_addrs = [a for a in cc_addrs if a.lower().strip() != to_lower]
+        cc = ", ".join(cc_addrs) if cc_addrs else ""
+    
     if cc:
         form["cc"] = cc
 

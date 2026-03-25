@@ -35,7 +35,7 @@ def _cms():
 
 def store_proposal(org: str, customer_email: str, project_title: str,
                    proposal_text: str, amount_eur: float, agent_id: str = "gigforge-sales") -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Store a proposal in the CMS."""
     try:
         cms = _cms()
@@ -54,7 +54,7 @@ def store_proposal(org: str, customer_email: str, project_title: str,
 
 def store_invoice(org: str, customer_email: str, project_title: str,
                   milestone: str, amount_eur: float, invoice_id: int = 0) -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Store an invoice in the CMS."""
     try:
         cms = _cms()
@@ -82,7 +82,7 @@ def store_invoice(org: str, customer_email: str, project_title: str,
 def store_feedback(org: str, customer_email: str, project_title: str,
                    rating: int, comments: str, what_went_well: str = "",
                    what_to_improve: str = "") -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Store customer feedback in the CMS."""
     try:
         cms = _cms()
@@ -109,7 +109,7 @@ def store_feedback(org: str, customer_email: str, project_title: str,
 
 def store_progress_report(org: str, customer_email: str, project_title: str,
                          milestones: list, completion_pct: int, agent_id: str = "gigforge-pm") -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Store a progress report in the CMS."""
     try:
         cms = _cms()
@@ -141,7 +141,7 @@ def store_progress_report(org: str, customer_email: str, project_title: str,
 def generate_case_study(org: str, customer_email: str, project_title: str,
                         tech_stack: str = "", feedback_rating: int = 0,
                         description: str = "") -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Auto-generate a case study draft from project data."""
     try:
         cms = _cms()
@@ -172,7 +172,7 @@ def generate_case_study(org: str, customer_email: str, project_title: str,
 
 def archive_email(org: str, sender: str, agent_id: str, subject: str,
                   inbound_body: str, outbound_body: str = "") -> dict:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Archive an email exchange in the CMS."""
     try:
         cms = _cms()

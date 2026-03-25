@@ -93,7 +93,7 @@ def _email_family(subject, body):
 
 @activity.defn
 async def plan_weekly_meals(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-cook",
@@ -114,7 +114,7 @@ async def plan_weekly_meals(input: FamilyInput) -> str:
 
 @activity.defn
 async def suggest_recipes(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-cook",
@@ -131,10 +131,10 @@ class MealPlanningWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
         plan = await workflow.execute_activity(plan_weekly_meals, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("meal_plan_created")
         result.output = plan
         result.status = "completed"
@@ -147,7 +147,7 @@ class MealPlanningWorkflow:
 
 @activity.defn
 async def coordinate_weekly_calendar(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-secretary",
@@ -169,10 +169,10 @@ class CalendarWeekWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
         cal = await workflow.execute_activity(coordinate_weekly_calendar, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("calendar_coordinated")
         result.output = cal
         result.status = "completed"
@@ -185,7 +185,7 @@ class CalendarWeekWorkflow:
 
 @activity.defn
 async def create_chore_rotation(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-housekeeper",
@@ -208,10 +208,10 @@ class ChoreRotationWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(create_chore_rotation, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _create_chore_rotation_result = await workflow.execute_activity(create_chore_rotation, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("chores_assigned")
         result.status = "completed"
         return result
@@ -223,7 +223,7 @@ class ChoreRotationWorkflow:
 
 @activity.defn
 async def monthly_budget_review(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-steward",
@@ -246,10 +246,10 @@ class BudgetReviewWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(monthly_budget_review, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _monthly_budget_review_result = await workflow.execute_activity(monthly_budget_review, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("budget_reviewed")
         result.status = "completed"
         return result
@@ -261,7 +261,7 @@ class BudgetReviewWorkflow:
 
 @activity.defn
 async def health_check_reminders(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-physician",
@@ -281,7 +281,7 @@ async def health_check_reminders(input: FamilyInput) -> str:
 
 @activity.defn
 async def eldercare_check(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-companion",
@@ -301,13 +301,13 @@ class HealthCheckWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(health_check_reminders, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _health_check_reminders_result = await workflow.execute_activity(health_check_reminders, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("health_reviewed")
-        await workflow.execute_activity(eldercare_check, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _eldercare_check_result = await workflow.execute_activity(eldercare_check, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("eldercare_checked")
         result.status = "completed"
         return result
@@ -319,7 +319,7 @@ class HealthCheckWorkflow:
 
 @activity.defn
 async def daily_homework_checkin(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-governess",
@@ -338,10 +338,10 @@ class HomeworkSupportWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
         hw = await workflow.execute_activity(daily_homework_checkin, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("homework_checkin")
         result.output = hw
         result.status = "completed"
@@ -354,7 +354,7 @@ class HomeworkSupportWorkflow:
 
 @activity.defn
 async def plan_family_event(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-events",
@@ -380,10 +380,10 @@ class EventPlanningWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(plan_family_event, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _plan_family_event_result = await workflow.execute_activity(plan_family_event, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("event_planned")
         result.status = "completed"
         return result
@@ -395,7 +395,7 @@ class EventPlanningWorkflow:
 
 @activity.defn
 async def weekly_pet_schedule(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-groundskeeper",
@@ -415,10 +415,10 @@ class PetCareWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(weekly_pet_schedule, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _weekly_pet_schedule_result = await workflow.execute_activity(weekly_pet_schedule, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("pet_schedule")
         result.status = "completed"
         return result
@@ -430,7 +430,7 @@ class PetCareWorkflow:
 
 @activity.defn
 async def seasonal_maintenance_check(input: FamilyInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: _dispatch(
         "familyhub-housekeeper",
@@ -454,10 +454,10 @@ class HomeMaintenanceWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(seasonal_maintenance_check, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _seasonal_maintenance_check_result = await workflow.execute_activity(seasonal_maintenance_check, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("maintenance_checked")
         result.status = "completed"
         return result
@@ -499,10 +499,10 @@ class FamilyMeetingWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
     @workflow.run
     async def run(self, input: FamilyInput) -> FamilyResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = FamilyResult()
-        await workflow.execute_activity(majordomo_weekly_roundup, input,
-            start_to_close_timeout=timedelta(seconds=360), retry_policy=RETRY)
+        _majordomo_weekly_roundup_result = await workflow.execute_activity(majordomo_weekly_roundup, input,
+            start_to_close_timeout=timedelta(seconds=360, retry_policy=RETRY), retry_policy=RETRY)
         result.actions.append("briefing_delivered")
         result.status = "completed"
         return result
@@ -522,51 +522,51 @@ async def _start_workflow(wf_class, input, name):
     return {"workflow_id": h.id}
 
 async def plan_meals(week_of=None, preferences=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(MealPlanningWorkflow,
         FamilyInput(week_of=week_of or "", details=preferences), "meals")
 
 async def coordinate_calendar(week_of=None, details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(CalendarWeekWorkflow,
         FamilyInput(week_of=week_of or "", details=details), "calendar")
 
 async def assign_chores(week_of=None, family_members=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(ChoreRotationWorkflow,
         FamilyInput(week_of=week_of or "", details=family_members), "chores")
 
 async def review_budget(month=None, details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(BudgetReviewWorkflow,
         FamilyInput(date=month or "", details=details), "budget")
 
 async def health_check(details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(HealthCheckWorkflow,
         FamilyInput(date=datetime.now(timezone.utc).strftime("%Y-%m-%d"), details=details), "health")
 
 async def homework_help(student_details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(HomeworkSupportWorkflow,
         FamilyInput(date=datetime.now(timezone.utc).strftime("%Y-%m-%d"), details=student_details), "homework")
 
 async def plan_event(event_name="", date="", details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(EventPlanningWorkflow,
         FamilyInput(request=event_name, date=date, details=details), "event")
 
 async def pet_care(week_of=None, pets=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(PetCareWorkflow,
         FamilyInput(week_of=week_of or "", details=pets), "pets")
 
 async def home_maintenance(details=""):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(HomeMaintenanceWorkflow,
         FamilyInput(date=datetime.now(timezone.utc).strftime("%Y-%m-%d"), details=details), "maintenance")
 
 async def family_meeting(week_of=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     return await _start_workflow(FamilyMeetingWorkflow,
         FamilyInput(week_of=week_of or datetime.now(timezone.utc).strftime("%Y-%m-%d")), "meeting")

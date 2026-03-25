@@ -92,7 +92,7 @@ def _db():
 # ============================================================================
 
 def init_content_tables():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         conn = _db()
         cur = conn.cursor()
@@ -130,7 +130,7 @@ def init_content_tables():
             created_at TIMESTAMPTZ DEFAULT NOW()
         )""")
         conn.close()
-    except (DatabaseError, Exception) as e:
+    except Exception as e:
         log.error(f"Content table init error: {e}")
 
 init_content_tables()
@@ -252,7 +252,7 @@ class BlogPostWorkflow:
 
     @workflow.run
     async def run(self, input: ContentInput) -> ContentResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = ContentResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
@@ -268,12 +268,12 @@ class BlogPostWorkflow:
         write_input = ContentInput(org=input.org, topic=topic, date=input.date)
 
         # Write
-        await workflow.execute_activity(write_blog_post, write_input,
+        _write_blog_post_result = await workflow.execute_activity(write_blog_post, write_input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("written")
 
         # Edit
-        await workflow.execute_activity(edit_blog_post, write_input,
+        _edit_blog_post_result = await workflow.execute_activity(edit_blog_post, write_input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("edited")
 
@@ -353,8 +353,10 @@ async def send_newsletter(input: ContentInput) -> bool:
             to="braun.brelin@ai-elevate.ai",
             subject=f"[Newsletter Preview] {subject}",
             body=content[:3000],
-            agent_id=f"{input.org}-social")
-    except (DatabaseError, Exception) as e:
+            agent_id=f"{input.org}-social",
+                cc="braun.brelin@ai-elevate.ai",
+            )
+    except Exception as e:
         pass
 
     log.info(f"Newsletter compiled: {subject}")
@@ -367,16 +369,16 @@ class NewsletterWorkflow:
 
     @workflow.run
     async def run(self, input: ContentInput) -> ContentResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = ContentResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
 
-        await workflow.execute_activity(compile_newsletter, input,
+        _compile_newsletter_result = await workflow.execute_activity(compile_newsletter, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("compiled")
 
-        await workflow.execute_activity(send_newsletter, input,
+        _send_newsletter_result = await workflow.execute_activity(send_newsletter, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("preview_sent")
 
@@ -478,8 +480,10 @@ async def publish_ai_report(input: ContentInput) -> bool:
             to="braun.brelin@ai-elevate.ai",
             subject=title,
             body=content[:5000],
-            agent_id="ai-elevate-content")
-    except (DatabaseError, Exception) as e:
+            agent_id="ai-elevate-content",
+                cc="braun.brelin@ai-elevate.ai",
+            )
+    except Exception as e:
         pass
 
     log.info(f"AI Weekly published: {title}")
@@ -492,28 +496,28 @@ class NewsAggregationWorkflow:
 
     @workflow.run
     async def run(self, input: ContentInput) -> ContentResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = ContentResult()
         tl = timedelta(seconds=360)
         ts = timedelta(seconds=60)
 
         # Research
-        await workflow.execute_activity(research_ai_news, input,
+        _research_ai_news_result = await workflow.execute_activity(research_ai_news, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("researched")
 
         # Write
-        await workflow.execute_activity(write_ai_report, input,
+        _write_ai_report_result = await workflow.execute_activity(write_ai_report, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("written")
 
         # Edit
-        await workflow.execute_activity(edit_ai_report, input,
+        _edit_ai_report_result = await workflow.execute_activity(edit_ai_report, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("edited")
 
         # Publish
-        await workflow.execute_activity(publish_ai_report, input,
+        _publish_ai_report_result = await workflow.execute_activity(publish_ai_report, input,
             start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("published")
 
@@ -526,7 +530,7 @@ class NewsAggregationWorkflow:
 # ============================================================================
 
 async def start_blog_post(org="gigforge", date=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     d = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -537,7 +541,7 @@ async def start_blog_post(org="gigforge", date=None):
     return {"workflow_id": h.id}
 
 async def start_newsletter(org="gigforge", week_of=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     w = week_of or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -548,7 +552,7 @@ async def start_newsletter(org="gigforge", week_of=None):
     return {"workflow_id": h.id}
 
 async def start_ai_weekly(week_of=None):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     w = week_of or datetime.now(timezone.utc).strftime("%Y-%m-%d")

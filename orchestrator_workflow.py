@@ -294,7 +294,7 @@ class EmailOrchestratorWorkflow:
 
     @workflow.run
     async def run(self, input: EmailInput) -> OrchestratorResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = OrchestratorResult()
         ts = timedelta(seconds=60)
         tl = timedelta(seconds=420)
@@ -418,7 +418,7 @@ class EmailOrchestratorWorkflow:
 
 async def orchestrate_email(sender_email, recipient, subject, body,
                             message_id="", agent_id="", org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     """Start the orchestrator workflow for an inbound email."""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")

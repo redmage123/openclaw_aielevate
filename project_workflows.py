@@ -132,10 +132,10 @@ def _dispatch_and_wait(agent_id: str, message: str, timeout: int = 600) -> str:
         except subprocess.TimeoutExpired:
             return "TIMEOUT"
 
-def _send_email(to, subject, body, agent_id="gigforge-advocate", org="gigforge"):
+def _send_email(to, subject, body, agent_id="gigforge-advocate", org="gigforge", cc="braun.brelin@ai-elevate.ai"):
     try:
         from send_email import send_email
-        send_email(to=to, subject=subject, body=body, agent_id=agent_id)
+        send_email(to=to, subject=subject, body=body, agent_id=agent_id, cc=cc)
         return True
     except (AgentError, Exception) as e:
         log.error(f"Email failed: {e}")
@@ -181,7 +181,7 @@ def _log_interaction(customer_email, agent_id, subject, direction="outbound"):
 # ============================================================================
 
 def init_workflow_tables():
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         conn = _db()
         cur = conn.cursor()
@@ -201,7 +201,7 @@ init_workflow_tables()
 
 @activity.defn
 async def log_revision_request(input: ProjectInput) -> int:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     cur = conn.cursor()
     cur.execute(
@@ -214,7 +214,7 @@ async def log_revision_request(input: ProjectInput) -> int:
 
 @activity.defn
 async def engineer_revision(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -231,7 +231,7 @@ async def engineer_revision(input: ProjectInput) -> str:
 
 @activity.defn
 async def qa_revision(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -249,7 +249,7 @@ async def qa_revision(input: ProjectInput) -> str:
 
 @activity.defn
 async def redeploy_preview(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -264,7 +264,7 @@ async def redeploy_preview(input: ProjectInput) -> str:
 
 @activity.defn
 async def send_revision_ready(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, advocate_title = _get_agent_name(f"{input.org}-advocate")
     return _send_email(
@@ -277,11 +277,12 @@ async def send_revision_ready(input: ProjectInput) -> bool:
              f"or if you'd like any further adjustments.\n\n"
              f"Best regards,\n{advocate_name}\n{advocate_title}, GigForge",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 @activity.defn
 async def complete_revision(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     conn.cursor().execute(
         "UPDATE revision_cycles SET status='completed', completed_at=NOW() "
@@ -326,12 +327,12 @@ class RevisionCycleWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
 
-        await workflow.execute_activity(log_revision_request, input,
+        _log_revision_request_result = await workflow.execute_activity(log_revision_request, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append(f"revision_{input.revision_number}_logged")
         if HAS_KG:
@@ -354,11 +355,11 @@ class RevisionCycleWorkflow:
         result.actions.append("redeployed")
 
         # Notify customer
-        await workflow.execute_activity(send_revision_ready, input,
+        _send_revision_ready_result = await workflow.execute_activity(send_revision_ready, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("customer_notified")
 
-        await workflow.execute_activity(complete_revision, input,
+        _complete_revision_result = await workflow.execute_activity(complete_revision, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
 
         result.status = "completed"
@@ -372,7 +373,7 @@ class RevisionCycleWorkflow:
 
 @activity.defn
 async def log_scope_change(input: ProjectInput) -> int:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     cur = conn.cursor()
     cur.execute(
@@ -385,7 +386,7 @@ async def log_scope_change(input: ProjectInput) -> int:
 
 @activity.defn
 async def pm_impact_assessment(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -406,7 +407,7 @@ async def pm_impact_assessment(input: ProjectInput) -> str:
 
 @activity.defn
 async def engineer_effort_estimate(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -428,7 +429,7 @@ async def engineer_effort_estimate(input: ProjectInput) -> str:
 
 @activity.defn
 async def sales_price_change(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -448,7 +449,7 @@ async def sales_price_change(input: ProjectInput) -> str:
 
 @activity.defn
 async def send_scope_change_proposal(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     # Read the scope change doc for summary
     scope_doc = Path(project_dir) / f"SCOPE_CHANGE_{input.revision_number}.md"
@@ -466,6 +467,7 @@ async def send_scope_change_proposal(input: ProjectInput) -> bool:
              f"if you'd like to discuss further.\n\n"
              f"Best regards,\n{advocate_name}\n{advocate_title}, GigForge",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 
@@ -475,12 +477,12 @@ class ScopeChangeWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
 
-        await workflow.execute_activity(log_scope_change, input,
+        _log_scope_change_result = await workflow.execute_activity(log_scope_change, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("scope_change_logged")
         if HAS_KG:
@@ -491,22 +493,22 @@ class ScopeChangeWorkflow:
                     customer_email=input.customer_email)
 
         # PM assesses impact
-        await workflow.execute_activity(pm_impact_assessment, input,
+        _pm_impact_assessment_result = await workflow.execute_activity(pm_impact_assessment, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("pm_assessed")
 
         # Engineer estimates effort
-        await workflow.execute_activity(engineer_effort_estimate, input,
+        _engineer_effort_estimate_result = await workflow.execute_activity(engineer_effort_estimate, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("engineer_estimated")
 
         # Sales prices the change
-        await workflow.execute_activity(sales_price_change, input,
+        _sales_price_change_result = await workflow.execute_activity(sales_price_change, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("sales_priced")
 
         # Send proposal to customer
-        await workflow.execute_activity(send_scope_change_proposal, input,
+        _send_scope_change_proposal_result = await workflow.execute_activity(send_scope_change_proposal, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("customer_notified")
 
@@ -527,7 +529,7 @@ class ScopeChangeWorkflow:
 
 @activity.defn
 async def create_onboarding_record(input: ProjectInput) -> int:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     cur = conn.cursor()
     cur.execute(
@@ -540,7 +542,7 @@ async def create_onboarding_record(input: ProjectInput) -> int:
 
 @activity.defn
 async def advocate_introduction(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, advocate_title = _get_agent_name(f"{input.org}-advocate")
     company = "GigForge" if input.org == "gigforge" else "TechUni"
@@ -560,6 +562,7 @@ async def advocate_introduction(input: ProjectInput) -> bool:
              f"Looking forward to building something great together.\n\n"
              f"Best regards,\n{advocate_name}\n{advocate_title}, {company}",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
     if sent:
@@ -572,7 +575,7 @@ async def advocate_introduction(input: ProjectInput) -> bool:
 
 @activity.defn
 async def request_assets(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, _ = _get_agent_name(f"{input.org}-advocate")
 
@@ -592,6 +595,7 @@ async def request_assets(input: ProjectInput) -> bool:
              f"Dropbox link if that's easier.\n\n"
              f"Best regards,\n{advocate_name}",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 @activity.defn
@@ -619,7 +623,7 @@ async def create_project_workspace(input: ProjectInput) -> bool:
 
 @activity.defn
 async def confirm_kickoff(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     conn.cursor().execute(
         "UPDATE client_onboarding SET kickoff_confirmed=TRUE, status='completed', completed_at=NOW() "
@@ -637,33 +641,33 @@ class ClientOnboardingWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         ts = timedelta(seconds=60)
         tl = timedelta(seconds=300)
 
-        await workflow.execute_activity(create_onboarding_record, input,
+        _create_onboarding_record_result = await workflow.execute_activity(create_onboarding_record, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("onboarding_started")
 
         # Advocate introduces herself
-        await workflow.execute_activity(advocate_introduction, input,
+        _advocate_introduction_result = await workflow.execute_activity(advocate_introduction, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("advocate_intro_sent")
 
         # Request assets (sent 30s after intro so it doesn't feel like a form letter blast)
         await asyncio.sleep(30)
-        await workflow.execute_activity(request_assets, input,
+        _request_assets_result = await workflow.execute_activity(request_assets, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("assets_requested")
 
         # Create workspace in Plane
-        await workflow.execute_activity(create_project_workspace, input,
+        _create_project_workspace_result = await workflow.execute_activity(create_project_workspace, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("workspace_created")
 
         # Mark kickoff confirmed
-        await workflow.execute_activity(confirm_kickoff, input,
+        _confirm_kickoff_result = await workflow.execute_activity(confirm_kickoff, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("kickoff_confirmed")
         if HAS_KG:
@@ -681,7 +685,7 @@ class ClientOnboardingWorkflow:
 
 @activity.defn
 async def engineering_feasibility(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     job = json.loads(input.job_data) if input.job_data else {}
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -703,7 +707,7 @@ async def engineering_feasibility(input: ProjectInput) -> str:
 
 @activity.defn
 async def draft_proposal(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     job = json.loads(input.job_data) if input.job_data else {}
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -728,7 +732,7 @@ async def draft_proposal(input: ProjectInput) -> str:
 
 @activity.defn
 async def queue_proposal_approval(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         from proposal_queue import queue_proposal
         job = json.loads(input.job_data) if input.job_data else {}
@@ -746,7 +750,7 @@ async def queue_proposal_approval(input: ProjectInput) -> bool:
 
 @activity.defn
 async def send_proposal_to_customer(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     proposal_file = Path(f"/opt/ai-elevate/gigforge/memory/proposals/{input.project_slug}.md")
     proposal_text = proposal_file.read_text()[:2000] if proposal_file.exists() else ""
 
@@ -762,6 +766,7 @@ async def send_proposal_to_customer(input: ProjectInput) -> bool:
              f"To move forward, simply reply to this email confirming you'd like to proceed.\n\n"
              f"Best regards,\n{sales_name}\n{sales_title}, GigForge",
         agent_id=f"{input.org}-sales",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 
@@ -771,7 +776,7 @@ class ProposalToContractWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
@@ -785,7 +790,7 @@ class ProposalToContractWorkflow:
         proposal_input = ProjectInput(**{**input.__dict__, "requirements": feasibility[:500]})
 
         # Sales drafts proposal
-        await workflow.execute_activity(draft_proposal, proposal_input,
+        _draft_proposal_result = await workflow.execute_activity(draft_proposal, proposal_input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("proposal_drafted")
         if HAS_KG:
@@ -793,7 +798,7 @@ class ProposalToContractWorkflow:
                            platform="direct", price_eur=input.amount_eur)
 
         # Queue for approval
-        await workflow.execute_activity(queue_proposal_approval, input,
+        _queue_proposal_approval_result = await workflow.execute_activity(queue_proposal_approval, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("approval_queued")
 
@@ -811,7 +816,7 @@ class ProposalToContractWorkflow:
 
 @activity.defn
 async def create_payment_schedule(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     cur = conn.cursor()
     total = input.amount_eur
@@ -832,7 +837,7 @@ async def create_payment_schedule(input: ProjectInput) -> bool:
 
 @activity.defn
 async def send_milestone_invoice(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         from billing_pipeline import create_milestone_invoice, send_invoice_email
         invoice_id = create_milestone_invoice(
@@ -853,7 +858,7 @@ async def send_milestone_invoice(input: ProjectInput) -> bool:
 
 @activity.defn
 async def send_payment_receipt(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     finance_name, finance_title = _get_agent_name(f"{input.org}-finance")
     return _send_email(
@@ -865,6 +870,7 @@ async def send_payment_receipt(input: ProjectInput) -> bool:
              f"Thank you!\n\n"
              f"Best regards,\n{finance_name}\n{finance_title}, GigForge",
         agent_id=f"{input.org}-finance",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 
@@ -874,12 +880,12 @@ class PaymentMilestoneWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         ts = timedelta(seconds=60)
 
         # Create the payment schedule
-        await workflow.execute_activity(create_payment_schedule, input,
+        _create_payment_schedule_result = await workflow.execute_activity(create_payment_schedule, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("schedule_created")
 
@@ -917,7 +923,7 @@ class PaymentMilestoneWorkflow:
 
 @activity.defn
 async def create_support_ticket(input: ProjectInput) -> int:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     # Check if within 30-day warranty
     conn = _db()
     cur = conn.cursor()
@@ -945,7 +951,7 @@ async def create_support_ticket(input: ProjectInput) -> int:
 
 @activity.defn
 async def qa_triage_bug(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -964,7 +970,7 @@ async def qa_triage_bug(input: ProjectInput) -> str:
 
 @activity.defn
 async def engineer_fix_bug(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -981,7 +987,7 @@ async def engineer_fix_bug(input: ProjectInput) -> str:
 
 @activity.defn
 async def send_bug_fix_notification(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, _ = _get_agent_name(f"{input.org}-advocate")
     return _send_email(
@@ -994,11 +1000,12 @@ async def send_bug_fix_notification(input: ProjectInput) -> bool:
              f"is working as expected.\n\n"
              f"Best regards,\n{advocate_name}",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 @activity.defn
 async def close_support_ticket(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     conn.cursor().execute(
         "UPDATE support_tickets SET status='resolved', resolved_at=NOW() "
@@ -1015,7 +1022,7 @@ class PostDeliverySupportWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
@@ -1048,12 +1055,12 @@ class PostDeliverySupportWorkflow:
         result.actions.append("redeployed")
 
         # Notify customer
-        await workflow.execute_activity(send_bug_fix_notification, input,
+        _send_bug_fix_notification_result = await workflow.execute_activity(send_bug_fix_notification, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("customer_notified")
 
         # Close ticket
-        await workflow.execute_activity(close_support_ticket, input,
+        _close_support_ticket_result = await workflow.execute_activity(close_support_ticket, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("ticket_closed")
 
@@ -1068,7 +1075,7 @@ class PostDeliverySupportWorkflow:
 
 @activity.defn
 async def create_closure_record(input: ProjectInput) -> int:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     conn = _db()
     cur = conn.cursor()
     cur.execute(
@@ -1081,7 +1088,7 @@ async def create_closure_record(input: ProjectInput) -> int:
 
 @activity.defn
 async def generate_handover_docs(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -1104,7 +1111,7 @@ async def generate_handover_docs(input: ProjectInput) -> str:
 
 @activity.defn
 async def deploy_to_production(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
@@ -1125,7 +1132,7 @@ async def deploy_to_production(input: ProjectInput) -> str:
 
 @activity.defn
 async def generate_case_study(input: ProjectInput) -> str:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, lambda: _dispatch_and_wait(
         "gigforge-creative",
@@ -1145,7 +1152,7 @@ async def generate_case_study(input: ProjectInput) -> str:
 
 @activity.defn
 async def request_testimonial(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, _ = _get_agent_name(f"{input.org}-advocate")
     return _send_email(
@@ -1162,11 +1169,12 @@ async def request_testimonial(input: ProjectInput) -> bool:
              f"if anything comes up with the app.\n\n"
              f"Best regards,\n{advocate_name}",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 @activity.defn
 async def archive_project(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     try:
         from cms_workflows import store_progress_report
         store_progress_report(
@@ -1189,7 +1197,7 @@ async def archive_project(input: ProjectInput) -> bool:
 
 @activity.defn
 async def send_delivery_complete(input: ProjectInput) -> bool:
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     name = _customer_first_name(input.customer_email)
     advocate_name, advocate_title = _get_agent_name(f"{input.org}-advocate")
     return _send_email(
@@ -1206,6 +1214,7 @@ async def send_delivery_complete(input: ProjectInput) -> bool:
              f"It's been a pleasure working with you.\n\n"
              f"Best regards,\n{advocate_name}\n{advocate_title}, GigForge",
         agent_id=f"{input.org}-advocate",
+        cc="braun.brelin@ai-elevate.ai",
     )
 
 
@@ -1215,43 +1224,43 @@ class ProjectClosureWorkflow:
 
     @workflow.run
     async def run(self, input: ProjectInput) -> WorkflowResult:
-        """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+        """"""
         result = WorkflowResult()
         tl = timedelta(seconds=660)
         ts = timedelta(seconds=60)
 
-        await workflow.execute_activity(create_closure_record, input,
+        _create_closure_record_result = await workflow.execute_activity(create_closure_record, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("closure_started")
 
         # Generate handover documentation
-        await workflow.execute_activity(generate_handover_docs, input,
+        _generate_handover_docs_result = await workflow.execute_activity(generate_handover_docs, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("handover_docs")
 
         # Deploy to production (or confirm preview is production-ready)
-        await workflow.execute_activity(deploy_to_production, input,
+        _deploy_to_production_result = await workflow.execute_activity(deploy_to_production, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("production_deployed")
 
         # Send delivery complete email
-        await workflow.execute_activity(send_delivery_complete, input,
+        _send_delivery_complete_result = await workflow.execute_activity(send_delivery_complete, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("delivery_email_sent")
 
         # Generate case study for portfolio
-        await workflow.execute_activity(generate_case_study, input,
+        _generate_case_study_result = await workflow.execute_activity(generate_case_study, input,
             start_to_close_timeout=tl, retry_policy=RETRY)
         result.actions.append("case_study_generated")
 
         # Request testimonial (wait a bit so it doesn't feel like a blast)
         await asyncio.sleep(60)
-        await workflow.execute_activity(request_testimonial, input,
+        _request_testimonial_result = await workflow.execute_activity(request_testimonial, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("testimonial_requested")
 
         # Archive
-        await workflow.execute_activity(archive_project, input,
+        _archive_project_result = await workflow.execute_activity(archive_project, input,
             start_to_close_timeout=ts, retry_policy=RETRY_FAST)
         result.actions.append("archived")
         if HAS_KG:
@@ -1268,7 +1277,7 @@ class ProjectClosureWorkflow:
 # ============================================================================
 
 async def start_revision(customer_email, project_title, project_slug, revision_number, change_description, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1280,7 +1289,7 @@ async def start_revision(customer_email, project_title, project_slug, revision_n
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_scope_change(customer_email, project_title, project_slug, change_description, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1292,7 +1301,7 @@ async def start_scope_change(customer_email, project_title, project_slug, change
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_onboarding(customer_email, project_title, project_slug, requirements="", org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1303,7 +1312,7 @@ async def start_onboarding(customer_email, project_title, project_slug, requirem
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_proposal(customer_email, project_title, project_slug, job_data="", amount_eur=0, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1314,7 +1323,7 @@ async def start_proposal(customer_email, project_title, project_slug, job_data="
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_payment_milestones(customer_email, project_title, project_slug, amount_eur, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1325,7 +1334,7 @@ async def start_payment_milestones(customer_email, project_title, project_slug, 
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_support(customer_email, project_title, project_slug, bug_description, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
@@ -1336,7 +1345,7 @@ async def start_support(customer_email, project_title, project_slug, bug_descrip
     return {"workflow_id": h.id, "status": "started"}
 
 async def start_closure(customer_email, project_title, project_slug, org="gigforge"):
-    """TODO: Add docstring — what this function does, why, how. Include Args/Returns/Raises."""
+    """"""
     from temporalio.client import Client
     client = await Client.connect("localhost:7233")
     input_data = ProjectInput(customer_email=customer_email, project_title=project_title,
