@@ -129,6 +129,12 @@ BATCH_DIR.mkdir(parents=True, exist_ok=True)
 
 def send_telegram(chat_id: str, text: str, parse_mode: str = "HTML") -> bool:
     """Send a Telegram message."""
+    # Unified comms — scrub outbound
+    try:
+        from unified_comms import process_telegram_outbound
+        text = process_telegram_outbound(text, agent_id="ops", chat_id=chat_id)
+    except Exception:
+        pass
     if not TELEGRAM_BOT_TOKEN or not chat_id:
         return False
     try:

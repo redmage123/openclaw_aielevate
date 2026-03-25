@@ -147,13 +147,17 @@ def send_email(
             f"OUTBOUND DEDUP: skipping duplicate send to {to} subject={subject}")
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
-    # NLP-based email scrubbing — removes metadata, call suggestions, AI language
+    # Unified comms pipeline — scrub, store, train
     try:
-        from nlp_email_scrubber import scrub_email
-        body = scrub_email(body)
-    except Exception as _scrub_err:
-        import logging
-        logging.getLogger("send_email").debug(f"Scrubber: {_scrub_err}")
+        from unified_comms import process_outbound
+        body = process_outbound(body, sender_agent=agent_id, recipient=to, subject=subject, channel="email")
+    except Exception as _comms_err:
+        # Fallback to direct scrubber if unified comms fails
+        try:
+            from nlp_email_scrubber import scrub_email
+            body = scrub_email(body)
+        except Exception:
+            pass
 
         from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
     reply_to = reply_to or default_reply_to
