@@ -103,46 +103,24 @@ async def trigger_support_chain(input: EmailInput) -> str:
 
 @activity.defn
 async def classify_email_intent(input: EmailInput) -> dict:
-    """Classify email intent using LLM."""
+    """Classify email intent using LDA + KG + RAG (with LLM fallback)."""
     try:
-        from intent_classifier import classify_intent
-        from customer_context import get_context
-
-        # Get customer context
-        ctx = {}
+        from lda_classifier import classify_email
+        result = classify_email(input.sender_email, input.subject, input.body)
+        return {
+            "type": result["intent"],
+            "confidence": result["confidence"],
+            "trigger_workflow": result["confidence"] >= 0.6,
+            "method": result["method"],
+            "topics": result.get("topics", {}),
+        }
+    except Exception as e:
+        # Fallback to old LLM classifier if LDA fails
         try:
-            ctx = get_context(input.sender_email) or {}
-        except (AiElevateError, Exception) as e:
-            pass
-
-        has_active = bool(ctx.get("active_project"))
-        delivered = False
-        try:
-            import psycopg2
-            conn = psycopg2.connect(**DB_CONN)
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT status FROM project_milestones WHERE customer_email=%s AND milestone='Deployment' AND status='completed'",
-                (input.sender_email,))
-            delivered = cur.fetchone() is not None
-            conn.close()
-        except (DatabaseError, Exception) as e:
-            pass
-
-        result = classify_intent(
-            sender=input.sender_email,
-            subject=input.subject,
-            body=input.body,
-            has_active_project=has_active,
-            project_delivered=delivered,
-        )
-        result["has_active_project"] = has_active
-        result["project_delivered"] = delivered
-        return result
-    except (AiElevateError, Exception) as e:
-        log.error(f"Classification failed: {e}")
-        return {"type": "general", "confidence": 0.3, "trigger_workflow": False,
-                "has_active_project": False, "project_delivered": False}
+            from intent_classifier import classify_intent_llm
+            return classify_intent_llm(input.subject, input.body)
+        except Exception:
+            return {"type": "general", "confidence": 0.5, "trigger_workflow": False}
 
 
 @activity.defn
@@ -315,7 +293,7 @@ class EmailOrchestratorWorkflow:
             result.actions.append(f"existing_workflows:{list(running.keys())}")
 
         # 3. Dispatch based on intent — support chain for bug/support, simple reply for others
-        support_intents = {"bug_report", "question", "feedback"}
+        support_intents = {"bug_report"}  # Only actual bugs get full ACK→investigate→verify→RCA chain
         if result.intent in support_intents:
             # Full support chain: ACK → Investigation → Status Updates → RCA
             chain_json = await workflow.execute_activity(
@@ -333,7 +311,7 @@ class EmailOrchestratorWorkflow:
             result.actions.append("email_replied")
 
         email_result = {}
-        if result.intent not in {"bug_report", "question", "feedback"}:
+        if result.intent not in {"bug_report"}:
             try:
                 email_result = json.loads(email_result_json)
             except (AgentError, Exception) as e:
