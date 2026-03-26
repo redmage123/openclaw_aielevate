@@ -194,9 +194,6 @@ async def read_kg(input: InteractionInput) -> str:
         pass
 
     return "\n".join(parts) if parts else ""
-    except (AgentError, Exception) as e:
-        pass
-    return ""
 
 
 @activity.defn
