@@ -258,6 +258,27 @@ def check_regulatory_compliance(action_description, body=""):
     return applicable
 
 
+
+
+# ── Rule 8: Strategic Veto Gate ─────────────────────────────────────
+
+STRATEGIC_KEYWORDS = [
+    'new service', 'new offering', 'pricing change', 'price increase', 'price decrease',
+    'partnership', 'partner with', 'campaign launch', 'marketing campaign',
+    'outbound sales', 'cold email', 'cold outreach', 'new market',
+    'hire', 'new agent', 'new role', 'expand into', 'pivot',
+    'rebrand', 'new feature launch', 'product launch', 'go to market',
+]
+
+def check_strategic_approval(action_description):
+    """Strategic/external actions require Braun + Peter approval.
+    Internal ops (task assignment, bug fixes, maintenance) proceed autonomously."""
+    desc_lower = action_description.lower()
+    for kw in STRATEGIC_KEYWORDS:
+        if kw in desc_lower:
+            return False  # Needs approval
+    return True  # Internal ops — proceed
+
 # ── Master Validation — called on every outbound action ─────────────
 
 def validate_action(action_type, description, agent_id, **kwargs):
@@ -302,6 +323,10 @@ def validate_action(action_type, description, agent_id, **kwargs):
         legal_flags = check_legal(kwargs["body"])
         if legal_flags:
             result["violations"].append(f"Legal topics detected: {', '.join(legal_flags)} — verify compliance")
+
+    # Strategic veto gate
+    if not check_strategic_approval(description):
+        result['violations'].append('Strategic action requires Braun + Peter approval before execution')
 
     # Regulatory compliance check
     if kwargs.get("body") or description:
