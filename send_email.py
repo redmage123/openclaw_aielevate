@@ -221,11 +221,20 @@ def send_email(
             _conn.close()
         except Exception:
             pass
-        # Store outbound email compressed + encrypted
+        # Store outbound email compressed + encrypted + semantically indexed
         try:
             from email_nlp_pipeline import store_email, queue_training
             store_email(to, from_addr, subject, body, direction="outbound", agent_id=agent_id)
             queue_training(to, subject, body)
+        except Exception:
+            pass
+        try:
+            from semantic_search import index_document
+            index_document("email", f"{subject} {body[:1000]}",
+                          doc_id=f"outbound-{agent_id}-{int(__import__('time').time())}",
+                          metadata={"sender": agent_id, "recipient": to, "subject": subject,
+                                   "direction": "outbound", "date": __import__('datetime').datetime.now().isoformat()},
+                          org="gigforge")
         except Exception:
             pass
         return {"status": "sent", "domain": mailgun_domain, "response": result[:100]}
