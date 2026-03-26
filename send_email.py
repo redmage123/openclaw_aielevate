@@ -149,6 +149,17 @@ def send_email(
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
     # Resolve domain first (always needed)
+    # Governance: enforce CC on external customers, check tone, flag legal
+    try:
+        from org_governance import validate_action
+        gov = validate_action("email", subject, agent_id, to=to, cc=cc, body=body)
+        cc = gov.get("cc", cc)  # Updated CC with Braun + Peter if external customer
+        if gov.get("violations"):
+            import logging
+            logging.getLogger("governance").info(f"Violations: {gov['violations']}")
+    except Exception:
+        pass
+
     # Digest: batch non-critical emails to Braun instead of sending individually
     braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com', 'peter.munro@ai-elevate.ai']
     if to.lower() in braun_emails:

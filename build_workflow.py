@@ -811,6 +811,18 @@ async def verify_build(input: BuildInput) -> str:
         log.error(failure_report)
         raise ApplicationError(failure_report, non_retryable=True)
 
+    # Check GDPR compliance
+    gdpr_signals = ['cookie', 'privacy', 'consent', 'gdpr', 'data protection']
+    has_gdpr = any(s in body.lower() for s in gdpr_signals) if body else False
+    if not has_gdpr:
+        failures.append('Missing GDPR elements (cookie consent, privacy policy, or data protection notice)')
+
+    # Check accessibility (WCAG 2.1 AA)
+    a11y_signals = ['aria-', 'role=', 'alt=', 'sr-only', 'focus-visible', 'tabindex']
+    has_a11y = sum(1 for s in a11y_signals if s in body) if body else 0
+    if has_a11y < 2:
+        failures.append('Insufficient accessibility attributes (need ARIA labels, alt text, focus management)')
+
     log.info(f"Build verified: {len(source_files)} files, containers running, health OK, no placeholders")
     return f"VERIFIED: {len(source_files)} source files, health OK, no placeholder content"
 
@@ -1373,7 +1385,18 @@ async def record_build_to_kg(input: BuildInput) -> bool:
 # Workflow — the full build chain
 # ============================================================================
 
+
+@activity.defn
+async def security_review(input):
+    from security_review import run_security_review
+    project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
+    passed, report = run_security_review(project_dir, input.domain)
+    if not passed:
+        raise ApplicationError(f"Security review failed: {report}", non_retryable=True)
+    return report
+
 @workflow.defn
+
 class ProjectBuildWorkflow:
     """TODO: Add docstring — what this class does, why it exists, how to use it."""
 
@@ -1497,6 +1520,21 @@ class ProjectBuildWorkflow:
         await workflow.execute_activity(notify_ops,
             mi("All milestones verified complete — proceeding to deployment"),
             start_to_close_timeout=ts, retry_policy=RETRY)
+
+        # Step 10.5: SECURITY GATE — OWASP + penetration test required
+        # No app deploys without security agent sign-off
+        security_input = BuildInput(**{**input.__dict__})
+        _security_result = await workflow.execute_activity(
+            security_review, security_input,
+            start_to_close_timeout=timedelta(seconds=600), retry_policy=RETRY)
+        if 'FAILED' in str(_security_result) or 'CRITICAL' in str(_security_result):
+            result.actions.append(f'security_blocked:{str(_security_result)[:100]}')
+            await workflow.execute_activity(notify_ops,
+                mi(f'SECURITY BLOCKED — cannot deploy: {str(_security_result)[:200]}'),
+                start_to_close_timeout=ts, retry_policy=RETRY)
+            result.status = 'security_blocked'
+            return result
+        result.actions.append('security_approved')
 
         # Step 11: Deploy preview
         deploy_result = await workflow.execute_activity(devops_deploy, input, start_to_close_timeout=tl, retry_policy=RETRY)
