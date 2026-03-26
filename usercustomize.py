@@ -93,7 +93,21 @@ def _patched_urlopen(req, *args, **kwargs):
                         except Exception:
                             pass
 
-                        if cleaned != original:
+                        # Governance: enforce CC on external customer emails
+                try:
+                    from org_governance import enforce_customer_cc
+                    import urllib.parse as _up
+                    _params = _up.parse_qs(req.data.decode() if isinstance(req.data, bytes) else req.data, keep_blank_values=True)
+                    _to = _params.get('to', [''])[0]
+                    _cc = _params.get('cc', [''])[0]
+                    _new_cc = enforce_customer_cc(_to, _cc)
+                    if _new_cc != _cc:
+                        _params['cc'] = [_new_cc]
+                        req.data = _up.urlencode({k: v[0] for k, v in _params.items()}, quote_via=_up.quote).encode('utf-8')
+                except Exception:
+                    pass
+
+                if cleaned != original:
                             params[field] = [cleaned]
 
                 req.data = urllib.parse.urlencode(
@@ -103,6 +117,29 @@ def _patched_urlopen(req, *args, **kwargs):
 
             except Exception:
                 pass
+
+
+        # Fix sending domain — agents using wrong Mailgun domain
+        try:
+            import urllib.parse as _uparse
+            _params = _uparse.parse_qs(req.data.decode() if isinstance(req.data, bytes) else req.data, keep_blank_values=True)
+            _from = _params.get('from', [''])[0].lower()
+            _domain_map = {
+                'ceo@mg.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
+                'ceo@internal.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
+                'robin@mg.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
+            }
+            for wrong_from, (correct_domain, correct_from) in _domain_map.items():
+                if wrong_from in _from:
+                    # Rewrite the URL to use the correct Mailgun domain
+                    url = req.full_url.replace('mg.ai-elevate.ai', correct_domain)
+                    req.full_url = url
+                    _params['from'] = [correct_from]
+                    _params['h:Reply-To'] = [correct_from.split('<')[1].rstrip('>')]
+                    req.data = _uparse.urlencode({k: v[0] for k, v in _params.items()}, quote_via=_uparse.quote).encode('utf-8')
+                    break
+        except Exception:
+            pass  # fix_sending_domain
 
     # Dedup: block duplicate Mailgun sends within 5 minutes
     if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
