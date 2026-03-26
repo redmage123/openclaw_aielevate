@@ -149,6 +149,17 @@ def send_email(
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
     # Resolve domain first (always needed)
+    # Digest: batch non-critical emails to Braun instead of sending individually
+    braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com']
+    if to.lower() in braun_emails:
+        try:
+            from email_digest import should_send_immediately, queue_for_digest
+            if not should_send_immediately(subject):
+                queue_for_digest(subject, body, agent_id)
+                return {"status": "queued_for_digest", "to": to, "subject": subject}
+        except Exception:
+            pass  # If digest fails, send normally
+
     from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
 
     # Unified comms pipeline — scrub, store, train
