@@ -147,6 +147,9 @@ def send_email(
             f"OUTBOUND DEDUP: skipping duplicate send to {to} subject={subject}")
         return {"status": "dedup_skipped", "to": to, "subject": subject}
 
+    # Resolve domain first (always needed)
+    from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
+
     # Unified comms pipeline — scrub, store, train
     try:
         from unified_comms import process_outbound
@@ -159,7 +162,6 @@ def send_email(
         except Exception:
             pass
 
-        from_addr, default_reply_to, mailgun_domain = _resolve_domain(agent_id)
     reply_to = reply_to or default_reply_to
 
     key = _get_key()

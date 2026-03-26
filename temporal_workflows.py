@@ -169,13 +169,31 @@ async def check_directives(input: InteractionInput) -> str:
 
 @activity.defn
 async def read_kg(input: InteractionInput) -> str:
-    """Read customer data from knowledge graph."""
+    """Read customer data from knowledge graph + semantic search across all sources."""
+    parts = []
+    org = _get_org(input.agent_id)
+
+    # 1. KG lookup by sender
     try:
         from knowledge_graph import KG
-        kg = KG(_get_org(input.agent_id))
+        kg = KG(org)
         results = kg.search(input.sender_email)
         if results:
-            return "\n".join(str(r)[:200] for r in results[:5])
+            parts.append("KG data:\n" + "\n".join(str(r)[:200] for r in results[:5]))
+    except Exception:
+        pass
+
+    # 2. Semantic search across all data sources (emails, proposals, milestones, KG)
+    try:
+        from semantic_search import get_context_for_email
+        context = get_context_for_email(
+            input.sender_email, input.subject, input.message, org=org, max_results=8)
+        if context:
+            parts.append(context)
+    except Exception:
+        pass
+
+    return "\n".join(parts) if parts else ""
     except (AgentError, Exception) as e:
         pass
     return ""
