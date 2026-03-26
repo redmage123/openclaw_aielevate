@@ -49,7 +49,7 @@ def check_unanswered_emails(hours=4):
             ei.sender_email, ei.subject, ei.agent_id, ei.created_at
         FROM email_interactions ei
         WHERE ei.direction = 'inbound'
-          AND ei.created_at > NOW() - INTERVAL '%s hours'
+          AND ei.created_at > NOW() - INTERVAL '%s hours' AND ei.created_at > NOW() - INTERVAL '48 hours'
           AND ei.sender_email NOT LIKE '%%@mg.ai-elevate.ai'
           AND ei.sender_email NOT LIKE '%%@gigforge.ai'
           AND ei.sender_email NOT LIKE '%%@techuni.ai'
@@ -77,7 +77,7 @@ def check_stale_milestones(days=3):
     cur.execute("""
         SELECT project_title, milestone, status, customer_email, created_at
         FROM project_milestones
-        WHERE status = 'pending'
+        WHERE status = 'pending' AND status != 'stale' AND status != 'cancelled' AND status != 'abandoned'
           AND created_at < NOW() - INTERVAL '%s days'
         ORDER BY created_at ASC
     """, (days,))
@@ -141,8 +141,19 @@ def check_promised_actions():
     return promises
 
 
+_nudge_cache = {}
+
 def dispatch_nudge(agent_id, task_description):
-    """Send a nudge to an agent via sessions_send or direct dispatch."""
+    """Send a nudge to an agent via sessions_send or direct dispatch.
+    Deduplicates: won't nudge the same agent about the same issue within 24h."""
+    import hashlib, time
+    nudge_key = hashlib.sha256(f"{agent_id}:{task_description[:100]}".encode()).hexdigest()[:16]
+    last_nudge = _nudge_cache.get(nudge_key, 0)
+    if time.time() - last_nudge < 86400:  # 24 hours
+        log.info(f"Skipping duplicate nudge for {agent_id}: {task_description[:50]}")
+        return False
+    _nudge_cache[nudge_key] = time.time()
+
     try:
         import subprocess
         result = subprocess.run(
@@ -187,23 +198,47 @@ def run():
     """Run all proactive checks."""
     log.info("Proactive tracker running")
 
-    # 1. Unanswered emails (4+ hours old)
+    # 1. Unanswered emails (4-48 hours old — not stale, not brand new)
     unanswered = check_unanswered_emails(hours=4)
+    # Filter out anything older than 48 hours — those are stale, not actionable
+    from datetime import datetime, timezone, timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=48)
+    fresh_unanswered = []
+    for item in unanswered:
+        try:
+            received = datetime.fromisoformat(item["received"])
+            if received > cutoff:
+                fresh_unanswered.append(item)
+        except Exception:
+            pass
+    unanswered = fresh_unanswered
+
     if unanswered:
-        log.info(f"Found {len(unanswered)} unanswered emails")
+        log.info(f"Found {len(unanswered)} unanswered emails (filtered stale)")
         for item in unanswered:
             agent = item["agent"] or "gigforge"
             dispatch_nudge(agent,
                 f"You have an unanswered email from {item['sender']} "
                 f"about '{item['subject']}' received at {item['received']}. "
                 f"Reply now using send_email.")
-        notify_ops(unanswered, "unanswered emails (4+ hours)")
+        notify_ops(unanswered, "unanswered emails (4-48 hours)")
 
-    # 2. Stale milestones (3+ days pending)
+    # 2. Stale milestones (3-30 days pending — skip ancient ones)
     stale = check_stale_milestones(days=3)
+    cutoff_old = datetime.now(timezone.utc) - timedelta(days=30)
+    fresh_stale = []
+    for item in stale:
+        try:
+            created = datetime.fromisoformat(item["created"])
+            if created > cutoff_old:
+                fresh_stale.append(item)
+        except Exception:
+            pass
+    stale = fresh_stale
+
     if stale:
-        log.info(f"Found {len(stale)} stale milestones")
-        notify_ops(stale, "stale milestones (3+ days pending)")
+        log.info(f"Found {len(stale)} stale milestones (filtered ancient)")
+        notify_ops(stale, "stale milestones (3-30 days pending)")
 
     # 3. Unfulfilled promises (said we'd do something, didn't follow up)
     promises = check_promised_actions()
