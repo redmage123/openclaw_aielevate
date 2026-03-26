@@ -223,6 +223,15 @@ def send_email(
     if cc:
         form["cc"] = cc
 
+    # Format as HTML email
+    try:
+        from email_formatter import format_email, get_agent_info
+        agent_name, agent_title = get_agent_info(agent_id)
+        html_body = format_email(body, agent_id=agent_id, agent_name=agent_name, agent_title=agent_title)
+        form["html"] = html_body
+    except Exception:
+        pass
+
     data = urllib.parse.urlencode(form).encode("utf-8")
     url = f"https://api.mailgun.net/v3/{mailgun_domain}/messages"
 
