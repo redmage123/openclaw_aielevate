@@ -1,43 +1,127 @@
-"""Auto-patches urllib to scrub all Mailgun sends.
-Loaded automatically by Python on every startup for the aielevate user."""
+"""Auto-patches urllib: rule scrub + LLM validation on all Mailgun sends."""
 import urllib.request
+import hashlib
+import time as _time
 
 _original_urlopen = urllib.request.urlopen
 
+# Dedup cache: hash → timestamp. Prevents sending same email twice within 5 min.
+_send_cache = {}
+_DEDUP_TTL = 300  # 5 minutes
+
+
+def _llm_validate(text):
+    """Ask the email-validator model to check the email. Returns (pass, cleaned, violations)."""
+    import json, re
+
+    try:
+        payload = json.dumps({
+            "model": "email-validator",
+            "prompt": text[:2000],
+            "stream": False,
+        }).encode()
+
+        req = urllib.request.Request(
+            "http://localhost:11434/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"}
+        )
+        resp = _original_urlopen(req, timeout=15)
+        result = json.loads(resp.read())["response"].strip()
+
+        m = re.search(r'\{.*\}', result, re.DOTALL)
+        if m:
+            parsed = json.loads(m.group())
+            violations = parsed.get("violations", [])
+            if violations:
+                # Remove lines that contain violations
+                cleaned = text
+                for v in violations:
+                    # Try to find and remove the offending content
+                    for line in text.split("\n"):
+                        if any(keyword in line.lower() for keyword in
+                               ["trigger:", "call", "zoom", "screen share", "meeting",
+                                "walk through", "set up a time", "reach out",
+                                "carehaven.ai", "techuni.com", "gigforge.com"]):
+                            cleaned = cleaned.replace(line, "")
+                cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
+                return False, cleaned, violations
+            return True, text, []
+
+    except Exception:
+        pass
+    return True, text, []
+
+
 def _patched_urlopen(req, *args, **kwargs):
-    """Intercept Mailgun sends and scrub the body."""
+    """Intercept Mailgun sends: rule scrub + LLM validate."""
     url = req if isinstance(req, str) else (req.full_url if hasattr(req, 'full_url') else str(req))
 
     if 'api.mailgun.net' in url and '/messages' in url:
-        # This is a Mailgun send — scrub the body
         if hasattr(req, 'data') and req.data:
             try:
                 import sys
                 if '/home/aielevate' not in sys.path:
                     sys.path.insert(0, '/home/aielevate')
-                from nlp_email_scrubber import scrub_email
                 import urllib.parse
 
                 data = req.data.decode('utf-8') if isinstance(req.data, bytes) else req.data
                 params = urllib.parse.parse_qs(data, keep_blank_values=True)
 
-                scrubbed = False
                 for field in ['text', 'html']:
                     if field in params:
                         original = params[field][0]
-                        cleaned = scrub_email(original)
+
+                        # Pass 1: Rule-based scrub (fast, <1ms)
+                        try:
+                            from nlp_email_scrubber import scrub_email
+                            cleaned = scrub_email(original)
+                        except Exception:
+                            cleaned = original
+
+                        # Pass 2: LLM validation (catches what regex misses)
+                        passed, cleaned, violations = _llm_validate(cleaned)
+                        if violations:
+                            import logging
+                            logging.getLogger("llm-validator").warning(
+                                f"LLM caught: {violations}")
+
+                        # Pass 3: Credential validation
+                        try:
+                            from enforce_rules import validate_outbound
+                            _, cleaned, _ = validate_outbound(cleaned)
+                        except Exception:
+                            pass
+
                         if cleaned != original:
                             params[field] = [cleaned]
-                            scrubbed = True
 
-                if scrubbed:
-                    req.data = urllib.parse.urlencode(
-                        {k: v[0] for k, v in params.items()}, 
-                        quote_via=urllib.parse.quote
-                    ).encode('utf-8')
+                req.data = urllib.parse.urlencode(
+                    {k: v[0] for k, v in params.items()},
+                    quote_via=urllib.parse.quote
+                ).encode('utf-8')
 
             except Exception:
-                pass  # Don't break email sending if scrubber fails
+                pass
+
+    # Dedup: block duplicate Mailgun sends within 5 minutes
+    if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
+        dedup_key = hashlib.sha256(req.data[:500] if isinstance(req.data, bytes) else req.data.encode()[:500]).hexdigest()[:16]
+        now = _time.time()
+        # Clean expired entries
+        _send_cache.update({k: v for k, v in _send_cache.items() if now - v < _DEDUP_TTL})
+        if dedup_key in _send_cache:
+            import logging
+            logging.getLogger("urllib-dedup").warning("Blocked duplicate Mailgun send")
+            # Return a fake successful response instead of sending twice
+            import io
+            class FakeResponse:
+                def read(self): return b'{"id":"dedup-blocked","message":"Duplicate blocked"}'
+                def getcode(self): return 200
+                def __enter__(self): return self
+                def __exit__(self, *a): pass
+            return FakeResponse()
+        _send_cache[dedup_key] = now
 
     return _original_urlopen(req, *args, **kwargs)
 
