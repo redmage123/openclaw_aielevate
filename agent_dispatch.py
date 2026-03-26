@@ -233,6 +233,16 @@ def check_gateway() -> bool:
     except (subprocess.TimeoutExpired, OSError) as e:
         log.warning("Gateway check failed", extra={"error": str(e)})
         return False
+    # Real health check
+    try:
+        import urllib.request
+        resp = urllib.request.urlopen(f"http://localhost:{GATEWAY_PORT}/health", timeout=5)
+        if resp.getcode() != 200:
+            log.error(f"Gateway unhealthy: HTTP {resp.getcode()}")
+            return False
+    except Exception as e:
+        log.error(f"Gateway unreachable: {e}")
+        return False
 
 
 def is_healthy() -> bool:
@@ -495,8 +505,9 @@ def _poll_process(
             proc.kill()
             try:
                 proc.wait(timeout=5)
-            except Exception:
-                pass
+            except Exception as _e:
+
+                import logging; logging.getLogger('agent_dispatch.py').debug(f'Suppressed: {_e}')
             _circuit.record_failure("timeout")
             log.warning("Agent timed out", extra={"agent_id": agent_id, "timeout": timeout, "elapsed": elapsed})
             return DispatchResult(status="timeout", error=f"Agent {agent_id} timed out after {elapsed:.0f}s",
@@ -505,8 +516,9 @@ def _poll_process(
         if heartbeat_fn and time.time() - last_heartbeat > HEARTBEAT_INTERVAL_SECONDS:
             try:
                 heartbeat_fn(f"Agent {agent_id} running ({elapsed:.0f}s)")
-            except Exception:
-                pass
+            except Exception as _e:
+
+                import logging; logging.getLogger('agent_dispatch.py').debug(f'Suppressed: {_e}')
             last_heartbeat = time.time()
 
         time.sleep(POLL_INTERVAL_SECONDS)

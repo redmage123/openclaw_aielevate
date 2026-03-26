@@ -1080,7 +1080,7 @@ async def create_closure_record(input: ProjectInput) -> int:
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO project_closures (customer_email, project_slug) "
-        "VALUES (%s,%s) RETURNING id",
+        "VALUES (%s,%s) ON CONFLICT DO NOTHING RETURNING id",
         (input.customer_email, input.project_slug))
     cid = cur.fetchone()[0]
     conn.close()

@@ -342,7 +342,7 @@ async def send_newsletter(input: ContentInput) -> bool:
 
     conn = _db()
     conn.cursor().execute(
-        "INSERT INTO newsletters (org, week_of, subject, content, status) VALUES (%s, %s, %s, %s, 'compiled')",
+        "INSERT INTO newsletters (org, week_of, subject, content, status) VALUES (%s, %s, %s, %s, 'compiled') ON CONFLICT DO NOTHING",
         (input.org, input.week_of, subject, content[:5000]))
     conn.close()
 
@@ -356,8 +356,9 @@ async def send_newsletter(input: ContentInput) -> bool:
             agent_id=f"{input.org}-social",
                 cc="braun.brelin@ai-elevate.ai",
             )
-    except Exception as e:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('content_workflows.py').debug(f'Suppressed: {_e}')
 
     log.info(f"Newsletter compiled: {subject}")
     return True
@@ -469,7 +470,7 @@ async def publish_ai_report(input: ContentInput) -> bool:
     conn = _db()
     conn.cursor().execute(
         "INSERT INTO news_aggregations (week_of, title, content, status, published_at) "
-        "VALUES (%s, %s, %s, 'published', NOW())",
+        "VALUES (%s, %s, %s, 'published', NOW() ON CONFLICT DO NOTHING)",
         (input.week_of, title, content[:10000]))
     conn.close()
 
@@ -483,8 +484,9 @@ async def publish_ai_report(input: ContentInput) -> bool:
             agent_id="ai-elevate-content",
                 cc="braun.brelin@ai-elevate.ai",
             )
-    except Exception as e:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('content_workflows.py').debug(f'Suppressed: {_e}')
 
     log.info(f"AI Weekly published: {title}")
     return True

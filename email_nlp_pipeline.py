@@ -248,7 +248,10 @@ def _fuzzy_match(text):
     except ImportError:
         try:
             from thefuzz import fuzz
-        except ImportError:
+        except ImportError as _e:
+
+            import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
+
             return {}
 
     scores = {}
@@ -328,8 +331,9 @@ def _kg_enrich(sender, subject, body):
             project_data = kg.query(f"project:{refs[0].upper()}")
             if project_data:
                 context["project_status"] = project_data.get("status", "unknown")
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
     return context
 
 
@@ -350,7 +354,10 @@ def _rag_precedent(body, top_k=3):
         rows = cur.fetchall()
         conn.close()
         return {row[0]: row[1] for row in rows if row[0]}
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
+
         return {}
 
 
@@ -446,8 +453,9 @@ def classify_email(sender, subject, body):
                 top_intent = llm_result["type"]
                 confidence = llm_result["confidence"]
                 method = "llm_fallback"
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
 
     # Extract entities
     entities = _ner_extract(full_text)
@@ -532,8 +540,9 @@ def _incremental_train():
                     texts.append(text)
                     labels.append(row[2])
             conn.close()
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
 
         if len(texts) < 10:
             return
@@ -546,8 +555,9 @@ def _incremental_train():
             tfidf_matrix = tfidf.fit_transform(texts)
             with open(MODEL_DIR / "tfidf_vectorizer.pkl", "wb") as f:
                 pickle.dump(tfidf, f)
-        except ValueError:
-            pass  # Not enough documents with min_df=2
+        except ValueError as _e:
+
+            import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')  # Not enough documents with min_df=2
 
         # Train LDA
         count_vec = CountVectorizer(max_df=0.95, min_df=2, max_features=1000, stop_words="english")
@@ -560,8 +570,9 @@ def _incremental_train():
                 pickle.dump(count_vec, f)
             with open(MODEL_DIR / "lda_model.pkl", "wb") as f:
                 pickle.dump(lda, f)
-        except ValueError:
-            pass
+        except ValueError as _e:
+
+            import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
 
         # Train Naive Bayes (only on labeled data)
         labeled_texts = [t for t, l in zip(texts, labels) if l]
@@ -599,8 +610,9 @@ def _audit_log(sender, subject, result):
         }
         with open(AUDIT_LOG, "a") as f:
             f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('email_nlp_pipeline.py').debug(f'Suppressed: {_e}')
 
 
 # ── CLI ────────────────────────────────────────────────────────────────

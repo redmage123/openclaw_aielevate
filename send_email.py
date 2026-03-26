@@ -50,8 +50,9 @@ def _outbound_dedup_check(to: str, subject: str) -> bool:
     try:
         with open(_OUTBOUND_DEDUP_FILE, "w") as f:
             json.dump(cache, f)
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('send_email.py').debug(f'Suppressed: {_e}')
     return False
 
 
@@ -159,8 +160,9 @@ def send_email(
         try:
             from nlp_email_scrubber import scrub_email
             body = scrub_email(body)
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('send_email.py').debug(f'Suppressed: {_e}')
 
     reply_to = reply_to or default_reply_to
 
@@ -219,15 +221,17 @@ def send_email(
                 "INSERT INTO email_dedup (dedup_key, sender, subject) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
                 (_key, to, subject))
             _conn.close()
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('send_email.py').debug(f'Suppressed: {_e}')
         # Store outbound email compressed + encrypted + semantically indexed
         try:
             from email_nlp_pipeline import store_email, queue_training
             store_email(to, from_addr, subject, body, direction="outbound", agent_id=agent_id)
             queue_training(to, subject, body)
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('send_email.py').debug(f'Suppressed: {_e}')
         try:
             from semantic_search import index_document
             index_document("email", f"{subject} {body[:1000]}",
@@ -235,8 +239,9 @@ def send_email(
                           metadata={"sender": agent_id, "recipient": to, "subject": subject,
                                    "direction": "outbound", "date": __import__('datetime').datetime.now().isoformat()},
                           org="gigforge")
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('send_email.py').debug(f'Suppressed: {_e}')
         return {"status": "sent", "domain": mailgun_domain, "response": result[:100]}
     except (EmailError, Exception) as e:
         return {"status": "error", "error": str(e), "domain": mailgun_domain}

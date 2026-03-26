@@ -115,7 +115,7 @@ def queue_proposal(
     cur.execute(
         """INSERT INTO proposal_queue
         (platform, job_url, job_title, job_budget, job_description, proposal_text, recommended_bid, org, drafted_by, notes)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
         RETURNING id, platform, job_title, status, created_at""",
         (platform, job_url, job_title, job_budget, job_description, proposal_text, recommended_bid, org, drafted_by, notes)
     )

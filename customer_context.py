@@ -84,8 +84,9 @@ def _fetch_emails(email: str) -> list:
             return [{"direction": r["direction"], "timestamp": str(r["timestamp"])[:19],
                      "subject": r["subject"], "snippet": (r["body"] or "")[:200], "agent": r["agent"]}
                     for r in rows]
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
     return []
 
 
@@ -94,7 +95,10 @@ def _fetch_proposals(email: str) -> list:
     try:
         from sales_pipeline import pipeline_status
         return pipeline_status(email).get("proposals", [])
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+
         return []
 
 
@@ -103,7 +107,10 @@ def _fetch_previews(email: str) -> list:
     try:
         from preview_deploy import list_previews
         return [p for p in list_previews() if p.get("customer_email") == email]
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+
         return []
 
 
@@ -128,12 +135,15 @@ def _fetch_plane_projects(email: str) -> list:
                                                      "title": i.get("name", ""),
                                                      "state": state.get("name", "unknown") if isinstance(state, dict) else "unknown",
                                                      "id": i.get("id", "")})
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-    except Exception:
-        pass
+                    except Exception as _e:
+
+                        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+            except Exception as _e:
+
+                import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
     return projects
 
 
@@ -146,10 +156,12 @@ def _fetch_kg_deals(email: str) -> list:
             try:
                 results = KG(org).search(email)
                 deals.extend(r for r in (results or [])[:5] if isinstance(r, dict))
-            except Exception:
-                pass
-    except Exception:
-        pass
+            except Exception as _e:
+
+                import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
     return deals
 
 
@@ -166,8 +178,9 @@ def _fetch_sentiment(email: str) -> tuple:
             sentiment = {"rating": rows[0]["rating"], "notes": rows[0]["notes"],
                          "as_of": str(rows[0]["timestamp"])[:19]}
             return sentiment, [dict(r) for r in rows]
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
     return None, []
 
 
@@ -180,7 +193,10 @@ def _fetch_assets(email: str) -> list:
         assets = [dict(r) for r in cur.fetchall()]
         conn.close()
         return assets
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+
         return []
 
 
@@ -193,7 +209,10 @@ def _fetch_notes(email: str) -> list:
         notes = [dict(r) for r in cur.fetchall()]
         conn.close()
         return notes
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('customer_context.py').debug(f'Suppressed: {_e}')
+
         return []
 
 

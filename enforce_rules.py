@@ -35,8 +35,9 @@ def _load_credential_store():
     if CREDENTIAL_STORE.exists():
         try:
             return json.loads(CREDENTIAL_STORE.read_text())
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('enforce_rules.py').debug(f'Suppressed: {_e}')
     return {}
 
 
@@ -193,8 +194,9 @@ def validate_outbound(text):
     try:
         from nlp_email_scrubber import scrub_email
         text = scrub_email(text)
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('enforce_rules.py').debug(f'Suppressed: {_e}')
 
     is_valid = len(violations) == 0
     return is_valid, text, violations
@@ -304,8 +306,9 @@ def _patched_urlopen(req, *args, **kwargs):
                                 import logging
                                 logging.getLogger("enforce").warning(
                                     f"Outbound violations caught by urllib patch: {violations}")
-                        except Exception:
-                            pass
+                        except Exception as _e:
+
+                            import logging; logging.getLogger('enforce_rules.py').debug(f'Suppressed: {_e}')
 
                         if cleaned != original:
                             params[field] = [cleaned]
@@ -315,8 +318,10 @@ def _patched_urlopen(req, *args, **kwargs):
                     quote_via=urllib.parse.quote
                 ).encode('utf-8')
 
-            except Exception:
-                pass
+            except Exception as _e:
+
+
+                import logging; logging.getLogger('enforce_rules.py').debug(f'Suppressed: {_e}')
 
     return _original_urlopen(req, *args, **kwargs)
 

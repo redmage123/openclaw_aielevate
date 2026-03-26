@@ -180,8 +180,9 @@ def check_promised_actions():
                                 and meta.get("date", "") > str(row[4])):
                                 fulfilled = True
                                 break
-                    except Exception:
-                        pass
+                    except Exception as _e:
+
+                        import logging; logging.getLogger('proactive_tracker.py').debug(f'Suppressed: {_e}')
 
                     if not fulfilled:
                         promises.append({
@@ -263,8 +264,9 @@ def run():
             received = datetime.fromisoformat(item["received"])
             if received > cutoff:
                 fresh_unanswered.append(item)
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('proactive_tracker.py').debug(f'Suppressed: {_e}')
     unanswered = fresh_unanswered
 
     if unanswered:
@@ -286,8 +288,9 @@ def run():
             created = datetime.fromisoformat(item["created"])
             if created > cutoff_old:
                 fresh_stale.append(item)
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('proactive_tracker.py').debug(f'Suppressed: {_e}')
     stale = fresh_stale
 
     if stale:

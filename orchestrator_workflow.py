@@ -369,8 +369,9 @@ class EmailOrchestratorWorkflow:
         if result.intent not in {"bug_report"}:
             try:
                 email_result = json.loads(email_result_json)
-            except Exception as e:
-                pass
+            except Exception as _e:
+
+                import logging; logging.getLogger('orchestrator_workflow.py').debug(f'Suppressed: {_e}')
 
         # 4. Check if acceptance was detected by the email workflow
         acceptance_from_email = any("handoff:" in a for a in email_result.get("actions", []))

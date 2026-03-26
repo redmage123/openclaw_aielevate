@@ -35,7 +35,10 @@ def _safe_import(module, func):
     try:
         mod = __import__(module)
         return getattr(mod, func)
-    except Exception:
+    except Exception as _e:
+
+        import logging; logging.getLogger('unified_comms.py').debug(f'Suppressed: {_e}')
+
         return None
 
 # NLP components

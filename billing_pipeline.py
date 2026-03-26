@@ -110,7 +110,7 @@ def create_milestone_invoice(
     due_date = (datetime.now(timezone.utc) + timedelta(days=14)).isoformat()
     cur.execute(
         """INSERT INTO invoices (customer_email, project_title, milestone, amount_eur, org, stripe_link, due_date, notes)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
         RETURNING id, customer_email, project_title, milestone, amount_eur, stripe_link""",
         (customer_email, project_title, milestone, amount_eur, org, stripe_link, due_date, notes)
     )

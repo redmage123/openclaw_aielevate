@@ -180,8 +180,9 @@ async def read_kg(input: InteractionInput) -> str:
         results = kg.search(input.sender_email)
         if results:
             parts.append("KG data:\n" + "\n".join(str(r)[:200] for r in results[:5]))
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('temporal_workflows.py').debug(f'Suppressed: {_e}')
 
     # 2. Semantic search across all data sources (emails, proposals, milestones, KG)
     try:
@@ -190,8 +191,9 @@ async def read_kg(input: InteractionInput) -> str:
             input.sender_email, input.subject, input.message, org=org, max_results=8)
         if context:
             parts.append(context)
-    except Exception:
-        pass
+    except Exception as _e:
+
+        import logging; logging.getLogger('temporal_workflows.py').debug(f'Suppressed: {_e}')
 
     return "\n".join(parts) if parts else ""
 

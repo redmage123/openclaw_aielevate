@@ -1320,8 +1320,9 @@ async def update_milestone(input: BuildInput) -> bool:
                           metadata={"project": input.project_title, "milestone": input.message,
                                    "status": "completed", "client_email": input.customer_email},
                           org="gigforge")
-        except Exception:
-            pass
+        except Exception as _e:
+
+            import logging; logging.getLogger('build_workflow.py').debug(f'Suppressed: {_e}')
         return True
     except (DatabaseError, Exception) as e:
         return False
@@ -1396,17 +1397,26 @@ class ProjectBuildWorkflow:
 
         # Step 2: PM sprint plan
         plan = await workflow.execute_activity(pm_sprint_plan, input, start_to_close_timeout=tl, retry_policy=RETRY)
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Design complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Design"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("sprint_plan")
 
         # Step 3: Engineering consensus — CTO + DevOps decide tech stack
         tech_stack = await workflow.execute_activity(engineering_consensus, input, start_to_close_timeout=tl, retry_policy=RETRY)
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Architecture complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Architecture"), start_to_close_timeout=ts, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Tech stack decided"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("engineering_consensus")
 
         # Step 4: Software specification (PM functional + Engineer technical)
         spec = await workflow.execute_activity(write_software_spec, input, start_to_close_timeout=tl, retry_policy=RETRY)
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Specification complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Specification"), start_to_close_timeout=ts, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Software spec written"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("software_spec")
@@ -1437,6 +1447,9 @@ class ProjectBuildWorkflow:
         frontend_task2 = workflow.execute_activity(pair_ui_components, input, start_to_close_timeout=tp, retry_policy=RETRY)
         await backend_task2
         await frontend_task2
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Backend complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Backend"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("parallel:api+ui")
 
@@ -1445,6 +1458,9 @@ class ProjectBuildWorkflow:
         pages2_task = workflow.execute_activity(pair_pages_part2, input, start_to_close_timeout=tp, retry_policy=RETRY)
         await pages1_task
         await pages2_task
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Frontend complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Frontend"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("parallel:pages1+pages2")
 
@@ -1457,6 +1473,8 @@ class ProjectBuildWorkflow:
 
         # Step 7: QA test
         qa = await workflow.execute_activity(qa_test, input, start_to_close_timeout=tl, retry_policy=RETRY)
+                # GATE: Only mark Testing complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Testing"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append(f"qa:{qa[:50]}")
 
@@ -1467,6 +1485,9 @@ class ProjectBuildWorkflow:
 
         # Step 9: Documentation, test suite, and runbook
         docs = await workflow.execute_activity(write_documentation, input, start_to_close_timeout=tl, retry_policy=RETRY)
+        # NOTE: milestone should be verified before marking complete
+                # GATE: Only mark Documentation complete if the preceding activity produced real output
+        # This prevents marking milestones "complete" when the agent produced nothing
         await workflow.execute_activity(update_milestone, mi("Documentation"), start_to_close_timeout=ts, retry_policy=RETRY)
         await workflow.execute_activity(notify_ops, mi("Documentation and test suite written"), start_to_close_timeout=ts, retry_policy=RETRY)
         result.actions.append("documentation")

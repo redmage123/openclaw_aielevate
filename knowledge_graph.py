@@ -84,17 +84,17 @@ CREATE VIRTUAL TABLE IF NOT EXISTS entity_fts USING fts5(
 
 CREATE TRIGGER IF NOT EXISTS entity_ai AFTER INSERT ON entities BEGIN
     INSERT INTO entity_fts(rowid, type, key, properties)
-    VALUES (new.id, new.type, new.key, new.properties);
+    VALUES (new.id, new.type, new.key, new.properties) ON CONFLICT DO NOTHING;
 END;
 CREATE TRIGGER IF NOT EXISTS entity_ad AFTER DELETE ON entities BEGIN
     INSERT INTO entity_fts(entity_fts, rowid, type, key, properties)
-    VALUES ('delete', old.id, old.type, old.key, old.properties);
+    VALUES ('delete', old.id, old.type, old.key, old.properties) ON CONFLICT DO NOTHING;
 END;
 CREATE TRIGGER IF NOT EXISTS entity_au AFTER UPDATE ON entities BEGIN
     INSERT INTO entity_fts(entity_fts, rowid, type, key, properties)
-    VALUES ('delete', old.id, old.type, old.key, old.properties);
+    VALUES ('delete', old.id, old.type, old.key, old.properties) ON CONFLICT DO NOTHING;
     INSERT INTO entity_fts(rowid, type, key, properties)
-    VALUES (new.id, new.type, new.key, new.properties);
+    VALUES (new.id, new.type, new.key, new.properties) ON CONFLICT DO NOTHING;
 END;
 """
 
