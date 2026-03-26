@@ -178,7 +178,7 @@ async def trigger_email_workflow(input: EmailInput) -> str:
             "status": "started",
             "agent_id": input.agent_id,
         })
-    except (AgentError, Exception) as e:
+    except Exception as e:
         return json.dumps({"error": str(e)[:200]})
 
 
@@ -193,7 +193,7 @@ async def trigger_build_workflow(input: EmailInput) -> str:
             input.sender_email, input.subject.replace("Re: ", ""),
             slug, input.body[:1000])
         return json.dumps(result)
-    except (AgentError, Exception) as e:
+    except Exception as e:
         return json.dumps({"error": str(e)[:200]})
 
 
@@ -208,7 +208,7 @@ async def trigger_onboarding_workflow(input: EmailInput) -> str:
             input.sender_email, input.subject.replace("Re: ", ""),
             slug, input.body[:1000])
         return json.dumps(result)
-    except (AgentError, Exception) as e:
+    except Exception as e:
         return json.dumps({"error": str(e)[:200]})
 
 
@@ -369,7 +369,7 @@ class EmailOrchestratorWorkflow:
         if result.intent not in {"bug_report"}:
             try:
                 email_result = json.loads(email_result_json)
-            except (AgentError, Exception) as e:
+            except Exception as e:
                 pass
 
         # 4. Check if acceptance was detected by the email workflow

@@ -114,6 +114,9 @@ def scrub_email(body):
         kept_sentences = []
 
         for sent in sentences:
+            if _is_metadata(sent):
+                log.info(f"Scrubbed metadata (sentence): {sent[:60]}")
+                continue
             if _is_call_suggestion(sent):
                 log.info(f"Scrubbed call suggestion: {sent[:60]}")
                 continue
