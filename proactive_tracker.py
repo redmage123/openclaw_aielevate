@@ -39,34 +39,72 @@ def _get_db():
 
 
 def check_unanswered_emails(hours=4):
-    """Find inbound emails that never got an outbound reply."""
+    """Find inbound emails that never got a reply — uses semantic search to check.
+
+    Instead of just matching subject lines, uses semantic search to find
+    if we sent ANY related outbound email to the same sender.
+    """
     conn = _get_db()
     cur = conn.cursor()
 
-    # Emails received in the last N hours with no outbound reply to same sender+subject
+    # Get recent inbound emails from external senders
     cur.execute("""
         SELECT DISTINCT ON (ei.sender_email, ei.subject)
-            ei.sender_email, ei.subject, ei.agent_id, ei.created_at
+            ei.sender_email, ei.subject, ei.agent_id, ei.created_at, ei.body_text
         FROM email_interactions ei
         WHERE ei.direction = 'inbound'
-          AND ei.created_at > NOW() - INTERVAL '%s hours' AND ei.created_at > NOW() - INTERVAL '48 hours'
+          AND ei.created_at > NOW() - INTERVAL '%s hours'
+          AND ei.created_at > NOW() - INTERVAL '48 hours'
           AND ei.sender_email NOT LIKE '%%@mg.ai-elevate.ai'
           AND ei.sender_email NOT LIKE '%%@gigforge.ai'
           AND ei.sender_email NOT LIKE '%%@techuni.ai'
           AND ei.sender_email NOT LIKE '%%@internal.ai-elevate.ai'
-          AND NOT EXISTS (
-              SELECT 1 FROM email_interactions eo
-              WHERE eo.direction = 'outbound'
-                AND eo.created_at > ei.created_at
-                AND (eo.subject ILIKE '%%' || ei.subject || '%%'
-                     OR ei.subject ILIKE '%%' || eo.subject || '%%')
-          )
         ORDER BY ei.sender_email, ei.subject, ei.created_at DESC
     """, (hours,))
 
-    unanswered = cur.fetchall()
+    candidates = cur.fetchall()
     conn.close()
-    return [{"sender": r[0], "subject": r[1], "agent": r[2], "received": str(r[3])} for r in unanswered]
+
+    unanswered = []
+    for r in candidates:
+        sender, subject, agent, received, body = r[0], r[1], r[2], r[3], r[4] or ""
+
+        # Use semantic search to find if we already replied to this topic
+        try:
+            from semantic_search import search
+            query = f"{subject} {body[:200]}"
+            results = search(query, org="gigforge", top_k=5)
+
+            # Check if any result is an outbound email sent AFTER this inbound
+            has_reply = False
+            for hit in results:
+                meta = hit.get("metadata", {})
+                if meta.get("direction") == "outbound" and hit["score"] > 0.3:
+                    # Check if the outbound was sent after this inbound
+                    try:
+                        hit_date = meta.get("date", "")
+                        if hit_date and hit_date > str(received):
+                            has_reply = True
+                            break
+                    except Exception:
+                        # If we can't compare dates, assume any high-score outbound is a reply
+                        if hit["score"] > 0.5:
+                            has_reply = True
+                            break
+
+            if not has_reply:
+                unanswered.append({
+                    "sender": sender, "subject": subject,
+                    "agent": agent, "received": str(received)
+                })
+        except Exception:
+            # Fallback: include it as potentially unanswered
+            unanswered.append({
+                "sender": sender, "subject": subject,
+                "agent": agent, "received": str(received)
+            })
+
+    return unanswered
 
 
 def check_stale_milestones(days=3):
@@ -130,11 +168,27 @@ def check_promised_actions():
                 """, (row[4], row[4], row[1][:30]))
                 followup_count = cur.fetchone()[0]
                 if followup_count == 0:
-                    promises.append({
-                        "recipient": row[0], "subject": row[1],
-                        "agent": row[3], "promised_at": str(row[4]),
-                        "phrase": phrase,
-                    })
+                    # Double-check with semantic search — maybe we replied on a different subject
+                    fulfilled = False
+                    try:
+                        from semantic_search import search
+                        results = search(f"{row[1]} {row[0]}", org="gigforge", top_k=3)
+                        for hit in results:
+                            meta = hit.get("metadata", {})
+                            if (meta.get("direction") == "outbound"
+                                and hit["score"] > 0.4
+                                and meta.get("date", "") > str(row[4])):
+                                fulfilled = True
+                                break
+                    except Exception:
+                        pass
+
+                    if not fulfilled:
+                        promises.append({
+                            "recipient": row[0], "subject": row[1],
+                            "agent": row[3], "promised_at": str(row[4]),
+                            "phrase": phrase,
+                        })
                 break  # One promise per email is enough
 
     conn.close()
