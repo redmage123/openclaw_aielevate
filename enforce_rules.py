@@ -189,6 +189,7 @@ def validate_outbound(text):
                 # Internal URL — verify it's a real endpoint
                 if not any(valid in url_lower for valid in VALID_URLS.values()):
                     violations.append(f"Unverified internal URL: {url}")
+                    text = text.replace(url, "[URL REDACTED — verify before sending]")
 
     # Scrub metadata and calls (belt + suspenders with usercustomize.py)
     try:
