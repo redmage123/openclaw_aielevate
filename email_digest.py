@@ -103,6 +103,15 @@ def compile_and_send():
         cc="peter.munro@ai-elevate.ai",
     )
 
+    # Send Peter his own copy
+    send_email(
+        to="peter.munro@ai-elevate.ai",
+        subject=f"Daily Digest — {len(items)} updates from {len(by_agent)} agents",
+        body=body,
+        agent_id="operations",
+        cc="",
+    )
+
     # Clear the queue
     QUEUE_FILE.write_text("")
     log.info(f"Digest sent: {len(items)} items from {len(by_agent)} agents")

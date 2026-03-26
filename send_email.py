@@ -150,7 +150,7 @@ def send_email(
 
     # Resolve domain first (always needed)
     # Digest: batch non-critical emails to Braun instead of sending individually
-    braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com']
+    braun_emails = ['braun.brelin@ai-elevate.ai', 'bbrelin@gmail.com', 'peter.munro@ai-elevate.ai']
     if to.lower() in braun_emails:
         try:
             from email_digest import should_send_immediately, queue_for_digest
