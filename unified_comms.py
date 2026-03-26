@@ -135,7 +135,20 @@ def process_inbound(
         except Exception as e:
             log.debug(f"Storage: {e}")
 
-    # 5. Queue for incremental NLP training
+    # 5. Index in semantic search
+    try:
+        from semantic_search import index_document
+        import hashlib, time
+        doc_id = hashlib.sha256(f"{sender}{subject}{time.time()}".encode()).hexdigest()[:16]
+        index_document('email', f"{subject} {text[:500]}",
+                      doc_id=f"inbound-{doc_id}",
+                      metadata={'sender': sender, 'subject': subject, 'direction': 'inbound',
+                               'channel': channel, 'agent_id': agent_id},
+                      org=org)
+    except Exception:
+        pass
+
+    # 6. Queue for incremental NLP training
     if _queue_train:
         try:
             _queue_train(sender, subject, text + " " + attachment_text)
@@ -168,7 +181,20 @@ def process_outbound(
         except Exception as e:
             log.debug(f"Scrub: {e}")
 
-    # 2. Store compressed + encrypted
+    # 2. Index in semantic search
+    try:
+        from semantic_search import index_document
+        import hashlib, time
+        doc_id = hashlib.sha256(f"{sender_agent}{recipient}{subject}{time.time()}".encode()).hexdigest()[:16]
+        index_document('email', f"{subject} {text[:500]}",
+                      doc_id=f"outbound-{doc_id}",
+                      metadata={'sender': sender_agent, 'recipient': recipient, 'subject': subject,
+                               'direction': 'outbound', 'channel': channel},
+                      org='gigforge')
+    except Exception:
+        pass
+
+    # 3. Store compressed + encrypted
     if _store:
         try:
             _store(recipient, sender_agent, subject, text, direction="outbound", agent_id=sender_agent)
