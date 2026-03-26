@@ -141,7 +141,7 @@ def _patched_urlopen(req, *args, **kwargs):
         except Exception:
             pass  # fix_sending_domain
 
-    # HTML formatting — convert plain text to branded HTML
+    # HTML formatting — ALWAYS convert plain text to branded HTML
     if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
         try:
             import sys
@@ -149,7 +149,7 @@ def _patched_urlopen(req, *args, **kwargs):
                 sys.path.insert(0, '/home/aielevate')
             import urllib.parse as _fp
             _fparams = _fp.parse_qs(req.data.decode() if isinstance(req.data, bytes) else req.data, keep_blank_values=True)
-            if 'html' not in _fparams and 'text' in _fparams:
+            if 'text' in _fparams:  # Always format — override any existing html
                 from email_formatter import format_email, get_agent_info
                 _from = _fparams.get('from', [''])[0]
                 # Extract agent_id from From address
@@ -163,8 +163,9 @@ def _patched_urlopen(req, *args, **kwargs):
                 _html = format_email(_fparams['text'][0], agent_id=_agent_id, agent_name=_name, agent_title=_title)
                 _fparams['html'] = [_html]
                 req.data = _fp.urlencode({k: v[0] for k, v in _fparams.items()}, quote_via=_fp.quote).encode('utf-8')
-        except Exception:
-            pass
+        except Exception as _fmt_err:
+            import logging
+            logging.getLogger('urllib-formatter').error(f'Format failed: {_fmt_err}')
 
     # Dedup: block duplicate Mailgun sends within 5 minutes
     if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
