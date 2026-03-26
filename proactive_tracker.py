@@ -199,14 +199,71 @@ def check_promised_actions():
 _nudge_cache = {}
 
 def dispatch_nudge(agent_id, task_description):
-    """Send a nudge to an agent via sessions_send or direct dispatch.
-    Deduplicates: won't nudge the same agent about the same issue within 24h."""
+    """Send a nudge to an agent — but first check KG, Plane, and semantic search
+    to see if the task is already being handled or was completed."""
     import hashlib, time
+
+    # Dedup: don't nudge same agent about same issue within 24h
     nudge_key = hashlib.sha256(f"{agent_id}:{task_description[:100]}".encode()).hexdigest()[:16]
     last_nudge = _nudge_cache.get(nudge_key, 0)
-    if time.time() - last_nudge < 86400:  # 24 hours
+    if time.time() - last_nudge < 86400:
         log.info(f"Skipping duplicate nudge for {agent_id}: {task_description[:50]}")
         return False
+
+    # Check semantic search — is this already being worked on or completed?
+    try:
+        from semantic_search import search
+        results = search(task_description[:200], org="gigforge", top_k=3)
+        for r in results:
+            meta = r.get("metadata", {})
+            status = meta.get("status", "").lower()
+            if status in ("completed", "delivered", "closed", "done", "cancelled", "cancelled-owner-handling"):
+                log.info(f"Skipping nudge — task already {status}: {task_description[:50]}")
+                return False
+            if r["score"] > 0.5 and meta.get("direction") == "outbound":
+                # High-score outbound email found — someone already responded
+                log.info(f"Skipping nudge — outbound reply found (score={r['score']:.2f}): {task_description[:50]}")
+                return False
+    except Exception:
+        pass
+
+    # Check Plane for active tickets
+    try:
+        from plane_ops import Plane
+        p = Plane("gigforge")
+        issues = p.list_issues(project="BUG")
+        for issue in issues:
+            name = issue.get("name", "").lower()
+            state = issue.get("state_detail", {}).get("name", "").lower()
+            # If there's an active ticket for this topic, check its state
+            if any(word in name for word in task_description.lower().split()[:3]):
+                if state in ("done", "closed", "cancelled"):
+                    log.info(f"Skipping nudge — Plane ticket {state}: {issue.get('name', '')[:40]}")
+                    return False
+                if state in ("in progress", "in review"):
+                    log.info(f"Skipping nudge — Plane ticket already {state}: {issue.get('name', '')[:40]}")
+                    return False
+    except Exception:
+        pass
+
+    # Check KG for project status
+    try:
+        from knowledge_graph import KG
+        kg = KG("gigforge")
+        # Extract key terms from the task description
+        import re
+        refs = re.findall(r'GF-\d+|gf-\d+|CC-\d+', task_description)
+        for ref in refs:
+            results = kg.search(ref)
+            if results:
+                for r in results:
+                    props = r.get("properties", {})
+                    if props.get("status", "").lower() in ("completed", "delivered", "closed", "cancelled"):
+                        log.info(f"Skipping nudge — KG shows {ref} is {props['status']}")
+                        return False
+    except Exception:
+        pass
+
     _nudge_cache[nudge_key] = time.time()
 
     try:
