@@ -312,16 +312,16 @@ def _already_responded(sender: str, subject: str) -> bool:
     except Exception:
         return False
 
-def _log_interaction(message_id, sender_email, recipient, agent_id, subject, direction="inbound", status="received"):
+def _log_interaction(message_id, sender_email, recipient, agent_id, subject, direction="inbound", status="received", body_text=""):
     """Log email interaction for audit trail."""
     try:
         import psycopg2
         conn = psycopg2.connect(host="127.0.0.1", port=5434, dbname="rag", user="rag", password="rag_vec_2026")
         conn.autocommit = True
         conn.cursor().execute(
-            "INSERT INTO email_interactions (message_id, sender_email, recipient, agent_id, subject, direction, status) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (message_id, sender_email, recipient, agent_id, subject, direction, status))
+            "INSERT INTO email_interactions (message_id, sender_email, recipient, agent_id, subject, direction, status, body_text) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (message_id, sender_email, recipient, agent_id, subject, direction, status, body_text[:2000] if body_text else None))
         conn.close()
     except Exception:
         pass
@@ -387,6 +387,17 @@ def _get_org(agent_id: str) -> tuple:
         return ("ai-elevate", "AI Elevate", f"{agent_id}@internal.ai-elevate.ai", "internal.ai-elevate.ai")
 
 def _send_mailgun(domain: str, form_data: dict):
+    # Scrub email body before sending via any path
+    try:
+        import sys
+        sys.path.insert(0, "/home/aielevate") if "/home/aielevate" not in sys.path else None
+        from nlp_email_scrubber import scrub_email
+        if "text" in form_data:
+            form_data["text"] = scrub_email(form_data["text"])
+        if "html" in form_data:
+            form_data["html"] = scrub_email(form_data["html"])
+    except Exception:
+        pass
     """Send email via Mailgun API."""
     data = _up.urlencode(form_data).encode("utf-8")
     req = _ur.Request(f"https://api.mailgun.net/v3/{domain}/messages", data=data, method="POST")
@@ -443,6 +454,7 @@ NEVER admit ignorance — search Plane, RAG, and KG first.
 # ---------------------------------------------------------------------------
 @app.post("/webhook/inbound")
 async def inbound_email(
+    request: Request,
     sender: str = Form(""),
     recipient: str = Form(""),
     subject: str = Form(""),
@@ -450,9 +462,29 @@ async def inbound_email(
     stripped_text: str = Form("", alias="stripped-text"),
     message_id: str = Form("", alias="Message-Id"),
     header_from: str = Form("", alias="from"),
+    cc: str = Form("", alias="Cc"),
 ):
     raw_sender = sender
     raw_body = body_plain or stripped_text or ""
+
+    # Extract text from attachments
+    attachment_text = ""
+    attachment_files = []
+    try:
+        form = await request.form()
+        for key in form:
+            if key.startswith("attachment"):
+                upload = form[key]
+                if hasattr(upload, "filename") and upload.filename:
+                    attachment_files.append(upload)
+        if attachment_files:
+            from attachment_processor import process_attachments
+            att_result = process_attachments(attachment_files)
+            attachment_text = att_result.get("text", "")
+            if attachment_text:
+                logger.info(f"Extracted {len(attachment_text)} chars from {att_result['count']} attachment(s): {att_result['filenames']}")
+    except Exception as _att_err:
+        logger.debug(f"Attachment processing: {_att_err}")
 
     # --- Bounce handling: use From header if envelope is bounce ---
     if sender.lower().startswith("bounce+") and header_from:
@@ -575,7 +607,9 @@ async def inbound_email(
             pass
 
     # --- Build agent message ---
-    full_message = f"INBOUND EMAIL — respond to this email.\n\nFrom: {sender}\nSubject: {subject}\nSender first name: {sender_name}\n\nEmail body:\n{message}"
+    cc_line = f"\nCC: {cc}" if cc else ""
+    att_line = f"\n\nAttachment content:\n{attachment_text[:3000]}" if attachment_text else ""
+    full_message = f"INBOUND EMAIL — respond to this email.\n\nFrom: {sender}\nSubject: {subject}\nSender first name: {sender_name}{cc_line}\n\nEmail body:\n{message}\n\nIMPORTANT: If there are CC recipients, include them when replying. Use their email addresses from the CC line.{att_line}"
     if thread_context:
         full_message += thread_context
     if customer_ctx:
@@ -583,7 +617,18 @@ async def inbound_email(
 
     # --- Auto-ack REMOVED: was sending duplicate emails ---
     # The Temporal workflow sends the real reply; no need for a separate ack.
-    _log_interaction(message_id, sender_email, recipient, agent_id, subject)
+    _log_interaction(message_id, sender_email, recipient, agent_id, subject, body_text=raw_body[:2000])
+
+    # Store email compressed + encrypted and queue for NLP training
+    try:
+        sys.path.insert(0, "/home/aielevate") if "/home/aielevate" not in sys.path else None
+        from unified_comms import process_inbound as _unified_inbound
+        _unified_inbound(
+            text=raw_body, sender=sender_email, recipient=recipient,
+            subject=subject, channel="email", agent_id=agent_id, org=org,
+            attachments=attachment_files if attachment_files else None, cc=cc)
+    except Exception as _nlp_err:
+        logger.debug(f"NLP pipeline: {_nlp_err}")
 
     # --- Read agent AGENTS.md for context ---
     agent_context = ""
@@ -685,11 +730,16 @@ async def inbound_email(
 
         # Remove call/meeting offers
         call_patterns = [
-            r"[Hh]appy to (?:hop on|jump on|set up|schedule) a (?:quick )?call.*?[.!]",
-            r"[Ww]e could (?:hop on|jump on) a (?:quick )?call.*?[.!]",
-            r"[Ff]eel free to (?:book|schedule|set up) a (?:call|meeting|zoom|video).*?[.!]",
-            r"[Hh]appy to (?:chat|talk|discuss) (?:on|over|via) (?:a )?(?:call|phone|zoom|video|teams).*?[.!]",
-            r"[Ll]et me know if you.d (?:prefer|like|rather) a (?:quick )?(?:call|chat|meeting).*?[.!]",
+            r"[Hh]appy to (?:hop on|jump on|set up|schedule) a (?:quick )?(?:call|screen ?share|meeting|zoom|video).*?[.!]",
+            r"[Ww]e could (?:hop on|jump on|schedule|set up) a (?:quick )?(?:call|screen ?share|meeting).*?[.!]",
+            r"[Ff]eel free to (?:book|schedule|set up) a (?:call|meeting|zoom|video|screen ?share).*?[.!]",
+            r"[Hh]appy to (?:chat|talk|discuss|walk.*?through) (?:on|over|via|this on) (?:a )?(?:call|phone|zoom|video|teams|screen ?share).*?[.!]",
+            r"[Ll]et me know if you.d (?:prefer|like|rather|want) (?:a |to )?(?:quick )?(?:call|chat|meeting|screen ?share|walk.*?through).*?[.!]",
+            r"[Ww]e.d suggest (?:scheduling|setting up|hopping on) a (?:short |quick )?(?:call|screen ?share|meeting|walk.*?through).*?[.!]",
+            r"[Ss]hall we (?:set up|schedule|hop on|jump on) a (?:quick )?(?:call|meeting|screen ?share).*?[.!]",
+            r"[Ww]ould you (?:like|prefer|be open) to (?:a |hopping on a )?(?:quick )?(?:call|meeting|screen ?share|walk.*?through).*?[.!]",
+            r"[Ii]f you.d like.{0,20}(?:walk|screen ?share|call|meeting|demo).*?[.!]",
+            r"[Ww]e can (?:walk|talk) (?:you |)through (?:this|it|the|everything).*?[.!]",
         ]
         for pattern in call_patterns:
             response = re.sub(pattern, "", response).strip()
