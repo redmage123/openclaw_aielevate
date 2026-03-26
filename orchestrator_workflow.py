@@ -143,17 +143,40 @@ async def check_duplicate_workflows(input: EmailInput) -> dict:
 
 @activity.defn
 async def trigger_email_workflow(input: EmailInput) -> str:
-    """Start the email interaction workflow (agent responds to customer)."""
+    """Start the email interaction workflow (non-blocking — fire and forget).
+
+    The agent workflow runs independently. The orchestrator doesn't wait
+    for it to finish, preventing cascading timeouts and pile-ups.
+    """
     try:
-        from temporal_workflows import execute_workflow
-        result = await execute_workflow(
-            input.agent_id, input.body, input.sender_email,
-            input.subject, timeout=300)
+        from temporalio.client import Client
+        import time as _time
+
+        client = await Client.connect("localhost:7233")
+        from temporal_workflows import InteractionInput
+
+        input_data = InteractionInput(
+            agent_id=input.agent_id,
+            message=input.body,
+            sender_email=input.sender_email,
+            subject=input.subject,
+            timeout=300,
+        )
+
+        workflow_id = f"email-{input.agent_id}-{int(_time.time())}"
+
+        # START (not execute) — returns immediately
+        handle = await client.start_workflow(
+            "EmailInteractionWorkflow",
+            input_data,
+            id=workflow_id,
+            task_queue="email-interactions",
+        )
+
         return json.dumps({
-            "sentiment": result.get("sentiment", ""),
-            "actions": result.get("actions", []),
-            "stdout": result.get("stdout", "")[:500],
-            "response_agent": result.get("response_agent", ""),
+            "workflow_id": workflow_id,
+            "status": "started",
+            "agent_id": input.agent_id,
         })
     except (AgentError, Exception) as e:
         return json.dumps({"error": str(e)[:200]})
