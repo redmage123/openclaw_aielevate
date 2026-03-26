@@ -376,6 +376,20 @@ def search(query, org=None, doc_type=None, top_k=10):
             0.2 * item["vector_score"]
         )
 
+    # Boost project records — they contain authoritative info (URLs, credentials, status)
+    DOC_TYPE_BOOST = {
+        'project': 1.3,
+        'milestone': 1.1,
+        'proposal': 1.0,
+        'kg_entity': 1.1,
+        'email': 0.9,
+        'stored_email': 0.85,
+    }
+    for key in merged:
+        item = merged[key]
+        boost = DOC_TYPE_BOOST.get(item['doc_type'], 1.0)
+        item['score'] *= boost
+
     ranked = sorted(merged.values(), key=lambda x: x["score"], reverse=True)[:top_k]
     return ranked
 
