@@ -141,6 +141,31 @@ def _patched_urlopen(req, *args, **kwargs):
         except Exception:
             pass  # fix_sending_domain
 
+    # HTML formatting — convert plain text to branded HTML
+    if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
+        try:
+            import sys
+            if '/home/aielevate' not in sys.path:
+                sys.path.insert(0, '/home/aielevate')
+            import urllib.parse as _fp
+            _fparams = _fp.parse_qs(req.data.decode() if isinstance(req.data, bytes) else req.data, keep_blank_values=True)
+            if 'html' not in _fparams and 'text' in _fparams:
+                from email_formatter import format_email, get_agent_info
+                _from = _fparams.get('from', [''])[0]
+                # Extract agent_id from From address
+                _agent_id = 'gigforge'
+                if 'techuni' in _from.lower(): _agent_id = 'techuni-ceo'
+                elif 'sales' in _from.lower(): _agent_id = 'gigforge-sales'
+                elif 'engineer' in _from.lower(): _agent_id = 'gigforge-engineer'
+                elif 'devops' in _from.lower() or 'casey' in _from.lower(): _agent_id = 'gigforge-devops'
+                elif 'scout' in _from.lower() or 'quinn' in _from.lower(): _agent_id = 'gigforge-scout'
+                _name, _title = get_agent_info(_agent_id)
+                _html = format_email(_fparams['text'][0], agent_id=_agent_id, agent_name=_name, agent_title=_title)
+                _fparams['html'] = [_html]
+                req.data = _fp.urlencode({k: v[0] for k, v in _fparams.items()}, quote_via=_fp.quote).encode('utf-8')
+        except Exception:
+            pass
+
     # Dedup: block duplicate Mailgun sends within 5 minutes
     if 'api.mailgun.net' in url and '/messages' in url and hasattr(req, 'data') and req.data:
         dedup_key = hashlib.sha256(req.data[:500] if isinstance(req.data, bytes) else req.data.encode()[:500]).hexdigest()[:16]
