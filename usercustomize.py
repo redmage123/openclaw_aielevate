@@ -128,6 +128,16 @@ def _patched_urlopen(req, *args, **kwargs):
                 'ceo@mg.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
                 'ceo@internal.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
                 'robin@mg.ai-elevate.ai': ('techuni.ai', 'Robin Callister <ceo@techuni.ai>'),
+                'ops@mg.ai-elevate.ai': ('gigforge.ai', 'Alex Reeves <ops@gigforge.ai>'),
+                'sales@mg.ai-elevate.ai': ('gigforge.ai', 'Sam Carrington <sales@gigforge.ai>'),
+                'engineer@mg.ai-elevate.ai': ('gigforge.ai', 'Chris Novak <engineer@gigforge.ai>'),
+                'devops@mg.ai-elevate.ai': ('gigforge.ai', 'Casey Muller <devops@gigforge.ai>'),
+                'scout@mg.ai-elevate.ai': ('gigforge.ai', 'Quinn Azevedo <scout@gigforge.ai>'),
+                'pm@mg.ai-elevate.ai': ('gigforge.ai', 'Jamie Okafor <pm@gigforge.ai>'),
+                'clientservices@mg.ai-elevate.ai': ('gigforge.ai', 'Jordan Whitaker <clientservices@gigforge.ai>'),
+                'finance@mg.ai-elevate.ai': ('gigforge.ai', 'Pat Eriksen <finance@gigforge.ai>'),
+                'billing@mg.ai-elevate.ai': ('gigforge.ai', 'GigForge Billing <billing@gigforge.ai>'),
+                'qa@mg.ai-elevate.ai': ('gigforge.ai', 'Riley Svensson <qa@gigforge.ai>'),
             }
             for wrong_from, (correct_domain, correct_from) in _domain_map.items():
                 if wrong_from in _from:
