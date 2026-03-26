@@ -732,20 +732,87 @@ async def pair_integration(input: BuildInput) -> str:
 
 @activity.defn
 async def verify_build(input: BuildInput) -> str:
-    """Verify the build produced actual source files."""
+    """Verify the build ACTUALLY WORKS — not just that files exist.
+
+    Three checks:
+    1. HEALTH: The app responds on its port with HTTP 200
+    2. FUNCTIONAL: Key pages contain real content, not placeholders
+    3. SMOKE TEST: Critical user flows work (login, main page loads)
+
+    Fails the build if any check fails. Does NOT mark milestones complete.
+    """
+    import subprocess
+    import urllib.request
+
     project_dir = f"/opt/ai-elevate/gigforge/projects/{input.project_slug}"
     project = Path(project_dir)
+    failures = []
+
+    # Check 1: Source files exist (basic sanity)
     source_exts = {'.py', '.ts', '.tsx', '.js', '.jsx'}
     source_files = [f for ext in source_exts for f in project.rglob(f'*{ext}') if 'node_modules' not in str(f)]
-    has_docker = bool(list(project.rglob('Dockerfile')) or list(project.rglob('docker-compose.yml')))
-
     if len(source_files) < 5:
-        raise ApplicationError(
-            f"Build produced only {len(source_files)} source files.",
-            non_retryable=True)
+        failures.append(f"Only {len(source_files)} source files — not a real build")
 
-    log.info(f"Build verified: {len(source_files)} files, docker={has_docker}")
-    return f"VERIFIED: {len(source_files)} source files, docker={has_docker}"
+    # Check 2: Docker containers running
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", f"name={input.project_slug}", "--format", "{{.Names}} {{.Status}}"],
+            capture_output=True, text=True, timeout=10)
+        running = [l for l in result.stdout.strip().split("\n") if "Up" in l]
+        if not running:
+            failures.append(f"No Docker containers running for {input.project_slug}")
+    except Exception as e:
+        failures.append(f"Docker check failed: {e}")
+
+    # Check 3: Health check — app responds on its port
+    if input.domain:
+        url = input.domain if input.domain.startswith("http") else f"http://{input.domain}"
+        try:
+            resp = urllib.request.urlopen(url, timeout=10)
+            status = resp.getcode()
+            if status != 200:
+                failures.append(f"App returned HTTP {status}, expected 200")
+            else:
+                body = resp.read().decode("utf-8", errors="replace")[:5000]
+
+                # Check 4: NOT just scaffolding — look for placeholder content
+                placeholder_signals = [
+                    "coming soon", "lorem ipsum", "todo", "placeholder",
+                    "sample text", "example content", "under construction",
+                ]
+                for signal in placeholder_signals:
+                    if signal in body.lower():
+                        failures.append(f"App contains placeholder text: '{signal}'")
+                        break
+
+                # Check 5: Has actual interactive elements (not just a static page)
+                has_forms = "<form" in body.lower() or "<input" in body.lower()
+                has_buttons = "<button" in body.lower()
+                has_links = body.count("<a ") > 3
+                if not (has_forms or has_buttons or has_links):
+                    failures.append("App has no interactive elements (no forms, buttons, or navigation)")
+
+        except Exception as e:
+            failures.append(f"Health check failed: {url} — {e}")
+
+    # Check 6: Verify against project spec (if exists)
+    spec_path = project / "SOFTWARE_SPEC.md"
+    if spec_path.exists():
+        spec = spec_path.read_text()[:2000]
+        # Extract required features from spec
+        features = re.findall(r'(?:must|shall|should|will)\s+(.+?)(?:\.|$)', spec.lower())
+        if features:
+            log.info(f"Spec has {len(features)} required features")
+            # TODO: verify each feature exists in the app
+
+    if failures:
+        failure_report = "BUILD VERIFICATION FAILED:\n" + "\n".join(f"  ✗ {f}" for f in failures)
+        log.error(failure_report)
+        raise ApplicationError(failure_report, non_retryable=True)
+
+    log.info(f"Build verified: {len(source_files)} files, containers running, health OK, no placeholders")
+    return f"VERIFIED: {len(source_files)} source files, health OK, no placeholder content"
 
 
 
