@@ -30,6 +30,9 @@ QUEUE_FILE = DIGEST_DIR / "queue.jsonl"
 IMMEDIATE_KEYWORDS = [
     "incident", "down", "crash", "urgent", "critical", "security",
     "customer reply", "payment", "invoice",
+    "scout", "lead", "opportunit", "proposal", "bid",
+    "approved", "rejected", "deadline", "expir",
+    "client", "customer", "willie", "drazen", "jon",
 ]
 
 
