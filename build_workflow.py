@@ -1245,6 +1245,16 @@ async def update_milestone(input: BuildInput) -> bool:
             "UPDATE project_milestones SET status='completed', completed_at=NOW() WHERE customer_email=%s AND milestone=%s",
             (input.customer_email, milestone))
         conn.close()
+        # Re-index project with updated milestone status
+        try:
+            from semantic_search import index_document
+            index_document("milestone", f"{input.project_title} — {input.message} completed",
+                          doc_id=f"milestone-{input.slug}-{input.message}",
+                          metadata={"project": input.project_title, "milestone": input.message,
+                                   "status": "completed", "client_email": input.customer_email},
+                          org="gigforge")
+        except Exception:
+            pass
         return True
     except (DatabaseError, Exception) as e:
         return False
