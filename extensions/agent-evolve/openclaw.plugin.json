@@ -1,0 +1,86 @@
+{
+  "id": "agent-evolve",
+  "name": "Agent Evolve",
+  "description": "Observes agent failures, proposes LLM-driven workspace mutations, validates with fitness tests, and git-tags successful evolutions. Inspired by A-Evolve.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true
+      },
+      "minObservationsBeforeEvolve": {
+        "type": "number",
+        "default": 5
+      },
+      "maxMutationsPerCycle": {
+        "type": "number",
+        "default": 3
+      },
+      "fitnessThreshold": {
+        "type": "number",
+        "default": 0.7
+      },
+      "mutableFiles": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": ["AGENTS.md", "SOUL.md", "TOOLS.md"]
+      },
+      "allowSkillMutation": {
+        "type": "boolean",
+        "default": true
+      },
+      "testPrompts": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "mutationModel": {
+        "type": "string"
+      },
+      "mutationProvider": {
+        "type": "string"
+      },
+      "observationRetentionDays": {
+        "type": "number",
+        "default": 30
+      },
+      "maxObservationFileBytes": {
+        "type": "number",
+        "default": 10485760
+      },
+      "gateTimeoutMs": {
+        "type": "number",
+        "default": 120000
+      },
+      "autoEvolveSchedule": {
+        "type": "string"
+      }
+    }
+  },
+  "uiHints": {
+    "enabled": {
+      "label": "Enable Agent Evolve",
+      "help": "Master switch for the agent evolution system."
+    },
+    "minObservationsBeforeEvolve": {
+      "label": "Min Observations",
+      "help": "Minimum observation records before an evolution cycle can run."
+    },
+    "fitnessThreshold": {
+      "label": "Fitness Threshold",
+      "help": "Gate pass threshold: postScore must be >= preScore * threshold (0-1)."
+    },
+    "testPrompts": {
+      "label": "Test Prompts",
+      "help": "Map of agentId to test prompt strings used for fitness gating."
+    },
+    "autoEvolveSchedule": {
+      "label": "Auto-Evolve Schedule",
+      "help": "Optional cron expression to run evolution cycles automatically."
+    }
+  }
+}

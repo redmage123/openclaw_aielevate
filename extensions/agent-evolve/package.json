@@ -1,0 +1,12 @@
+{
+  "name": "@openclaw/agent-evolve",
+  "version": "2026.3.31",
+  "private": true,
+  "description": "A-Evolve pattern: automated agent workspace mutation with observation, LLM-driven evolution, fitness gating, and git-tracked rollback.",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
