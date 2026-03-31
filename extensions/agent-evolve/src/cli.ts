@@ -1,13 +1,62 @@
 // ---------------------------------------------------------------------------
-// Agent Evolve — CLI commands: openclaw evolve {status,run,rollback,observations}
-// Reads observation/evolution JSONL files directly (no gateway RPC needed).
+// Agent Evolve — CLI commands: openclaw evolve {status,run,sweep,rollback,observations}
+// status/observations read JSONL directly; run/sweep/rollback call gateway via WS.
 // ---------------------------------------------------------------------------
 
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { OpenClawPluginApi, OpenClawPluginCliContext } from "../../../src/plugins/types.js";
 import { readJsonl, countJsonlLines } from "./jsonl.js";
 import { analyzePatterns } from "./mutator.js";
 import { resolveObservationsPath, resolveEvolutionPath } from "./paths.js";
+import { parseConfig } from "./types.js";
 import type { Observation, EvolutionRecord } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Gateway WS call — dynamically loads core callGateway
+// ---------------------------------------------------------------------------
+
+async function callGatewayWs(method: string, params: Record<string, unknown>): Promise<unknown> {
+  // Try core callGateway (WebSocket)
+  try {
+    const mod = await import("../../../src/gateway/call.js");
+    const fn = (mod as Record<string, unknown>).callGateway;
+    if (typeof fn === "function") {
+      return await (fn as Function)({
+        method,
+        params,
+        url: process.env.OPENCLAW_GATEWAY_URL ?? "ws://127.0.0.1:18789",
+        token: process.env.OPENCLAW_GATEWAY_TOKEN,
+        timeoutMs: 120_000,
+        mode: "cli",
+        clientName: "agent-evolve-cli",
+      });
+    }
+  } catch {
+    // Not available in this install
+  }
+
+  // Fallback: try openclaw plugin-sdk path
+  try {
+    const mod = await import("openclaw/plugin-sdk");
+    const fn = (mod as Record<string, unknown>).callGateway;
+    if (typeof fn === "function") {
+      return await (fn as Function)({
+        method,
+        params,
+        url: process.env.OPENCLAW_GATEWAY_URL ?? "ws://127.0.0.1:18789",
+        token: process.env.OPENCLAW_GATEWAY_TOKEN,
+        timeoutMs: 120_000,
+        mode: "cli",
+        clientName: "agent-evolve-cli",
+      });
+    }
+  } catch {
+    // Not available
+  }
+
+  throw new Error("Cannot reach gateway — ensure the gateway is running");
+}
 
 /** Register the `evolve` CLI subcommand. */
 export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCliContext) => void {
@@ -16,7 +65,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
       .command("evolve")
       .description("Agent Evolve — automated workspace mutation and self-correction");
 
-    // --- evolve status ---
+    // --- evolve status (local JSONL read) ---
     evolve
       .command("status")
       .argument("[agentId]", "Agent ID to check")
@@ -59,7 +108,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("");
       });
 
-    // --- evolve observations ---
+    // --- evolve observations (local JSONL read) ---
     evolve
       .command("observations")
       .argument("<agentId>", "Agent ID")
@@ -101,31 +150,96 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("");
       });
 
-    // --- evolve run (placeholder — requires gateway) ---
+    // --- evolve run — calls gateway RPC ---
     evolve
       .command("run")
       .argument("<agentId>", "Agent ID to evolve")
       .option("--dry-run", "Propose mutations without applying them")
-      .description("Trigger an evolution cycle (requires running gateway)")
+      .description("Trigger an evolution cycle via gateway")
       .action(async (agentId: string, opts: { dryRun?: boolean }) => {
         console.log(
-          `\n  To trigger evolution, use the gateway RPC method 'evolve.run' with agentId="${agentId}"`,
+          `\n  Starting evolution cycle for ${agentId}${opts.dryRun ? " (dry run)" : ""}...`,
         );
-        console.log(`  The gateway handles the full Observe → Evolve → Gate → Reload cycle.`);
-        console.log(`  Dry run: ${opts.dryRun ?? false}\n`);
+        console.log("  (calling gateway — this may take 30-60s for LLM analysis)\n");
+
+        try {
+          const result = (await callGatewayWs("evolve.run", {
+            agentId,
+            dryRun: opts.dryRun,
+          })) as Record<string, unknown>;
+
+          const plan = result.plan as Record<string, unknown>;
+          const gate = result.gate as Record<string, unknown>;
+          const mutations = (plan?.mutations as Array<Record<string, unknown>>) ?? [];
+
+          console.log(`  Result: ${result.status}`);
+          console.log(`  Analysis: ${(plan?.analysis as string)?.slice(0, 200)}`);
+          console.log(`  Mutations: ${mutations.length}`);
+          for (const m of mutations) {
+            console.log(`    ${m.operation} ${m.file}: ${(m.reason as string)?.slice(0, 80)}`);
+          }
+          if (gate) {
+            console.log(
+              `  Gate: pre=${(gate.preScore as number)?.toFixed(2)} post=${(gate.postScore as number)?.toFixed(2)} passed=${gate.passed}`,
+            );
+          }
+          if (result.gitTag) console.log(`  Git tag: ${result.gitTag}`);
+        } catch (err) {
+          console.error(`  ${err instanceof Error ? err.message : err}`);
+        }
+
+        console.log("");
       });
 
-    // --- evolve rollback (placeholder — requires gateway) ---
+    // --- evolve sweep — calls gateway RPC ---
+    evolve
+      .command("sweep")
+      .description("Run evolution sweep across all agents via gateway")
+      .action(async () => {
+        console.log("\n  Starting evolution sweep via gateway...");
+        console.log("  (this may take several minutes)\n");
+
+        try {
+          const result = (await callGatewayWs("evolve.sweep", {})) as Record<string, unknown>;
+
+          const evolved = (result.evolved as string[]) ?? [];
+          const rejected = (result.rejected as string[]) ?? [];
+          const skipped = (result.skipped as string[]) ?? [];
+          const errors = (result.errors as string[]) ?? [];
+
+          console.log(`  Evolved: ${evolved.join(", ") || "none"}`);
+          console.log(`  Rejected: ${rejected.join(", ") || "none"}`);
+          console.log(`  Skipped: ${skipped.length} agents`);
+          if (errors.length > 0) console.log(`  Errors: ${errors.join("; ")}`);
+        } catch (err) {
+          console.error(`  ${err instanceof Error ? err.message : err}`);
+        }
+
+        console.log("");
+      });
+
+    // --- evolve rollback — calls gateway RPC ---
     evolve
       .command("rollback")
       .argument("<agentId>", "Agent ID to rollback")
       .argument("[version]", "Specific evolution version to rollback to")
-      .description("Rollback to a previous workspace version (requires running gateway)")
+      .description("Rollback to a previous workspace version via gateway")
       .action(async (agentId: string, version?: string) => {
-        console.log(
-          `\n  To rollback, use the gateway RPC method 'evolve.rollback' with agentId="${agentId}"${version ? `, version="${version}"` : ""}`,
-        );
-        console.log(`  The gateway handles workspace file restoration.\n`);
+        console.log(`\n  Rolling back ${agentId}${version ? ` to ${version}` : ""}...`);
+
+        try {
+          const result = (await callGatewayWs("evolve.rollback", {
+            agentId,
+            version,
+          })) as Record<string, unknown>;
+
+          console.log(`  Rolled back to: ${result.rolledBackTo}`);
+          console.log(`  Files restored: ${(result.files as string[])?.join(", ")}`);
+        } catch (err) {
+          console.error(`  ${err instanceof Error ? err.message : err}`);
+        }
+
+        console.log("");
       });
   };
 }

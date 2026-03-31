@@ -16,7 +16,7 @@ type Respond = (success: boolean, result?: unknown, error?: unknown) => void;
 type HandlerParams = { params: Record<string, unknown>; respond: Respond };
 
 /** Resolve agent workspace directory from config. */
-function resolveWorkspaceDir(api: OpenClawPluginApi, agentId: string): string {
+export function resolveWorkspaceDir(api: OpenClawPluginApi, agentId: string): string {
   // Try agent-specific workspace, fall back to default
   const cfg = api.config as Record<string, unknown>;
   const agents = cfg.agents as Record<string, unknown> | undefined;
@@ -168,6 +168,22 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
         observations,
         patterns: patterns.slice(0, 10),
       });
+    } catch (err) {
+      respond(false, undefined, String(err));
+    }
+  });
+
+  // --- evolve.sweep — trigger auto-evolve across all agents ---
+  api.registerGatewayMethod("evolve.sweep", async ({ params: _params, respond }: HandlerParams) => {
+    log.info?.("[agent-evolve] manual sweep triggered via gateway");
+    try {
+      const { runAutoEvolveSweep } = await import("./cron.js");
+      const results = await runAutoEvolveSweep({
+        config,
+        resolveWorkspaceDir: (agentId: string) => resolveWorkspaceDir(api, agentId),
+        logger: log,
+      });
+      respond(true, results);
     } catch (err) {
       respond(false, undefined, String(err));
     }
