@@ -4,7 +4,7 @@
 // fitness gating, and git-tracked rollback.
 // ---------------------------------------------------------------------------
 
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { createEvolveCli } from "./src/cli.js";
 import { startAutoEvolveCron } from "./src/cron.js";
 import { registerGatewayMethods, resolveWorkspaceDir } from "./src/gateway.js";
@@ -25,7 +25,7 @@ export default function register(api: OpenClawPluginApi): void {
   // Gateway methods — evolve.status, evolve.run, evolve.rollback, evolve.observations, evolve.sweep
   registerGatewayMethods(api, config);
 
-  // CLI — openclaw evolve {status, run, rollback, observations}
+  // CLI — openclaw evolve {status, run, sweep, rollback, observations}
   api.registerCli(createEvolveCli(api), { commands: ["evolve"] });
 
   // Auto-evolve cron — nightly sweep of all agents with failure observations
@@ -34,13 +34,24 @@ export default function register(api: OpenClawPluginApi): void {
     const cron = startAutoEvolveCron({
       config,
       resolveWorkspaceDir: (agentId: string) => resolveWorkspaceDir(api, agentId),
-      logger: api.logger,
+      logger: {
+        info: (msg: string) => api.logger.info?.(msg),
+        warn: (msg: string) => api.logger.warn?.(msg),
+        error: (msg: string) => api.logger.error?.(msg),
+      },
     });
 
     // Clean up on gateway stop
     api.on("gateway_stop", () => {
       cron.stop();
     });
+  }
+
+  // Post-evolution heartbeat verification uses runHeartbeatOnce (if available)
+  // to verify the mutated agent responds correctly after evolution
+  const hasHeartbeat = typeof api.runtime?.system?.runHeartbeatOnce === "function";
+  if (hasHeartbeat) {
+    api.logger.debug?.("[agent-evolve] runHeartbeatOnce available for post-evolution verification");
   }
 
   api.logger.info?.(

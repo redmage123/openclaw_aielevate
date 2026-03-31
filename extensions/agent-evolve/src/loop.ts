@@ -12,10 +12,10 @@ import { resolveObservationsPath, resolveEvolutionPath, resolveLockPath } from "
 import type { AgentEvolveConfig, Observation, EvolutionRecord } from "./types.js";
 
 type Logger = {
-  info?: (...args: unknown[]) => void;
-  warn?: (...args: unknown[]) => void;
-  error?: (...args: unknown[]) => void;
-  debug?: (...args: unknown[]) => void;
+  info?: (message: string) => void;
+  warn?: (message: string) => void;
+  error?: (message: string) => void;
+  debug?: (message: string) => void;
 };
 
 // Simple file-based lock to prevent concurrent evolution cycles
@@ -67,6 +67,10 @@ export async function runEvolutionCycle(params: {
   workspaceDir: string;
   logger: Logger;
   dryRun?: boolean;
+  /** Plugin runtime for post-evolution heartbeat verification */
+  pluginRuntime?: {
+    system?: { runHeartbeatOnce?: (opts?: Record<string, unknown>) => Promise<void> };
+  };
 }): Promise<EvolutionRecord> {
   const { agentId, config, workspaceDir, logger, dryRun } = params;
 
@@ -77,7 +81,7 @@ export async function runEvolutionCycle(params: {
   }
 
   try {
-    return await runCycleInner(agentId, config, workspaceDir, logger, dryRun);
+    return await runCycleInner(agentId, config, workspaceDir, logger, dryRun, params.pluginRuntime);
   } finally {
     await releaseLock(agentId);
   }
@@ -89,6 +93,9 @@ async function runCycleInner(
   workspaceDir: string,
   logger: Logger,
   dryRun?: boolean,
+  pluginRuntime?: {
+    system?: { runHeartbeatOnce?: (opts?: Record<string, unknown>) => Promise<void> };
+  },
 ): Promise<EvolutionRecord> {
   // 1. Read observations
   const obsPath = resolveObservationsPath(agentId);
@@ -204,6 +211,16 @@ async function runCycleInner(
 
     await appendJsonl(resolveEvolutionPath(agentId), record);
     await rotateJsonl(resolveObservationsPath(agentId), config.maxObservationFileBytes);
+
+    // Trigger a verification heartbeat so the evolved agent is tested immediately
+    if (pluginRuntime?.system?.runHeartbeatOnce) {
+      try {
+        await pluginRuntime.system.runHeartbeatOnce({ target: "none" });
+        logger.info?.(`[agent-evolve] ${agentId}: post-evolution heartbeat triggered`);
+      } catch (err) {
+        logger.warn?.(`[agent-evolve] ${agentId}: post-evolution heartbeat failed: ${err}`);
+      }
+    }
 
     logger.info?.(`[agent-evolve] ${agentId}: evolution ${evoId} applied successfully`);
     return record;

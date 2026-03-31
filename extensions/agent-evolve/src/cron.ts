@@ -4,17 +4,17 @@
 // ---------------------------------------------------------------------------
 
 import { readdir } from "node:fs/promises";
-import type { OpenClawPluginApi } from "../../../src/plugins/types.js";
+// OpenClawPluginApi type not needed here — cron uses Logger and config directly
 import { readJsonl, countJsonlLines } from "./jsonl.js";
-import { resolveEvolveBaseDir, resolveObservationsPath } from "./paths.js";
-import { analyzePatterns, hasSignificantPatterns } from "./mutator.js";
 import { runEvolutionCycle } from "./loop.js";
+import { analyzePatterns, hasSignificantPatterns } from "./mutator.js";
+import { resolveEvolveBaseDir, resolveObservationsPath } from "./paths.js";
 import type { AgentEvolveConfig, Observation, EvolutionRecord } from "./types.js";
 
 type Logger = {
-  info?: (...args: unknown[]) => void;
-  warn?: (...args: unknown[]) => void;
-  error?: (...args: unknown[]) => void;
+  info?: (message: string) => void;
+  warn?: (message: string) => void;
+  error?: (message: string) => void;
 };
 
 /** Discover agent IDs that have observation data. */

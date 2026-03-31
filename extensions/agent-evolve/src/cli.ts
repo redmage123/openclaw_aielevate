@@ -3,18 +3,20 @@
 // status/observations read JSONL directly; run/sweep/rollback use tools invoke.
 // ---------------------------------------------------------------------------
 
-import type { OpenClawPluginApi, OpenClawPluginCliContext } from "../../../src/plugins/types.js";
+import type { Command } from "commander";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { readJsonl, countJsonlLines } from "./jsonl.js";
-import { analyzePatterns } from "./mutator.js";
-import { resolveObservationsPath, resolveEvolutionPath } from "./paths.js";
-import type { Observation, EvolutionRecord } from "./types.js";
 
+// Local type for CLI context — matches CliContext without importing internals
+type CliContext = { program: Command };
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { analyzePatterns } from "./mutator.js";
 // ---------------------------------------------------------------------------
 // Gateway call via `openclaw tools invoke` (works on any install)
 // ---------------------------------------------------------------------------
-
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { resolveObservationsPath, resolveEvolutionPath } from "./paths.js";
+import type { Observation, EvolutionRecord } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -38,8 +40,8 @@ async function invokeGatewayMethod(
 }
 
 /** Register the `evolve` CLI subcommand. */
-export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCliContext) => void {
-  return ({ program }: OpenClawPluginCliContext) => {
+export function createEvolveCli(_api: OpenClawPluginApi): (ctx: CliContext) => void {
+  return ({ program }: CliContext) => {
     const evolve = program
       .command("evolve")
       .description("Agent Evolve — automated workspace mutation and self-correction");

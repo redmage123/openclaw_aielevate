@@ -88,6 +88,7 @@ let _runEmbeddedPiAgent: RunEmbeddedPiAgentFn | undefined;
 async function loadRunEmbeddedPiAgent(): Promise<RunEmbeddedPiAgentFn> {
   if (_runEmbeddedPiAgent) return _runEmbeddedPiAgent;
   try {
+    // Dynamic import — jiti resolves this at runtime from the openclaw install
     const mod = await import("../../../src/agents/pi-embedded-runner.js");
     // oxlint-disable-next-line typescript/no-explicit-any
     const fn = (mod as Record<string, unknown>).runEmbeddedPiAgent;

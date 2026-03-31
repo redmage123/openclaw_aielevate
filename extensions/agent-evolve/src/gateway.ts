@@ -4,7 +4,7 @@
 
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { OpenClawPluginApi } from "../../../src/plugins/types.js";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { rollbackToTag, listEvolutionTags } from "./git.js";
 import { readJsonl, countJsonlLines } from "./jsonl.js";
 import { runEvolutionCycle } from "./loop.js";
@@ -12,8 +12,11 @@ import { analyzePatterns } from "./mutator.js";
 import { resolveObservationsPath, resolveEvolutionPath } from "./paths.js";
 import type { AgentEvolveConfig, Observation, EvolutionRecord } from "./types.js";
 
-type Respond = (success: boolean, result?: unknown, error?: unknown) => void;
-type HandlerParams = { params: Record<string, unknown>; respond: Respond };
+// Use opts pattern matching GatewayRequestHandlerOptions
+type GwOpts = {
+  params: Record<string, unknown>;
+  respond: (success: boolean, result?: unknown, error?: { code: string; message: string }) => void;
+};
 
 /** Resolve agent workspace directory from config. */
 export function resolveWorkspaceDir(api: OpenClawPluginApi, agentId: string): string {
@@ -39,9 +42,16 @@ export function resolveWorkspaceDir(api: OpenClawPluginApi, agentId: string): st
 /** Register all gateway RPC methods. */
 export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvolveConfig): void {
   const log = api.logger;
+  // Wrap logger for loop/cron compatibility (PluginLogger.info takes string, not ...args)
+  const loopLogger = {
+    info: (msg: string) => log.info?.(msg),
+    warn: (msg: string) => log.warn?.(msg),
+    error: (msg: string) => log.error?.(msg),
+    debug: (msg: string) => log.debug?.(msg),
+  };
 
   // --- evolve.status ---
-  api.registerGatewayMethod("evolve.status", async ({ params, respond }: HandlerParams) => {
+  api.registerGatewayMethod("evolve.status", async ({ params, respond }: GwOpts) => {
     const agentId = params.agentId as string | undefined;
 
     try {
@@ -66,17 +76,17 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
         });
       }
     } catch (err) {
-      respond(false, undefined, String(err));
+      respond(false, undefined, { code: "error", message: String(err) });
     }
   });
 
   // --- evolve.run ---
-  api.registerGatewayMethod("evolve.run", async ({ params, respond }: HandlerParams) => {
+  api.registerGatewayMethod("evolve.run", async ({ params, respond }: GwOpts) => {
     const agentId = params.agentId as string;
     const dryRun = params.dryRun as boolean | undefined;
 
     if (!agentId) {
-      respond(false, undefined, "agentId is required");
+      respond(false, undefined, { code: "error", message: "agentId is required" });
       return;
     }
 
@@ -88,23 +98,23 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
         agentId,
         config,
         workspaceDir,
-        logger: log,
+        logger: loopLogger,
         dryRun,
       });
       respond(true, record);
     } catch (err) {
       log.warn?.(`[agent-evolve] evolution cycle failed: ${err}`);
-      respond(false, undefined, String(err));
+      respond(false, undefined, { code: "error", message: String(err) });
     }
   });
 
   // --- evolve.rollback ---
-  api.registerGatewayMethod("evolve.rollback", async ({ params, respond }: HandlerParams) => {
+  api.registerGatewayMethod("evolve.rollback", async ({ params, respond }: GwOpts) => {
     const agentId = params.agentId as string;
     const version = params.version as string | undefined;
 
     if (!agentId) {
-      respond(false, undefined, "agentId is required");
+      respond(false, undefined, { code: "error", message: "agentId is required" });
       return;
     }
 
@@ -113,7 +123,7 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
     try {
       const tags = await listEvolutionTags(workspaceDir, agentId);
       if (tags.length === 0) {
-        respond(false, undefined, "No evolution tags found");
+        respond(false, undefined, { code: "error", message: "No evolution tags found" });
         return;
       }
 
@@ -124,7 +134,10 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
       } else if (tags.length >= 2) {
         targetTag = tags[tags.length - 2];
       } else {
-        respond(false, undefined, "Only one evolution exists, cannot rollback further");
+        respond(false, undefined, {
+          code: "error",
+          message: "Only one evolution exists, cannot rollback further",
+        });
         return;
       }
 
@@ -135,21 +148,21 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
         log.info?.(`[agent-evolve] ${agentId}: rolled back to ${targetTag}`);
         respond(true, { agentId, rolledBackTo: targetTag, files });
       } else {
-        respond(false, undefined, `Failed to rollback to ${targetTag}`);
+        respond(false, undefined, { code: "error", message: `Failed to rollback to ${targetTag}` });
       }
     } catch (err) {
-      respond(false, undefined, String(err));
+      respond(false, undefined, { code: "error", message: String(err) });
     }
   });
 
   // --- evolve.observations ---
-  api.registerGatewayMethod("evolve.observations", async ({ params, respond }: HandlerParams) => {
+  api.registerGatewayMethod("evolve.observations", async ({ params, respond }: GwOpts) => {
     const agentId = params.agentId as string;
     const limit = (params.limit as number) ?? 50;
     const since = params.since as number | undefined;
 
     if (!agentId) {
-      respond(false, undefined, "agentId is required");
+      respond(false, undefined, { code: "error", message: "agentId is required" });
       return;
     }
 
@@ -169,23 +182,23 @@ export function registerGatewayMethods(api: OpenClawPluginApi, config: AgentEvol
         patterns: patterns.slice(0, 10),
       });
     } catch (err) {
-      respond(false, undefined, String(err));
+      respond(false, undefined, { code: "error", message: String(err) });
     }
   });
 
   // --- evolve.sweep — trigger auto-evolve across all agents ---
-  api.registerGatewayMethod("evolve.sweep", async ({ params: _params, respond }: HandlerParams) => {
+  api.registerGatewayMethod("evolve.sweep", async ({ params: _params, respond }: GwOpts) => {
     log.info?.("[agent-evolve] manual sweep triggered via gateway");
     try {
       const { runAutoEvolveSweep } = await import("./cron.js");
       const results = await runAutoEvolveSweep({
         config,
         resolveWorkspaceDir: (agentId: string) => resolveWorkspaceDir(api, agentId),
-        logger: log,
+        logger: loopLogger,
       });
       respond(true, results);
     } catch (err) {
-      respond(false, undefined, String(err));
+      respond(false, undefined, { code: "error", message: String(err) });
     }
   });
 

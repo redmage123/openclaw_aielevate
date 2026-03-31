@@ -2,16 +2,7 @@
 // Agent Evolve — Observer: captures structured observations from agent runs
 // ---------------------------------------------------------------------------
 
-import type { OpenClawPluginApi } from "../../../src/plugins/types.js";
-import type {
-  PluginHookAfterToolCallEvent,
-  PluginHookToolContext,
-  PluginHookLlmOutputEvent,
-  PluginHookAgentContext,
-  PluginHookAgentEndEvent,
-  PluginHookSessionEndEvent,
-  PluginHookSessionContext,
-} from "../../../src/plugins/types.js";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { classifyError, detectScaffoldingOnly, detectIncompleteDelivery } from "./classifier.js";
 import { appendJsonl, rotateJsonl } from "./jsonl.js";
 import { resolveObservationsPath } from "./paths.js";
@@ -41,7 +32,7 @@ export function registerObserverHooks(api: OpenClawPluginApi, config: AgentEvolv
   const log = api.logger;
 
   // --- after_tool_call: capture each tool invocation ---
-  api.on("after_tool_call", (event: PluginHookAfterToolCallEvent, ctx: PluginHookToolContext) => {
+  api.on("after_tool_call", (event, ctx) => {
     const sessionId = ctx.sessionKey ?? "unknown";
     const agentId = ctx.agentId ?? "unknown";
     const buf = getOrCreateBuffer(sessionId, agentId);
@@ -70,7 +61,7 @@ export function registerObserverHooks(api: OpenClawPluginApi, config: AgentEvolv
   });
 
   // --- llm_output: capture token usage and detect error patterns ---
-  api.on("llm_output", (event: PluginHookLlmOutputEvent, ctx: PluginHookAgentContext) => {
+  api.on("llm_output", (event, ctx) => {
     const sessionId = ctx.sessionKey ?? event.sessionId ?? "unknown";
     const agentId = ctx.agentId ?? "unknown";
     const buf = getOrCreateBuffer(sessionId, agentId);
@@ -89,7 +80,7 @@ export function registerObserverHooks(api: OpenClawPluginApi, config: AgentEvolv
   });
 
   // --- agent_end: capture overall run outcome ---
-  api.on("agent_end", (event: PluginHookAgentEndEvent, ctx: PluginHookAgentContext) => {
+  api.on("agent_end", (event, ctx) => {
     const sessionId = ctx.sessionKey ?? "unknown";
     const agentId = ctx.agentId ?? "unknown";
     const buf = getOrCreateBuffer(sessionId, agentId);
@@ -102,7 +93,7 @@ export function registerObserverHooks(api: OpenClawPluginApi, config: AgentEvolv
   });
 
   // --- session_end: flush buffered data to JSONL ---
-  api.on("session_end", async (event: PluginHookSessionEndEvent, ctx: PluginHookSessionContext) => {
+  api.on("session_end", async (event, ctx) => {
     const sessionId = ctx.sessionId ?? event.sessionId;
     const buf = sessionBuffers.get(sessionId);
     if (!buf) return;
