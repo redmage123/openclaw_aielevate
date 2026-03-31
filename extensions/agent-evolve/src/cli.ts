@@ -1,61 +1,40 @@
 // ---------------------------------------------------------------------------
 // Agent Evolve — CLI commands: openclaw evolve {status,run,sweep,rollback,observations}
-// status/observations read JSONL directly; run/sweep/rollback call gateway via WS.
+// status/observations read JSONL directly; run/sweep/rollback use tools invoke.
 // ---------------------------------------------------------------------------
 
-import { homedir } from "node:os";
-import { join } from "node:path";
 import type { OpenClawPluginApi, OpenClawPluginCliContext } from "../../../src/plugins/types.js";
 import { readJsonl, countJsonlLines } from "./jsonl.js";
 import { analyzePatterns } from "./mutator.js";
 import { resolveObservationsPath, resolveEvolutionPath } from "./paths.js";
-import { parseConfig } from "./types.js";
 import type { Observation, EvolutionRecord } from "./types.js";
 
 // ---------------------------------------------------------------------------
-// Gateway WS call — dynamically loads core callGateway
+// Gateway call via `openclaw tools invoke` (works on any install)
 // ---------------------------------------------------------------------------
 
-async function callGatewayWs(method: string, params: Record<string, unknown>): Promise<unknown> {
-  // Try core callGateway (WebSocket)
-  try {
-    const mod = await import("../../../src/gateway/call.js");
-    const fn = (mod as Record<string, unknown>).callGateway;
-    if (typeof fn === "function") {
-      return await (fn as Function)({
-        method,
-        params,
-        url: process.env.OPENCLAW_GATEWAY_URL ?? "ws://127.0.0.1:18789",
-        token: process.env.OPENCLAW_GATEWAY_TOKEN,
-        timeoutMs: 120_000,
-        mode: "cli",
-        clientName: "agent-evolve-cli",
-      });
-    }
-  } catch {
-    // Not available in this install
-  }
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-  // Fallback: try openclaw plugin-sdk path
-  try {
-    const mod = await import("openclaw/plugin-sdk");
-    const fn = (mod as Record<string, unknown>).callGateway;
-    if (typeof fn === "function") {
-      return await (fn as Function)({
-        method,
-        params,
-        url: process.env.OPENCLAW_GATEWAY_URL ?? "ws://127.0.0.1:18789",
-        token: process.env.OPENCLAW_GATEWAY_TOKEN,
-        timeoutMs: 120_000,
-        mode: "cli",
-        clientName: "agent-evolve-cli",
-      });
-    }
-  } catch {
-    // Not available
-  }
+const execFileAsync = promisify(execFile);
 
-  throw new Error("Cannot reach gateway — ensure the gateway is running");
+async function invokeGatewayMethod(
+  method: string,
+  params: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const paramsJson = JSON.stringify(params);
+  try {
+    const { stdout } = await execFileAsync(
+      "openclaw",
+      ["gateway", "call", method, "--params", paramsJson, "--json", "--timeout", "120000"],
+      { timeout: 130_000 },
+    );
+    return JSON.parse(stdout.trim()) as Record<string, unknown>;
+  } catch (err) {
+    const msg =
+      err instanceof Error ? ((err as { stderr?: string }).stderr ?? err.message) : String(err);
+    throw new Error(msg.trim());
+  }
 }
 
 /** Register the `evolve` CLI subcommand. */
@@ -150,7 +129,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("");
       });
 
-    // --- evolve run — calls gateway RPC ---
+    // --- evolve run (via gateway tools invoke) ---
     evolve
       .command("run")
       .argument("<agentId>", "Agent ID to evolve")
@@ -160,19 +139,19 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log(
           `\n  Starting evolution cycle for ${agentId}${opts.dryRun ? " (dry run)" : ""}...`,
         );
-        console.log("  (calling gateway — this may take 30-60s for LLM analysis)\n");
+        console.log("  (this may take 30-60s for LLM analysis)\n");
 
         try {
-          const result = (await callGatewayWs("evolve.run", {
+          const data = await invokeGatewayMethod("evolve.run", {
             agentId,
             dryRun: opts.dryRun,
-          })) as Record<string, unknown>;
+          });
 
-          const plan = result.plan as Record<string, unknown>;
-          const gate = result.gate as Record<string, unknown>;
+          const plan = data.plan as Record<string, unknown>;
+          const gate = data.gate as Record<string, unknown>;
           const mutations = (plan?.mutations as Array<Record<string, unknown>>) ?? [];
 
-          console.log(`  Result: ${result.status}`);
+          console.log(`  Result: ${data.status}`);
           console.log(`  Analysis: ${(plan?.analysis as string)?.slice(0, 200)}`);
           console.log(`  Mutations: ${mutations.length}`);
           for (const m of mutations) {
@@ -183,7 +162,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
               `  Gate: pre=${(gate.preScore as number)?.toFixed(2)} post=${(gate.postScore as number)?.toFixed(2)} passed=${gate.passed}`,
             );
           }
-          if (result.gitTag) console.log(`  Git tag: ${result.gitTag}`);
+          if (data.gitTag) console.log(`  Git tag: ${data.gitTag}`);
         } catch (err) {
           console.error(`  ${err instanceof Error ? err.message : err}`);
         }
@@ -191,7 +170,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("");
       });
 
-    // --- evolve sweep — calls gateway RPC ---
+    // --- evolve sweep (via gateway tools invoke) ---
     evolve
       .command("sweep")
       .description("Run evolution sweep across all agents via gateway")
@@ -200,12 +179,12 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("  (this may take several minutes)\n");
 
         try {
-          const result = (await callGatewayWs("evolve.sweep", {})) as Record<string, unknown>;
+          const data = await invokeGatewayMethod("evolve.sweep", {});
 
-          const evolved = (result.evolved as string[]) ?? [];
-          const rejected = (result.rejected as string[]) ?? [];
-          const skipped = (result.skipped as string[]) ?? [];
-          const errors = (result.errors as string[]) ?? [];
+          const evolved = (data.evolved as string[]) ?? [];
+          const rejected = (data.rejected as string[]) ?? [];
+          const skipped = (data.skipped as string[]) ?? [];
+          const errors = (data.errors as string[]) ?? [];
 
           console.log(`  Evolved: ${evolved.join(", ") || "none"}`);
           console.log(`  Rejected: ${rejected.join(", ") || "none"}`);
@@ -218,7 +197,7 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log("");
       });
 
-    // --- evolve rollback — calls gateway RPC ---
+    // --- evolve rollback (via gateway tools invoke) ---
     evolve
       .command("rollback")
       .argument("<agentId>", "Agent ID to rollback")
@@ -228,13 +207,12 @@ export function createEvolveCli(_api: OpenClawPluginApi): (ctx: OpenClawPluginCl
         console.log(`\n  Rolling back ${agentId}${version ? ` to ${version}` : ""}...`);
 
         try {
-          const result = (await callGatewayWs("evolve.rollback", {
+          const data = await invokeGatewayMethod("evolve.rollback", {
             agentId,
             version,
-          })) as Record<string, unknown>;
-
-          console.log(`  Rolled back to: ${result.rolledBackTo}`);
-          console.log(`  Files restored: ${(result.files as string[])?.join(", ")}`);
+          });
+          console.log(`  Rolled back to: ${data.rolledBackTo}`);
+          console.log(`  Files restored: ${(data.files as string[])?.join(", ")}`);
         } catch (err) {
           console.error(`  ${err instanceof Error ? err.message : err}`);
         }
