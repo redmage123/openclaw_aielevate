@@ -41,10 +41,8 @@ export default function register(api: OpenClawPluginApi): void {
       },
     });
 
-    // Clean up on gateway stop
-    api.on("gateway_stop", () => {
-      cron.stop();
-    });
+    // Clean up on process exit
+    process.on("exit", () => cron.stop());
   }
 
   // Post-evolution heartbeat verification uses runHeartbeatOnce (if available)
